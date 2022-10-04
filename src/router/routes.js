@@ -1,0 +1,130 @@
+
+const routes = [
+  {
+    path: '/auth',
+    component: () => import('layouts/Login.vue'),
+    children: [
+      { path: '', component: () => import('pages/auth/Index.vue') }
+    ]
+  },
+  {
+    path: '/',
+    meta: { auth: true },
+    component: () => import('layouts/Home.vue'),
+    children: [
+      { path: '', component: () => import('pages/Index.vue') }
+    ]
+  },
+  {
+    path: '/access',
+    meta: { auth: true },
+    component: () => import('layouts/Home.vue'),
+    children: [
+      { path: '', component: () => import('pages/Index.vue') },
+      { path: 'user', name: 'user', component: () => import('pages/config/User.vue') },
+      { path: 'useraccess', component: () => import('pages/config/Useraccess.vue') }
+    ]
+  },
+  {
+    path: '/setup',
+    meta: { auth: true },
+    component: () => import('layouts/Home.vue'),
+    children: [
+      { path: '', component: () => import('pages/Index.vue') },
+      { path: 'clinic', name: 'clinic', component: () => import('pages/setup/Clinic.vue') },
+      { path: 'igd', name: 'igd', component: () => import('pages/setup/IGD.vue') },
+      { path: 'diagnostic', name: 'diagnostic', component: () => import('pages/setup/Diagnostic.vue') },
+      { path: 'pharmacy', name: 'pharmacy', component: () => import('pages/setup/Pharmacy.vue') },
+      { path: 'medicalcheckup', name: 'mcu', component: () => import('pages/setup/MedicalCheckup.vue') },
+      { path: 'inpatient', name: 'inpatient', component: () => import('pages/setup/Inpatient.vue') },
+      { path: 'class', name: 'class', component: () => import('pages/setup/ServiceClass.vue') },
+    ]
+  },
+
+  {
+    path: '/master',
+    meta: { auth: true },
+    component: () => import('layouts/Home.vue'),
+    children: [
+      { path: '', component: () => import('pages/Index.vue') },
+      { path: 'inventory/item-group', name: 'item_group', component: () => import('pages/master/ItemGroup.vue') },
+      { path: 'inventory/items', name: 'items', component: () => import('pages/master/Items.vue') },
+      { path: 'inventory/warehouse', name: 'warehouse', component: () => import('pages/master/Warehouse.vue') },
+      { path: 'partner/customer', name: 'customer', component: () => import('pages/master/Customer.vue') },
+      { path: 'partner/supplier', name: 'supplier', component: () => import('pages/master/Supplier.vue') },
+      { path: 'partner/driver', name: 'driver', component: () => import('pages/master/Personal.vue') },
+      { path: 'operational/pool', name: 'pool', component: () => import('pages/master/Pools.vue') },
+      { path: 'operational/vehicle-group', name: 'vehiclegroup', component: () => import('pages/master/VehicleGroup.vue') },
+      { path: 'operational/vehicle', name: 'vehicle', component: () => import('pages/master/Vehicles.vue') },
+      { path: 'operational/variable-cost', name: 'variable-cost', component: () => import('pages/master/VehicleVariableCost.vue') },
+      { path: 'operational/geofance', name: 'geofance', component: () => import('pages/master/Geofance.vue') },
+      { path: 'operational/gpsdevice', name: 'gpsdevice', component: () => import('pages/master/GPSDevice.vue') },
+      { path: 'finance/cash-bank', name: 'cash-bank', component: () => import('pages/master/CashBank.vue') },
+      { path: 'accounting/voucher', name: 'voucher', component: () => import('pages/master/Voucher.vue') },
+      { path: 'accounting/coa', name: 'coa', component: () => import('pages/master/Coa.vue') },
+      { path: 'accounting/fiscal-year', name: 'fiscal-year', component: () => import('pages/master/FiscalYear.vue') },
+      { path: 'accounting/transaction-setup', name: 'transaction-setup', component: () => import('pages/master/AccountSetting.vue') }
+    ]
+  },
+
+  {
+    path: '/customer-service',
+    meta: { auth: true },
+    component: () => import('layouts/Home.vue'),
+    children: [
+      { path: '', component: () => import('pages/Index.vue') },
+      { path: 'customer-price', name: 'customer-price', component: () => import('pages/cs/CustomerPrice.vue') },
+      { path: 'order', name: 'item_group', component: () => import('pages/cs/CustomerOrder.vue') }
+    ]
+  },
+  {
+    path: '/operational',
+    meta: { auth: true },
+    component: () => import('layouts/Home.vue'),
+    children: [
+      { path: '', component: () => import('pages/Index.vue') },
+      { path: 'work-order', name: 'work-order', component: () => import('pages/operation/Operation.vue') },
+      { path: 'monitoring-unit', name: 'monitoring-unit', component: () => import('pages/operation/MonitoringUnit.vue') },
+      { path: 'map', name: 'maps', component: () => import('pages/operation/MapView.vue') },
+      { path: 'work-order/lbo', name: 'lbo', component: () => import('pages/operation/OperationLBO.vue') },
+      { path: 'work-order/closed-lbo', name: 'closed-lbo', component: () => import('pages/operation/OperationClosedLBO.vue') },
+    ]
+  },
+  {
+    path: '/accounting',
+    meta: { auth: true },
+    component: () => import('layouts/Home.vue'),
+    children: [
+      { path: '', component: () => import('pages/Index.vue') },
+      { path: 'general', name: 'journal', component: () => import('pages/accounting/Journal.vue') },
+      //{ path: 'inquery', component: () => import('pages/accounting/Inquery.vue') },
+      { path: 'gl', name: 'gl', component: () => import('pages/accounting/GeneralLedger.vue') },
+      //{ path: 'mutation', component: () => import('pages/accounting/Mutation.vue') }
+    ]
+  },
+  {
+    path: '/finance',
+    meta: { auth: true },
+    component: () => import('layouts/Home.vue'),
+    children: [
+      { path: '', component: () => import('pages/Index.vue') },
+      { path: 'cash-bank', name: 'cash-bank', component: () => import('pages/finance/CashBank.vue') },
+      { path: 'cash-bank/ujo', name: 'ujo', component: () => import('pages/finance/CashierUJO.vue') },
+      { path: 'cash-bank/droping', name: 'droping', component: () => import('pages/finance/Droping.vue') },
+      { path: 'cash-bank/receive-droping', name: 'receive-droping', component: () => import('pages/finance/Receiving.vue') },
+      { path: 'cash-bank/transaction-out', name: 'cashbankout', component: () => import('pages/finance/CashBankOUT.vue') },
+      { path: 'cash-bank/transaction-in', name: 'cashbankin', component: () => import('pages/finance/CashBankIN.vue') },
+      { path: 'ujo', name: 'ujo-list', component: () => import('pages/finance/OperationUJO.vue') },
+      { path: 'cash-bank/mutation', name: 'mutation', component: () => import('pages/finance/CashBankMutation.vue') },
+    ]
+  },
+
+  // Always leave this as last one,
+  // but you can also remove it
+  {
+    path: '/:catchAll(.*)*',
+    component: () => import('pages/Error404.vue')
+  }
+]
+
+export default routes

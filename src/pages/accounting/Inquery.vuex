@@ -1,0 +1,817 @@
+<template>
+  <q-page :class="pageapp">
+    <q-card
+      v-show="stateform"
+      square
+      class="icard"
+    >
+      <q-bar
+        dense
+        class="entry-caption"
+      >
+        <span><strong>{{ pagetitle }}</strong></span>
+        <q-space />
+        <q-btn
+          label="Kembali"
+          flat
+          dense
+          no-caps
+          size="sm"
+          icon="mdi-arrow-collapse-left"
+          @click="stateform=false"
+        />
+      </q-bar>
+      <q-card-section class="q-pa-sm">
+        <div class="row items-start q-col-gutter-xs q-mb-sm">
+          <div class="col-xs-12 col-sm-6 col-md-6">
+            <div class="row items-start q-mb-sm q-col-gutter-xs">
+              <div class="col-xs-8 col-sm-8 col-md-5">
+                <q-select
+                  v-model="edit.trans_code"
+                  :options="voucher"
+                  outlined
+                  dense
+                  options-dense
+                  label="Voucher"
+                  option-value="voucher_code"
+                  option-label="descriptions"
+                  emit-value
+                  map-options
+                  fill-input
+                  square
+                />
+              </div>
+              <div class="col-xs-4 col-sm-4 col-md-2">
+                <q-input
+                  v-model="edit.trans_series"
+                  dense
+                  outlined
+                  readonly
+                  type="text"
+                  label="Series"
+                  square
+                />
+              </div>
+              <div class="col-xs-6 col-sm-6 col-md-3">
+                <q-input
+                  v-model="edit.ref_date"
+                  dense
+                  outlined
+                  type="date"
+                  label="Tanggal"
+                  square
+                />
+              </div>
+            </div>
+            <div class="row items-start q-col-gutter-xs q-mb-sm">
+              <div class="col-xs-6 col-sm-6 col-md-5">
+                <q-input
+                  v-model="edit.reference1"
+                  dense
+                  outlined
+                  type="text"
+                  label="Referensi 1"
+                  square
+                />
+              </div>
+              <div class="col-xs-6 col-sm-6 col-md-5">
+                <q-input
+                  v-model="edit.reference2"
+                  dense
+                  outlined
+                  type="text"
+                  label="Referensi 2"
+                  square
+                />
+              </div>
+            </div>
+            <div class="row items-start q-col-gutter-xs q-mb-sm">
+              <div class="col-xs-12 col-sm-12 col-md-10">
+                <q-input
+                  v-model="edit.notes"
+                  dense
+                  outlined
+                  type="text"
+                  label="Catatan"
+                  square
+                />
+              </div>
+            </div>
+          </div>
+          <div class="col-xs-12 offset-sm-1 col-sm-5 offset-md-2 col-md-4">
+            <div class="row items-start q-col-gutter-xs q-mb-sm">
+              <div class="col-6">
+                <q-field
+                  v-model="edit.debit"
+                  dense
+                  outlined
+                  label="Debit"
+                  square
+                >
+                  <template v-slot:control="{ id, value, emitValue }">
+                    <vue-numeric
+                      :id="id"
+                      precision="2"
+                      :value="value"
+                      thousand-separator="."
+                      class="q-field__input text-right"
+                      readonly
+                      @input="emitValue"
+                    />
+                  </template>
+                </q-field>
+              </div>
+              <div class="col-6">
+                <q-field
+                  v-model="edit.credit"
+                  dense
+                  outlined
+                  label="Kredit"
+                  square
+                >
+                  <template v-slot:control="{ id, value, emitValue }">
+                    <vue-numeric
+                      :id="id"
+                      precision="2"
+                      :value="value"
+                      thousand-separator="."
+                      class="q-field__input text-right"
+                      readonly
+                      @input="emitValue"
+                    />
+                  </template>
+                </q-field>
+              </div>
+            </div>
+            <div class="row items-start q-mb-sm q-col-gutter-xs q-mb-sm">
+              <div class="col-6">
+                <q-input
+                  v-model="edit.fiscal_month"
+                  dense
+                  outlined
+                  readonly
+                  type="text"
+                  label="Bulan Fiscal"
+                  square
+                />
+              </div>
+              <div class="col-6">
+                <q-input
+                  v-model="edit.fiscal_year"
+                  dense
+                  outlined
+                  readonly
+                  type="text"
+                  label="Tahun Fiscal"
+                  square
+                />
+              </div>
+            </div>
+            <div class="row items-start q-mb-sm q-col-gutter-xs q-mb-sm">
+              <div class="col-12">
+                <q-select
+                  v-model="edit.transtype"
+                  :options="Jurnaltypes"
+                  outlined
+                  dense
+                  options-dense
+                  label="Tipe Jurnal"
+                  option-value="jurnal_type"
+                  option-label="descriptions"
+                  emit-value
+                  map-options
+                  readonly
+                  square
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </q-card-section>
+      <q-card-section class="q-pa-sm">
+        <q-table
+          class="grid-tables"
+          square
+          :data="detail"
+          :columns="coldetail"
+          dense
+          no-data-label="data kosong"
+          no-results-label="data yang kamu cari tidak ditemukan"
+          row-key="line_no"
+          separator="cell"
+          selection="single"
+          :selected.sync="selected_detail"
+          :pagination.sync="pagination_detail"
+          style="min-height: 150px;"
+        >
+          <template v-slot:header="props">
+            <q-tr :props="props">
+              <q-th
+                v-for="col in props.cols"
+                :key="col.name"
+                :props="props"
+                class="bg-teal-8 text-white"
+              >
+                {{ col.label }}
+              </q-th>
+            </q-tr>
+          </template>
+          <template v-slot:body="props">
+            <q-tr
+              :props="props"
+              @click.native="props.selected = !props.selected"
+            >
+              <q-td
+                v-for="col in props.cols"
+                :key="col.name"
+                :props="props"
+              >
+                <div class="grid-data">
+                  <div v-if="col.name === 'debit'">
+                    {{ localnumber(props.row.debit,2) }}
+                  </div>
+                  <div v-else-if="col.name === 'credit'">
+                    {{ localnumber(props.row.credit,2) }}
+                  </div>
+                  <div v-else>
+                    {{ col.value }}
+                  </div>
+                </div>
+              </q-td>
+            </q-tr>
+          </template>
+        </q-table>
+      </q-card-section>
+      <q-card-actions v-show="isVoid">
+        <q-btn
+          label="Void Jurnal"
+          no-caps
+          class="glossy"
+          color="red"
+          icon="remove_circle_outline"
+        />
+      </q-card-actions>
+    </q-card>
+    <q-card
+      v-show="!stateform"
+      square
+      class="q-mb-sm icard"
+    >
+      <q-bar class="entry-caption">
+        <span><strong>Filter data</strong></span>
+        <q-space />
+      </q-bar>
+      <div class="row items-center q-pa-sm q-col-gutter-sm">
+        <div class="col-xs-12 col-sm-4 col-md-3">
+          <q-select
+            v-model="jurnaltype"
+            :options="Jurnaltypes"
+            outlined
+            dense
+            options-dense
+            label="Asal Transaksi"
+            option-value="jurnal_type"
+            option-label="descriptions"
+            emit-value
+            map-options
+            fill-input
+            square
+          />
+        </div>
+        <div class="col-xs-6 col-sm-3 col-md-2">
+          <q-input
+            v-model="date1"
+            outlined
+            dense
+            label="Tanggal"
+            square
+            type="date"
+          />
+        </div>
+        <div class="col-xs-6 col-sm-3 col-md-2">
+          <q-input
+            v-model="date2"
+            type="date"
+            dense
+            label="s/d"
+            outlined
+            square
+          />
+        </div>
+      </div>
+    </q-card>
+    <q-card
+      v-show="!stateform"
+      square
+      class="icard q-mb-sm"
+    >
+      <q-bar class="entry-caption">
+        <span><strong>{{ pagetitle }}</strong></span>
+        <q-space />
+        <q-input
+          v-model="filter"
+          dense
+          outline
+          debounce="300"
+          label-color="white"
+          borderless
+          placeholder="Pencarian"
+          input-class="text-white"
+        >
+          <template v-slot:append>
+            <q-icon
+              v-if="filter === ''"
+              name="search"
+              color="white"
+              size="sm"
+            />
+            <q-icon
+              v-else
+              name="clear"
+              class="cursor-pointer"
+              color="white"
+              size="sm"
+              @click="filter = ''"
+            />
+          </template>
+        </q-input>
+      </q-bar>
+      <q-table
+        v-show="!stateform"
+        square
+        :data="data"
+        :columns="columns"
+        dense
+        no-data-label="data kosong"
+        no-results-label="data yang kamu cari tidak ditemukan"
+        row-key="sysid"
+        :filter="filter"
+        separator="cell"
+        selection="single"
+        :selected.sync="selected"
+        :pagination.sync="pagination"
+        class="grid-tables"
+        binary-state-sort
+        @request="onRequest"
+      >
+        <template v-slot:no-data="{ icon, message, filter }">
+          <div class="full-width row flex-center text-accent q-gutter-sm">
+            <q-icon
+              size="2em"
+              name="sentiment_dissatisfied"
+            />
+            <span>{{ message }}</span>
+            <q-icon
+              size="2em"
+              :name="filter ? 'filter_b_and_w' : icon"
+            />
+          </div>
+        </template>
+        <template v-slot:header="props">
+          <q-tr :props="props">
+            <q-th
+              v-for="col in props.cols"
+              :key="col.name"
+              :props="props"
+            >
+              {{ col.label }}
+            </q-th>
+          </q-tr>
+        </template>
+        <template v-slot:body="props">
+          <q-tr
+            :props="props"
+            @click.native="props.selected = !props.selected"
+            @dblclick.native="onDoubleClick(props.row)"
+          >
+            <q-td
+              v-for="col in props.cols"
+              :key="col.name"
+              :props="props"
+            >
+              <div class="grid-data">
+                <div v-if="col.name==='action'">
+                  <q-icon
+                    v-for="(btn, index) in btns"
+                    v-show="!(btn.action==='refresh') && !(btn.action==='add')"
+                    :key="index"
+                    flat
+                    no-caps
+                    dense
+                    class="q-mr-xs"
+                    :name="btn.icon"
+                    size="xs"
+                    color="teal-8"
+                    @click="runMethod(btn.onclick,props.row.sysid)"
+                  >
+                    <q-tooltip content-class="tooltips-app">
+                      {{ btn.tooltips }}
+                    </q-tooltip>
+                  </q-icon>
+                </div>
+                <div v-else-if="col.name==='is_void'">
+                  <q-toggle
+                    v-model="props.row.is_void"
+                    checked-icon="check"
+                    color="green"
+                    unchecked-icon="clear"
+                    false-value="0"
+                    true-value="1"
+                    disable
+                    dense
+                  />
+                </div>
+                <div v-else-if="col.name==='is_verified'">
+                  <q-toggle
+                    v-model="props.row.is_verified"
+                    checked-icon="check"
+                    color="green"
+                    unchecked-icon="clear"
+                    false-value="0"
+                    true-value="1"
+                    disable
+                    dense
+                  />
+                </div>
+                <div v-else-if="col.name==='debit'">
+                  {{ localnumber(props.row.debit,2) }}
+                </div>
+                <div v-else-if="col.name==='credit'">
+                  {{ localnumber(props.row.credit,2) }}
+                </div>
+                <div v-else-if="col.name==='ref_date'">
+                  {{ indonesiadate(props.row.ref_date) }}
+                </div>
+                <div v-else-if="col.name==='verified_date'">
+                  {{ indonesiadate(props.row.verified_date) }}
+                </div>
+
+                <div v-else>
+                  {{ col.value }}
+                </div>
+              </div>
+            </q-td>
+          </q-tr>
+        </template>
+      </q-table>
+    </q-card>
+
+    <!-- place QPageSticky at end of page -->
+    <q-page-sticky
+      expand
+      position="top"
+    >
+      <q-toolbar
+        v-show="!stateform"
+        class="main-toolbar"
+      >
+        <!-- <span class="page-title">User Akses</span> -->
+        <div
+          v-for="(btn,index) in btns"
+          :key="index"
+        >
+          <q-btn
+            flat
+            dense
+            no-caps
+            class="btn-toolbar q-mr-sm"
+            :icon="btn.icon"
+            :label="btn.caption"
+            @click="runMethod(btn.onclick)"
+          >
+            <q-tooltip content-class="tooltips-app">
+              {{ btn.tooltips }}
+            </q-tooltip>
+          </q-btn>
+        </div>
+      </q-toolbar>
+    </q-page-sticky>
+  </q-page>
+</template>
+
+<script>
+export default {
+  name: 'Inquery',
+  data () {
+    return {
+      data: [],
+      Jurnaltypes: [],
+      voucher: [],
+      jurnaltype: -1,
+      filter: '',
+      pagination: {
+        sortBy: 'sysid',
+        descending: false,
+        page: 1,
+        rowsPerPage: 25,
+        rowsNumber: 25
+      },
+      selected: [],
+      columns: [],
+      pagetitle: '',
+      api_url: {},
+      btns: [],
+      access: {},
+      date1: null,
+      date2: null,
+      stateform: false,
+      detail: [],
+      edit: {},
+      coldetail: [
+        { name: 'line_no', align: 'Left', sytle: 'width: 60px', headerStyle: 'width: 60px', label: '#', field: 'line_no' },
+        { name: 'no_account', align: 'left', sytle: 'width: 100px', headerStyle: 'width: 100px', label: 'No. Akun', field: 'no_account' },
+        { name: 'description', align: 'left', label: 'Nama Akun', field: 'description' },
+        { name: 'line_memo', align: 'left', sytle: 'width: 170px', headerStyle: 'width: 170px', label: 'Keterangan', field: 'line_memo' },
+        { name: 'debit', align: 'right', sytle: 'width: 30px', headerStyle: 'width: 30px', label: 'Debit', field: 'debit' },
+        { name: 'credit', align: 'right', sytle: 'width: 30px', headerStyle: 'width: 30px', label: 'Kredit', field: 'credit' },
+        { name: 'project', align: 'left', label: 'proyek', field: 'project' },
+        { name: 'reference1', align: 'left', label: 'No. Referensi 1', field: 'reference1' },
+        { name: 'reference2', align: 'center', label: 'No. Referensi 2', field: 'reference2' }
+      ],
+      selected_detail: [],
+      pagination_detail: {
+        sortBy: 'line_no',
+        descending: false,
+        page: 1,
+        rowsPerPage: 50,
+        rowsNumber: 50
+      },
+      isVoid: false
+    }
+  },
+  computed: {
+    xs () {
+      return this.$q.screen.xs
+    },
+    pageapp () {
+      if (!(this.stateform)) {
+        return 'page-app'
+      } else {
+        return 'page-app-edit'
+      }
+    }
+  },
+  async mounted () {
+    this.$q.loading.show({ delay: 200 })
+    try {
+      let props = {}
+      props.url = 'master/account/jurnaltype'
+      this.Jurnaltypes = await this.$store.dispatch('master/GET_DATA', props)
+      props = {}
+      props.url = 'master/voucher/getvoucher'
+      this.voucher = await this.$store.dispatch('master/GET_DATA', props)
+
+      let skrng = new Date()
+      this.date1 = skrng.toLocaleDateString('en-CA')
+      this.date2 = skrng.toLocaleDateString('en-CA')
+
+      let property = await this.$store.dispatch('home/GET_PAGEPROPERTY', this.$route.path)
+      this.columns = property.columns
+      this.pagetitle = property.title
+      this.api_url = property.url
+      this.btns = property.btn
+      this.access = property.access
+    } finally {
+      this.$q.loading.hide()
+    }
+  },
+  methods: {
+    runMethod (method, sysid = -1) {
+      this[method](sysid)
+    },
+    async loaddata () {
+      this.selected = []
+      this.onRequest({
+        pagination: this.pagination,
+        filter: this.filter
+      })
+    },
+    localdate (value) {
+      if (!(value === null)) {
+        let dat = this.$INDDate(value)
+        return dat
+      } else {
+        return value
+      }
+    },
+    localnumber (value, decimal, comma = ',', leadingzero = '') {
+      return this.$formatnumber(value, decimal, comma, leadingzero)
+    },
+    indonesiadate (value) {
+      if (!(value === null)) {
+        let dat = this.$INDDate(value)
+        return dat
+      } else {
+        return value
+      }
+    },
+    async onRequest (props) {
+      let { page, rowsPerPage, rowsNumber, sortBy, descending } = props.pagination
+      let filter = props.filter
+
+      let fetchCount = rowsPerPage === 0 ? rowsNumber : rowsPerPage
+      this.$q.loading.show({ delay: 200 })
+      try {
+        let props = {}
+        props.page = page
+        props.limit = fetchCount
+        props.filter = filter
+        props.sortBy = sortBy
+        props.descending = descending
+        props.jwt = this.jwt
+        props.jurnaltype = this.jurnaltype
+        props.start_date = this.date1
+        props.end_date = this.date2
+        props.url = this.api_url.retrieve
+        let respon = await this.$store.dispatch('master/GET_DATA', props)
+        this.data = respon.data
+        /* let index = -1
+        this.data.forEach(el => {
+          ++index
+          this.data[index].is_void = el.is_void.toString()
+          this.data[index].is_verified = el.is_verified.toString()
+        }) */
+
+        this.pagination.rowsNumber = respon.total
+        this.pagination.page = respon.current_page
+        this.pagination.rowsPerPage = respon.per_page
+        this.pagination.sortBy = sortBy
+        this.pagination.descending = descending
+      } catch (error) {
+      } finally {
+        this.$q.loading.hide()
+      }
+    },
+    async detail_event (sysid = -1) {
+      if ((this.selected.length > 0) || (sysid !== -1)) {
+        this.operation = 'updated'
+        this.isVoid = false
+        if (sysid === -1) {
+          let item = this.selected[0]
+          sysid = item.sysid
+        }
+        this.$q.loading.show({ delay: 100 })
+        try {
+          let props = {}
+          props.url = this.api_url.edit
+          props.sysid = sysid
+          let respon = await this.$store.dispatch('master/GET_DATA', props)
+          if (!(typeof respon === 'undefined')) {
+            this.stateform = true
+            this.edit = respon['header']
+            if (respon['detail'] === null) {
+              this.detail = []
+            } else {
+              this.detail = respon['detail']
+            }
+            this.lblSave = 'Simpan'
+            if (this.posted || this.deleted) {
+              this.$q.dialog({
+                title: 'Peringatan',
+                message: respon.message,
+                persistent: true
+              })
+            }
+          }
+        } finally {
+          this.$q.loading.hide()
+        }
+      }
+    },
+    async void_event (sysid = -1) {
+      if ((this.selected.length > 0) || (sysid !== -1)) {
+        this.operation = 'updated'
+        this.isVoid = true
+        if (sysid === -1) {
+          let item = this.selected[0]
+          sysid = item.sysid
+        }
+        this.$q.loading.show({ delay: 100 })
+        try {
+          let props = {}
+          props.url = this.api_url.edit
+          props.sysid = sysid
+          let respon = await this.$store.dispatch('master/GET_DATA', props)
+          if (!(typeof respon === 'undefined')) {
+            this.stateform = true
+            this.edit = respon['header']
+            if (respon['detail'] === null) {
+              this.detail = []
+            } else {
+              this.detail = respon['detail']
+            }
+            this.lblSave = 'Simpan'
+            if (this.posted || this.deleted) {
+              this.$q.dialog({
+                title: 'Peringatan',
+                message: respon.message,
+                persistent: true
+              })
+            }
+          }
+        } finally {
+          this.$q.loading.hide()
+        }
+      }
+    },
+    async print_event (sysid = -1) {
+      if ((this.selected.length > 0) || (!(sysid === -1))) {
+        this.operation = 'updated'
+        if (sysid === -1) {
+          let item = this.selected[0]
+          sysid = item.sysid
+        }
+        this.$q.loading.show({ delay: 200 })
+        try {
+          let props = {}
+          props.url = this.api_url.print
+          props.sysid = sysid
+          await this.$store.dispatch('master/GET_DOWNLOAD', props)
+        } finally {
+          this.$q.loading.hide()
+        }
+      }
+    },
+    verified_event (sysid = -1) {
+      if ((this.selected.length > 0) || (sysid !== -1)) {
+        if (sysid === -1) {
+          let item = this.selected[0]
+          sysid = item.sysid
+        }
+        this.$q.dialog({
+          dark: true,
+          title: 'Konfirmasi',
+          message: 'Apakah jurnal ini akan diverifikasi ?',
+          cancel: true,
+          persistent: true
+        })
+          .onOk(() => {
+            let props = {}
+            props.sysid = sysid
+            props.url = 'master/account/verified'
+            this.$q.loading.show({ delay: 100 })
+            this.$store.dispatch('master/POST_DATA', props)
+              .then((respon) => {
+                if (!(typeof (respon) === 'undefined')) {
+                  let msg = respon.data
+                  if (respon.success) {
+                    this.$q.notify({
+                      color: 'positive',
+                      textcolor: 'white',
+                      message: msg,
+                      position: 'center',
+                      timeout: 200
+                    })
+                    this.loaddata()
+                  } else {
+                    this.$q.loading.hide()
+                    this.$q.dialog({
+                      title: 'Peringatan',
+                      message: msg,
+                      persistent: true
+                    })
+                  }
+                }
+              })
+              .finally(function () {
+                this.$q.loading.hide()
+              })
+          })
+      }
+    },
+    async onDoubleClick (row) {
+      if (!(typeof (row) === 'undefined')) {
+        this.operation = 'updated'
+        let item = row
+        this.isVoid = false
+        this.$q.loading.show({ delay: 200 })
+        try {
+          let props = {}
+          props.url = this.api_url.edit
+          props.sysid = item.sysid
+          let respon = await this.$store.dispatch('master/GET_DATA', props)
+          if (!(typeof respon === 'undefined')) {
+            this.stateform = true
+            this.edit = respon['header']
+            if (respon['detail'] === null) {
+              this.detail = []
+            } else {
+              this.detail = respon['detail']
+            }
+            this.lblSave = 'Simpan'
+            if (this.posted || this.deleted) {
+              this.$q.dialog({
+                title: 'Peringatan',
+                message: respon.message,
+                persistent: true
+              })
+            }
+          }
+        } finally {
+          this.$q.loading.hide()
+        }
+      }
+    }
+  }
+}
+</script>

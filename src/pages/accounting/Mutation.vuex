@@ -1,0 +1,333 @@
+<template>
+  <q-page class="page-app">
+    <q-card
+      square
+      class="q-mb-sm icard"
+    >
+      <q-bar
+        dense
+        class="entry-caption"
+      >
+        <span><strong>Mutasi Jurnal</strong></span>
+      </q-bar>
+      <q-card-section class="q-pa-xs">
+        <div class="row items-center q-mb-sm q-gutter-sm aligment-left">
+          <q-select
+            v-model="bulan"
+            :options="months"
+            outlined
+            dense
+            options-dense
+            label="Bulan"
+            emit-value
+            map-options
+            fill-input
+            square
+            style="width:200px"
+          />
+          <q-input
+            v-model="tahun"
+            type="number"
+            dense
+            label="Tahun"
+            outlined
+            square
+            style="width:100px"
+          />
+          <q-toggle
+            v-model="neraca"
+            checked-icon="check"
+            color="green"
+            unchecked-icon="clear"
+            false-value="0"
+            true-value="1"
+            label="Mutasi Neraca"
+            dense
+          />
+        </div>
+        <div class="row items-center q-col-gutter-xs q-mb-sm">
+          <div class="col-xs-12 col-sm-5 col-md-3">
+            <q-select
+              v-model="project_code"
+              :options="projects"
+              outlined
+              dense
+              options-dense
+              label="Proyek Akunting"
+              option-value="project_code"
+              option-label="project_name"
+              emit-value
+              map-options
+              fill-input
+              square
+            />
+          </div>
+          <div class="col-xs-4 col-sm-3 col-md-2">
+            <q-btn
+              icon="refresh"
+              label="Query"
+              class="glossy"
+              no-caps
+              color="teal-8"
+              size="md"
+              @click="loaddata()"
+            />
+          </div>
+        </div>
+      </q-card-section>
+    </q-card>
+    <q-table
+      class="grid-tables"
+      square
+      :data="data"
+      :columns="columns"
+      dense
+      no-data-label="data kosong"
+      no-results-label="data yang kamu cari tidak ditemukan"
+      row-key="account_no"
+      separator="cell"
+      selection="single"
+      :selected.sync="selected"
+      :pagination.sync="pagination"
+    >
+      <template v-slot:no-data="{ icon, message, filter }">
+        <div class="full-width row flex-center text-accent q-gutter-sm">
+          <q-icon
+            size="2em"
+            name="sentiment_dissatisfied"
+          />
+          <span>{{ message }}</span>
+          <q-icon
+            size="2em"
+            :name="filter ? 'filter_b_and_w' : icon"
+          />
+        </div>
+      </template>
+      <template v-slot:header="props">
+        <q-tr :props="props">
+          <q-th
+            v-for="col in props.cols"
+            :key="col.name"
+            :props="props"
+          >
+            {{ col.label }}
+          </q-th>
+        </q-tr>
+      </template>
+      <template v-slot:body="props">
+        <q-tr
+          :props="props"
+          @click.native="props.selected = !props.selected"
+          @dblclick.native="onDoubleClick(props.row)"
+        >
+          <q-td
+            v-for="col in props.cols"
+            :key="col.name"
+            :props="props"
+          >
+            <div class="grid-data">
+              <div v-if="((col.name==='account_no') || (col.name==='account_name'))">
+                <div v-if="props.row.is_header===1">
+                  <span><strong>{{ col.value }}</strong></span>
+                </div>
+                <div v-else>
+                  <span>{{ col.value }}</span>
+                </div>
+              </div>
+              <div v-else-if="col.name==='reversed1'">
+                {{ localnumber(props.row.reversed1,2,',','') }}
+              </div>
+              <div v-else-if="col.name==='reversed2'">
+                {{ localnumber(props.row.reversed2,2,',','') }}
+              </div>
+              <div v-else-if="col.name==='reversed3'">
+                {{ localnumber(props.row.reversed3,2,',','') }}
+              </div>
+              <div v-else-if="col.name==='reversed4'">
+                {{ localnumber(props.row.reversed4,2,',','') }}
+              </div>
+              <div v-else>
+                {{ col.value }}
+              </div>
+            </div>
+          </q-td>
+        </q-tr>
+      </template>
+    </q-table>
+
+    <!-- place QPageSticky at end of page -->
+    <q-page-sticky
+      expand
+      position="top"
+    >
+      <q-toolbar
+        v-show="!xs"
+        class="main-toolbar"
+      >
+        <!-- <span class="page-title">User Akses</span> -->
+        <div
+          v-for="(btn,index) in btns"
+          :key="index"
+        >
+          <q-btn
+            flat
+            dense
+            no-caps
+            class="btn-toolbar q-mr-sm"
+            :icon="btn.icon"
+            :label="btn.caption"
+            @click="runMethod(btn.onclick)"
+          >
+            <q-tooltip content-class="tooltips-app">
+              {{ btn.tooltips }}
+            </q-tooltip>
+          </q-btn>
+        </div>
+      </q-toolbar>
+    </q-page-sticky>
+
+    <q-page-sticky
+      v-show="xs"
+      position="bottom-right"
+      :offset="[18, 45]"
+    >
+      <q-fab
+        icon="add"
+        direction="up"
+        color="accent"
+      >
+        <div
+          v-for="(btn,index) in btns"
+          :key="index"
+        >
+          <q-fab-action
+            color="primary"
+            :icon="btn.icon"
+            :label="btn.caption"
+            external-label
+            label-position="left"
+            @click="runMethod(btn.onclick)"
+          />
+        </div>
+      </q-fab>
+    </q-page-sticky>
+  </q-page>
+</template>
+
+<script>
+import { date } from 'quasar'
+export default {
+  name: 'Mutation',
+  data () {
+    return {
+      data: [],
+      projects: [],
+      project_code: '00',
+      filter: '',
+      pagination: {
+        sortBy: 'account_no',
+        descending: false,
+        page: 1,
+        rowsPerPage: 50,
+        rowsNumber: 50
+      },
+      selected: [],
+      columns: [],
+      pagetitle: '',
+      api_url: {},
+      btns: [],
+      access: {},
+      bulan: '-',
+      tahun: 2020,
+      months: ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'],
+      neraca: '1'
+    }
+  },
+  computed: {
+    xs () {
+      return this.$q.screen.xs
+    }
+  },
+  async created () {
+    this.$q.loading.show({ delay: 200 })
+    try {
+      let props = {}
+      props = {}
+      props.url = 'master/pool/project'
+      this.projects = await this.$store.dispatch('master/GET_DATA', props)
+
+      let skrng = new Date()
+      this.tahun = skrng.getFullYear()
+      this.bulan = this.months[skrng.getMonth()]
+
+      let property = await this.$store.dispatch('home/GET_PAGEPROPERTY', this.$route.path)
+      this.columns = property.columns
+      this.pagetitle = property.title
+      this.api_url = property.url
+      this.btns = property.btn
+      this.access = property.access
+    } finally {
+      this.$q.loading.hide()
+    }
+  },
+  methods: {
+    runMethod (method) {
+      this[method]()
+    },
+    async loaddata () {
+      this.$q.loading.show({ delay: 200 })
+      try {
+        this.selected = []
+        let props = {}
+        props.jwt = this.jwt
+        props.project = this.project_code
+        props.month = this.months.indexOf(this.bulan) + 1
+        props.year = this.tahun
+        if (this.neraca === '1') {
+          props.model = 'neraca'
+        } else {
+          props.model = 'labarugi'
+        }
+        props.url = this.api_url.retrieve
+        let respon = await this.$store.dispatch('master/GET_DATA', props)
+        this.data = respon
+      } finally {
+        this.$q.loading.hide()
+      }
+    },
+    localdate (value) {
+      if (!(value === null)) {
+        let dat = this.$INDDate(value)
+        return dat
+      } else {
+        return value
+      }
+    },
+    localnumber (value, decimal, comma = ',', leadingzero = '') {
+      return this.$formatnumber(value, decimal, comma, leadingzero)
+    },
+    indonesiadate (value) {
+      if (!(value === null)) {
+        let dat = this.$INDDate(value)
+        return dat
+      } else {
+        return value
+      }
+    },
+    gl_event () {
+      if (this.selected.length > 0) {
+        let item = this.selected[0]
+        if (item.is_header === 0) {
+          let account = item.account_no
+          let project = this.project_code
+          let url = '/accounting/gl'
+          let startdate = new Date(this.tahun, this.months.indexOf(this.bulan), 1).toLocaleDateString('en-CA')
+          let enddate = date.endOfDate(startdate, 'month').toLocaleDateString('en-CA')
+          this.$router.push({ path: url, query: { account: account, startdate: startdate, enddate: enddate, project: project } })
+        }
+      }
+    }
+  }
+}
+</script>

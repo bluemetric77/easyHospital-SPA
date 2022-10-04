@@ -1,6 +1,8 @@
-# clinic (app)
+# Easy Hospital
 
-Clinic Information System
+Aplikasi Rumah Sakit berbasis opensource dengan menggunakan framework javascript vue dan template Quasar.dev (https://www.quasar.dev).
+Aplikasi ini menggunakan backend dengan bahasa PHP dengan framework laravel.
+Database yang di gunakan SQL Server
 
 ## Install the dependencies
 ```bash

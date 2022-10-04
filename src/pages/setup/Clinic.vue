@@ -283,7 +283,7 @@ export default defineComponent({
                   textcolor: "white",
                   message: msg,
                   position: "top",
-                  timeout: 3000,
+                  timeout: 2000,
                 });
               }
             }

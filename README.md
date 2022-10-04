@@ -1,4 +1,4 @@
-# Easy Hospital
+# SIMRS Bersama
 
 Aplikasi Rumah Sakit berbasis opensource dengan menggunakan framework javascript vue dan template Quasar.dev (https://www.quasar.dev).
 Aplikasi ini menggunakan backend dengan bahasa PHP dengan framework laravel.

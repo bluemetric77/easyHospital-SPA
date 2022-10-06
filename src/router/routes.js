@@ -38,6 +38,7 @@ const routes = [
       { path: 'medicalcheckup', name: 'mcu', component: () => import('pages/setup/MedicalCheckup.vue') },
       { path: 'inpatient', name: 'inpatient', component: () => import('pages/setup/Inpatient.vue') },
       { path: 'class', name: 'class', component: () => import('pages/setup/ServiceClass.vue') },
+      { path: 'pricelevel', name: 'pricelevel', component: () => import('pages/setup/PriceLevel.vue') },
     ]
   },
 
@@ -47,23 +48,7 @@ const routes = [
     component: () => import('layouts/Home.vue'),
     children: [
       { path: '', component: () => import('pages/Index.vue') },
-      { path: 'inventory/item-group', name: 'item_group', component: () => import('pages/master/ItemGroup.vue') },
-      { path: 'inventory/items', name: 'items', component: () => import('pages/master/Items.vue') },
-      { path: 'inventory/warehouse', name: 'warehouse', component: () => import('pages/master/Warehouse.vue') },
-      { path: 'partner/customer', name: 'customer', component: () => import('pages/master/Customer.vue') },
-      { path: 'partner/supplier', name: 'supplier', component: () => import('pages/master/Supplier.vue') },
-      { path: 'partner/driver', name: 'driver', component: () => import('pages/master/Personal.vue') },
-      { path: 'operational/pool', name: 'pool', component: () => import('pages/master/Pools.vue') },
-      { path: 'operational/vehicle-group', name: 'vehiclegroup', component: () => import('pages/master/VehicleGroup.vue') },
-      { path: 'operational/vehicle', name: 'vehicle', component: () => import('pages/master/Vehicles.vue') },
-      { path: 'operational/variable-cost', name: 'variable-cost', component: () => import('pages/master/VehicleVariableCost.vue') },
-      { path: 'operational/geofance', name: 'geofance', component: () => import('pages/master/Geofance.vue') },
-      { path: 'operational/gpsdevice', name: 'gpsdevice', component: () => import('pages/master/GPSDevice.vue') },
-      { path: 'finance/cash-bank', name: 'cash-bank', component: () => import('pages/master/CashBank.vue') },
-      { path: 'accounting/voucher', name: 'voucher', component: () => import('pages/master/Voucher.vue') },
-      { path: 'accounting/coa', name: 'coa', component: () => import('pages/master/Coa.vue') },
-      { path: 'accounting/fiscal-year', name: 'fiscal-year', component: () => import('pages/master/FiscalYear.vue') },
-      { path: 'accounting/transaction-setup', name: 'transaction-setup', component: () => import('pages/master/AccountSetting.vue') }
+      { path: 'inventory/warehouse', name: 'warehouse', component: () => import('pages/master/inventory/Warehouse.vue') },
     ]
   },
 

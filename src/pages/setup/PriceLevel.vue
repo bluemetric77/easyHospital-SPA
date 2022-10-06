@@ -1,31 +1,24 @@
 <template>
   <q-page class="page-app">
     <q-card square class="icard">
-      <q-bar class="entry-caption">
-        <span><strong>{{ pagetitle }}</strong></span>
+      <q-toolbar class="entry-caption">
+        <strong>{{ pagetitle }}</strong>
         <q-space />
-        <q-input v-model="filter" dense outline debounce="300" label-color="white" borderless placeholder="Pencarian"
-          input-class="text-white">
+        <q-input dark v-model="filter" standout rounded dense outline debounce="500" label-color="white"
+          placeholder="Pencarian">
           <template v-slot:append>
-            <q-icon v-if="filter === ''" name="search" color="white" size="sm" />
-            <q-icon v-else name="clear" class="cursor-mouer" color="white" size="sm" @click="filter = ''" />
+            <q-icon v-if="filter === ''" name="search" size="sm" />
+            <q-icon v-else name="clear" class="cursor-pointer" size="sm" @click="filter = ''" />
           </template>
         </q-input>
-      </q-bar>
-      <q-table square :rows="data" :columns="columns" no-data-label="data kosong" :dense="$q.screen.md"
-        no-results-label="data yang kamu cari tidak ditemukan" row-key="warehouse_id" :filter="filter" separator="cell"
-        selection="single" v-model:selected="selected" v-model:pagination="pagination" binary-state-sort
-        @request="onRequest" :loading="loading">
-        <template v-slot:loading>
-          <q-spinner-ios showing color="primary" />
-        </template>
-        <template v-slot:no-data="{ icon, message, filter }">
-          <div class="full-width row flex-top text-accent q-gutter-sm">
-            <q-icon size="2em" name="sentiment_dissatisfied" />
-            <span>{{ message }}</span>
-            <q-icon size="2em" :name="filter ? 'filter_b_and_w' : icon" />
-          </div>
-        </template>
+      </q-toolbar>
+      <q-table square :rows="data" :columns="columns" no-data-label="data kosong"
+        no-results-label="data yang cari tidak ditemukan" row-key="sysid" :filter="filter" separator="cell" selection="single"
+        v-model:selected="selected" v-model:pagination="pagination" binary-state-sort @request="onRequest" :loading="loading"
+        virtual-scroll table-class="fix-table">
+        <q-inner-loading showing>
+          <q-spinner-ball size="75px" color="red-10" />
+        </q-inner-loading>
         <template v-slot:header="props">
           <q-tr :props="props">
             <q-th v-for="col in props.cols" :key="col.name" :props="props">
@@ -40,29 +33,20 @@
                 <div v-if="col.name === 'action'">
                   <q-icon v-for="(btn, index) in btns" v-show="btn.is_allowed && btn.is_show" :key="index" no-caps flat
                     class="q-mr-sm" :name="btn.icon" size="xs" color="green-10"
-                    @click="runMethod(btn.onclick, props.row.warehouse_id)">
+                    @click="runMethod(btn.onclick, props.row.sysid)">
                     <q-tooltip content-class="tooltips-app">
                       {{ btn.tooltips }}
                     </q-tooltip>
                   </q-icon>
                 </div>
-                <div v-else-if="col.name === 'is_allow_negatif'">
-                  <q-toggle v-model="props.row.is_allow_negatif" true-value="1" false-value="0" dense disable />
-                </div>
-                <div v-else-if="col.name === 'is_allow_receive'">
-                  <q-toggle v-model="props.row.is_allow_receive" true-value="1" false-value="0" dense disable />
-                </div>
-                <div v-else-if="col.name === 'is_allow_transfer'">
-                  <q-toggle v-model="props.row.is_allow_transfer" true-value="1" false-value="0" dense disable />
-                </div>
-                <div v-else-if="col.name === 'is_auto_transfer'">
-                  <q-toggle v-model="props.row.is_auto_transfer" true-value="1" false-value="0" dense disable />
-                </div>
                 <div v-else-if="col.name === 'is_active'">
-                  <q-toggle v-model="props.row.is_active" true-value="1" false-value="0" dense disable />
+                  <q-toggle v-model="props.row.is_active" dense disable />
                 </div>
-                <div v-else-if=" col.name==='update_timestamp'">
-                  {{ $INDDateTime(props.row.update_timestamp) }}
+                <div v-else-if="col.name === 'create_date'">
+                  {{ $INDDateTime(props.row.create_date) }}
+                </div>
+                <div v-else-if="col.name === 'update_date'">
+                  {{ $INDDateTime(props.row.update_date) }}
                 </div>
                 <div v-else>
                   {{ col.value }}
@@ -86,55 +70,37 @@
       </q-toolbar>
     </q-page-sticky>
 
-    <!-- Dialog Data Location-->
+    <!-- Dialog UI Interface-->
     <q-dialog v-model="dataevent" persistent transition-show="flip-down" transition-hide="flip-up">
-      <q-card class="icard" style="width: 700px" square>
+      <q-card class="icard" square style="min-width:500px">
         <q-bar class="entry-caption">
           {{ title }}
           <q-space />
-          <q-btn v-close-popup dense glossy rounded icon="close" color="red-5" size="xs">
-            <q-tooltip>Close</q-tooltip>
+          <q-btn v-close-popup dense flat rounded icon="close" color="red-5" size="sm" >
+            <q-tooltip>Tutup</q-tooltip>
           </q-btn>
         </q-bar>
 
         <q-card-section class="q-gutter-sm">
-          <div class="row items-start q-col-gutter-sm q-mb-sm">
+          <div class="row items-center q-col-gutter-sm q-mb-sm">
             <div class="col-4">
-              <q-input v-model="edit.warehouse_id" dense outlined square label="Kode" stack-label />
+              <q-input v-model="edit.level_code" dense outlined square label="Level Tarif" stack-label />
             </div>
-            <div class="col-8">
-              <q-input v-model="edit.descriptions" dense outlined square label="Nama group inventory" stack-label />
+          </div>
+          <div class="row items-center q-col-gutter-sm q-mb-sm">
+            <div class="col-12">
+              <q-input v-model="edit.descriptions" dense outlined square label="Keterangan" stack-label />
             </div>
           </div>
           <div class="row items-start q-col-gutter-sm q-mb-sm">
-            <div class="col-6">
-              <q-toggle v-model="edit.is_allow_negatif" dense outlined square label="Stock boleh minus" true-value="1"
-                false-value="0" />
-            </div>
-            <div class="col-6">
-              <q-toggle v-model="edit.is_allow_receive" dense outlined square label="Boleh terima invoice"
-                true-value="1" false-value="0" />
-            </div>
-          </div>
-          <div class="row items-start q-col-gutter-sm q-mb-sm">
-            <div class="col-6">
-              <q-toggle v-model="edit.is_allow_transfer" dense outlined square label="Boleh transfer stock"
-                true-value="1" false-value="0" />
-            </div>
-            <div class="col-6">
-              <q-toggle v-model="edit.is_auto_transfer" dense outlined square label="Stock otomatis di terima"
-                true-value="1" false-value="0" />
-            </div>
-          </div>
-          <div class="row items-start q-col-gutter-sm q-mb-sm">
-            <div class="col-6">
-              <q-toggle v-model="edit.is_active" dense outlined square label="Aktif" true-value="1" false-value="0" />
+            <div class="col-12">
+              <q-toggle v-model="edit.is_active" dense label="Aktif"/>
             </div>
           </div>
         </q-card-section>
         <q-separator />
-        <q-card-section class="dialog-action q-pa-sm" align="right">
-          <q-btn class="q-mr-sm" icon="save" label="Simpan" flat no-caps @click="save_data()" :loading="loading">
+        <q-card-section class="dialog-action q-pa-sm">
+          <q-btn class="q-mr-sm" icon="save" label="Simpan" flat no-caps @click="save_data()">
             <template v-slot:loading>
               <q-spinner class="on-left" />
               Proses
@@ -151,23 +117,23 @@
 import { defineComponent, ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useStore } from "vuex";
-import { useQuasar, QSpinnerIos } from "quasar";
+import { useQuasar } from "quasar";
 
 export default defineComponent({
-  name: "Warehouse",
+  name: "PriceClass",
   setup() {
     const $q = useQuasar();
     const $store = useStore();
     const $router = useRouter();
 
-    const loading = ref(false);
     const edit = ref({});
     const dataevent = ref(false);
     const title = ref("Tambah Data");
     const filter = ref("");
+    const loading=ref(false);
 
     const pagination = ref({
-      sortBy: "warehouse_id",
+      sortBy: "sysid",
       descending: false,
       page: 1,
       rowsPerPage: 20,
@@ -177,7 +143,6 @@ export default defineComponent({
     const selected = ref([]);
     const columns = ref([]);
 
-    const btn_loading = ref(false);
     const pagetitle = ref("");
     const api_url = ref({});
     const btns = ref([]);
@@ -197,6 +162,7 @@ export default defineComponent({
           filter: filter,
           sortBy: sortBy,
           descending: descending,
+          group_name:'OUTPATIENT',
           url: api_url.value.retrieve,
         };
         let respon = await $store.dispatch("master/GET_DATA", props);
@@ -215,47 +181,40 @@ export default defineComponent({
     }
 
     async function add_event() {
-      loading.value = false;
       dataevent.value = true;
+      title.value = "Tambah Data"
       edit.value = {
-        warehouse_id: "",
+        sysid: -1,
+        level_code:'',
         descriptions: "",
-        is_allow_negatif: "0",
-        is_allow_receive: "1",
-        is_allow_transfer: "1",
-        is_auto_transfer:"0",
-        is_active: "1"
+        is_active:true,
       };
     }
 
-    async function edit_event(primary ='') {
-      if (selected.value.length > 0 || !(primary === '')) {
-        if (primary === '') {
+    async function edit_event(primary =-1) {
+      if (selected.value.length > 0 || !(primary === -1)) {
+        if (primary === -1) {
           let item = selected.value[0];
-          primary = item.warehouse_id;
+          primary = item.sysid;
         }
-        $q.loading.show({ delay: 100 });
-        try {
-          loading.value = false;
-          let props = {};
-          props.url = api_url.value.edit;
-          props.warehouse_id = primary;
-          let respon = await $store.dispatch("master/GET_DATA", props);
-          if (!(typeof respon === "undefined")) {
-            dataevent.value = true;
-            edit.value = respon;
-          }
-        } finally {
-          $q.loading.hide();
+        let props = {};
+        props.url = api_url.value.edit;
+        props.sysid = primary;
+        props.progress=true;
+        let respon = await $store.dispatch("master/GET_DATA", props);
+        if (!(typeof respon === "undefined")) {
+          title.value = "Ubah Data"
+          dataevent.value = true;
+          edit.value = respon;
         }
       }
     }
 
-    async function delete_event(primary='') {
-      if (selected.value.length > 0 || !(primary==='')) {
-        if (primary === '') {
+    async function delete_event (primary=-1) {
+      if (selected.value.length > 0 || !(primary === -1)) {
+        if (primary === -1) {
           let item = selected.value[0];
-          primary = item.warehouse_id;
+          primary = item.sysid;
         }
         $q.dialog({
           title: "Konfirmasi",
@@ -264,7 +223,7 @@ export default defineComponent({
           persistent: true,
         }).onOk(() => {
           let json = {};
-          json.warehouse_id = primary;
+          json.sysid = primary;
           json.url = api_url.value.delete;
           $store.dispatch("master/DELETE_DATA", json).then((respon) => {
             if (!(typeof respon === "undefined")) {
@@ -295,38 +254,33 @@ export default defineComponent({
     }
 
     async function save_data() {
-      let sysid = -1;
-      try {
-        let app = {};
-        app.data = edit.value;
-        app.url = api_url.value.save;
-        loading.value = true;
-        let respon = await $store.dispatch("master/POST_DATA", app);
-        if (!(typeof respon === "undefined")) {
-          let msg = respon.data;
-          if (respon.success) {
-            dataevent.value = false;
-            $q.notify({
-              color: "positive",
-              textcolor: "white",
-              message: msg,
-              position: "top",
-              timeout: 2000,
-            });
-            loaddata();
-          } else {
-            $q.loading.hide();
-            $q.notify({
-              color: "negative",
-              textcolor: "white",
-              message: msg,
-              position: "top",
-              timeout: 2000,
-            });
-          }
+      let app = {};
+      app.data = edit.value;
+      app.operation=(edit.value.sysid===-1) ? 'inserted' : 'updated'
+      app.url = api_url.value.save;
+      app.progress= true
+      let respon = await $store.dispatch("master/POST_DATA", app);
+      if (!(typeof respon === "undefined")) {
+        let msg = respon.data;
+        if (respon.success) {
+          dataevent.value = false;
+          $q.notify({
+            color: "positive",
+            textcolor: "white",
+            message: msg,
+            position: "top",
+            timeout: 2000,
+          });
+          loaddata();
+        } else {
+          $q.notify({
+            color: "negative",
+            textcolor: "white",
+            message: msg,
+            position: "top",
+            timeout: 2000,
+          });
         }
-      } finally {
-        loading.value = false;
       }
     }
 
@@ -338,7 +292,7 @@ export default defineComponent({
       });
     }
 
-    function runMethod(method, primary = '') {
+    function runMethod(method, primary = -1) {
       this[method](primary);
     }
 
@@ -356,7 +310,6 @@ export default defineComponent({
     });
 
     return {
-      loading,
       data,
       edit,
       dataevent,
@@ -369,6 +322,7 @@ export default defineComponent({
       api_url,
       btns,
       access,
+      loading,
       runMethod,
       onRequest,
       add_event,
@@ -376,7 +330,6 @@ export default defineComponent({
       delete_event,
       loaddata,
       save_data,
-      btn_loading,
     };
   },
 });

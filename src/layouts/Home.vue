@@ -73,7 +73,7 @@
     </q-header>
 
     <q-drawer v-model="drawer" :mini="miniState" mini-to-overlay @click.capture="drawerClick"
-      @mouseover="miniState = false" :width="350" :breakpoint="500" class="background-drawer text-white">
+      @mouseover="miniState = false" :width="300" :breakpoint="400" class="background-drawer text-white">
       <q-scroll-area :thumb-style="thumbStyle" :bar-style="barStyle" style="
           height: calc(100% - 85px);
           margin-top: 85px;

@@ -1,21 +1,29 @@
 <template>
   <q-page class="page-app">
-    <q-card square class="icard">
+      <q-card square class="icard">
+      <q-card-section clas="q-pa-sm q-mb-sm">
+        <q-btn-toggle v-model="warehouse_group" class="my-custom-toggle" no-caps rounded unelevated toggle-color="primary" color="white"
+          style="border: 1px solid #027be3"
+          text-color="primary" :options="[
+                {label: 'Gudang Medis', value: 'MEDICAL'},
+                {label: 'Gudang Umum', value: 'GENERAL'}
+              ]" 
+            @update:model-value="loaddata()" />
+      </q-card-section>
       <q-toolbar class="entry-caption">
         <strong>{{ pagetitle }}</strong>
         <q-space />
-        <q-input dark v-model="filter" standout dense outline rounded debounce="500" label-color="white"
-          placeholder="Pencarian">
+        <q-input dark v-model="filter" standout rounded dense outline debounce="500" label-color="white" placeholder="Pencarian">
           <template v-slot:append>
             <q-icon v-if="filter === ''" name="search" size="sm" />
             <q-icon v-else name="clear" class="cursor-pointer" size="sm" @click="filter = ''" />
           </template>
         </q-input>
-      </q-toolbar>
-      <q-table square :rows="data" :columns="columns" no-data-label="data kosong"
-        no-results-label="data yang cari tidak ditemukan" row-key="sysid" :filter="filter" separator="cell" selection="single"
-        v-model:selected="selected" v-model:pagination="pagination" binary-state-sort @request="onRequest" :loading="loading"
-        virtual-scroll table-class="fix-table">
+      </q-toolbar>      
+      <q-table square :rows="data" :columns="columns" no-data-label="data kosong" :dense="$q.screen.md"
+        no-results-label="data yang cari tidak ditemukan" row-key="sysid" :filter="filter" separator="cell"
+        selection="single" v-model:selected="selected" v-model:pagination="pagination" binary-state-sort
+        @request="onRequest" :loading="loading" virtual-scroll table-class="fix-height">
         <q-inner-loading showing>
           <q-spinner-ball size="75px" color="red-10" />
         </q-inner-loading>
@@ -39,17 +47,14 @@
                     </q-tooltip>
                   </q-icon>
                 </div>
-                <div v-else-if="col.name === 'is_base_price'">
-                  <q-toggle v-model="props.row.is_base_price" disable />
+                <div v-else-if="col.name === 'is_received'">
+                  <q-toggle v-model="props.row.is_received" disable />
                 </div>
-                <div v-else-if="col.name === 'is_price_class'">
-                  <q-toggle v-model="props.row.is_price_class" dense disable />
+                <div v-else-if="col.name === 'is_sales'">
+                  <q-toggle v-model="props.row.is_sales" dense disable />
                 </div>
-                <div v-else-if="col.name === 'is_service_class'">
-                  <q-toggle v-model="props.row.is_service_class" disable />
-                </div>
-                <div v-else-if="col.name === 'is_pharmacy_class'">
-                  <q-toggle v-model="props.row.is_pharmacy_class" disable />
+                <div v-else-if="col.name === 'is_distribution'">
+                  <q-toggle v-model="props.row.is_distribution" disable />
                 </div>
                 <div v-else-if="col.name === 'is_active'">
                   <q-toggle v-model="props.row.is_active" dense disable />
@@ -84,41 +89,42 @@
 
     <!-- Dialog UI Interface-->
     <q-dialog v-model="dataevent" persistent transition-show="flip-down" transition-hide="flip-up">
-      <q-card class="icard" style="width: 700px" square>
+      <q-card class="icard" square>
         <q-bar class="entry-caption">
           {{ title }}
           <q-space />
-          <q-btn v-close-popup dense flat rounded icon="close" color="red-5" size="sm">
+          <q-btn v-close-popup dense flat rounded icon="close" color="red-5" size="sm" >
             <q-tooltip>Tutup</q-tooltip>
           </q-btn>
         </q-bar>
 
         <q-card-section class="q-gutter-sm">
           <div class="row items-center q-col-gutter-sm q-mb-sm">
-            <div class="col-3">
-              <q-input v-model="edit.price_code" dense outlined square label="Kode Kelas" stack-label />
+            <div class="col-4">
+              <q-input v-model="edit.loc_code" dense outlined square label="Kode Gudang" stack-label />
             </div>
-            <div class="col-6">
-              <q-input v-model="edit.descriptions" dense outlined square label="Nama Kelas" stack-label />
-            </div>
-            <div class="col-3">
-              <q-input v-model="edit.sort_name" dense outlined square label="Singkatan" stack-label />
+            <div class="col-8">
+              <q-input v-model="edit.location_name" dense outlined square label="Nama Gudang/Lokasi" stack-label />
             </div>
           </div>
           <div class="row items-start q-col-gutter-sm q-mb-sm">
-            <div class="col-6">
-              <q-checkbox v-model="edit.is_base_price" label="Dasar Tarif" stack-label />
+            <div class="col-12">
+              <q-checkbox v-model="edit.is_sales" dense outlined square label="Diizinkan untuk penjualan" stack-label/>
             </div>
-            <div class="col-6">
-              <q-checkbox v-model="edit.is_price_class" label="Kelas rawat inap" stack-label />
-            </div>
-          </div>  
+          </div>
           <div class="row items-start q-col-gutter-sm q-mb-sm">
-            <div class="col-6">
-              <q-checkbox v-model="edit.is_service_class" label="Kelas tarif pelayanan" stack-label />
+            <div class="col-12">
+              <q-checkbox v-model="edit.is_received" dense outlined square label="Diizinkan untuk penerimaan stock" stack-label />
             </div>
-            <div class="col-6">
-              <q-checkbox v-model="edit.is_pharmacy_class" label="Kelas tarif farmasi" stack-label />
+          </div>
+          <div class="row items-start q-col-gutter-sm q-mb-sm">
+            <div class="col-12">
+              <q-checkbox v-model="edit.is_distribution" dense outlined square label="Diizinkan untuk distribusi" stack-label />
+            </div>
+          </div>
+          <div class="row items-start q-col-gutter-sm q-mb-sm">
+            <div class="col-12">
+              <q-checkbox v-model="edit.is_active" dense outlined square label="Status gudang (Aktif)" stack-label />
             </div>
           </div>
         </q-card-section>
@@ -155,6 +161,7 @@ export default defineComponent({
     const title = ref("Tambah Data");
     const filter = ref("");
     const loading=ref(false);
+    const warehouse_group=ref('MEDICAL');
 
     const pagination = ref({
       sortBy: "sysid",
@@ -172,10 +179,6 @@ export default defineComponent({
     const btns = ref([]);
     const access = ref({});
 
-    const dlgAccount = ref(false);
-    const pools=ref([]);
-    const vouchers=ref([]);
-
     async function onRequest(props) {
       let { page, rowsPerPage, rowsNumber, sortBy, descending } =
         props.pagination;
@@ -190,6 +193,7 @@ export default defineComponent({
           filter: filter,
           sortBy: sortBy,
           descending: descending,
+          group_name:warehouse_group.value,
           url: api_url.value.retrieve,
         };
         let respon = await $store.dispatch("master/GET_DATA", props);
@@ -212,18 +216,13 @@ export default defineComponent({
       title.value = "Tambah Data"
       edit.value = {
         sysid: -1,
-        price_code:'',
-        descriptions: "",
-        sort_name:"",
-        is_base_price:false,
-        is_price_class: false,
-        is_service_class: false,
-        is_pharmacy_class: false,
-        is_bpjs_class: false,
-        factor_inpatient: 100,
-        factor_service: 100,
-        factor_pharmacy: 100,
-        minimum_deposit:0
+        loc_code:'',
+        location_name: "",
+        is_sales:true,
+        is_distribution: true,
+        is_received: true,
+        warehouse_group:warehouse_group.value,
+        is_active: true
       };
     }
 
@@ -254,7 +253,7 @@ export default defineComponent({
         }
         $q.dialog({
           title: "Konfirmasi",
-          message: "Apakah data ini akan di hapus?",
+          message: "Apakah data ini akan di hapus ?",
           cancel: true,
           persistent: true,
         }).onOk(() => {
@@ -359,6 +358,7 @@ export default defineComponent({
       btns,
       access,
       loading,
+      warehouse_group,
       runMethod,
       onRequest,
       add_event,
@@ -370,3 +370,9 @@ export default defineComponent({
   },
 });
 </script>
+<style lang="sass">
+.fix-height 
+    height: -webkit-calc(100vh - 230px) !important
+    height:    -moz-calc(100vh - 230px) !important
+    height:         calc(100vh - 230px) !important
+</style>

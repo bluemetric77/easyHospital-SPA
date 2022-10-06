@@ -5,7 +5,7 @@ $text-color-btn-disable: $red
 
 $bg-color1: $grey-2
 $bg-color2: $grey-1
-$bg-caption: $blue-grey-10 //#064C96 //
+$bg-caption: $blue-grey-9 //#064C96 //
 $bg-toolbar: $blue-grey-8
 
 .background-drawer
@@ -68,6 +68,7 @@ $bg-toolbar: $blue-grey-8
   background-color: $bg-caption
   color: #fff
   font-size: 1.0em
+  padding: 5px 10px
 
 .entry-caption button:hover
   background-color: #ffff
@@ -142,10 +143,11 @@ $bg-toolbar: $blue-grey-8
   text-transform: uppercase
 
 .input-normal
-  padding: 5px 5px
-  border: 0.5px solid #BEBEBE
+  padding: 3px 5px
+  border: 0.1px solid #BEBEBE
   border-width: thin
   background-color: $bg-color2
+  font-size: 11px
   @media (max-width: $breakpoint-xs-max)
     background-color: $bg-color2
 
@@ -153,6 +155,7 @@ $bg-toolbar: $blue-grey-8
   outline: none !important
   border-color: #719ECE
   background-color: #ffff
+  border: 0.1px solid $red-10
 
 .input-normal select
   background-color: white
@@ -248,3 +251,28 @@ $bg-toolbar: $blue-grey-8
 .filter-search:focus
   color: $red-10
   background-color: #fff
+
+.fix-table
+  height: -webkit-calc(100vh - 175px) !important
+  height: -moz-calc(100vh - 175px) !important
+  height: calc(100vh - 175px) !important
+
+.fit-table-dialog
+  height: 75vh
+
+  .q-table__top,
+  .q-table__bottom,
+  thead tr:first-child th
+    /* bg color is important for th; just specify one */
+    background-color: rgb(193, 244, 205)
+
+  thead tr th
+    position: sticky
+    z-index: 1
+  thead tr:first-child th
+    top: 0
+
+  /* this is when the loading indicator appears */
+  &.q-table--loading thead tr:last-child th
+    /* height of all previous header rows */
+    top: 48px

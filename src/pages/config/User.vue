@@ -1,17 +1,17 @@
 <template>
   <q-page class="page-app">
     <q-card square class="icard">
-      <q-bar class="entry-caption">
-        <span><strong>{{ pagetitle }}</strong></span>
+      <q-toolbar class="entry-caption">
+        <strong>{{ pagetitle }}</strong>
         <q-space />
-        <q-input v-model="filter" dense outline debounce="300" label-color="white" borderless placeholder="Pencarian"
-          input-class="text-white">
+        <q-input dark v-model="filter" standout rounded dense outline debounce="500" label-color="white"
+          placeholder="Pencarian">
           <template v-slot:append>
-            <q-icon v-if="filter === ''" name="search" color="white" size="sm" />
-            <q-icon v-else name="clear" class="cursor-pointer" color="white" size="sm" @click="filter = ''" />
+            <q-icon v-if="filter === ''" name="search" size="sm" />
+            <q-icon v-else name="clear" class="cursor-pointer" size="sm" @click="filter = ''" />
           </template>
         </q-input>
-      </q-bar>
+      </q-toolbar>
       <q-table square :rows="data" :columns="columns" dense no-data-label="data kosong"
         no-results-label="data yang kamu cari tidak ditemukan" row-key="sysid" :filter="filter" separator="cell"
         selection="single" v-model:selected="selected" v-model:pagination="pagination" binary-state-sort

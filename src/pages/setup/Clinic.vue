@@ -1,17 +1,21 @@
 <template>
   <q-page class="page-app">
     <q-card square class="icard">
-      <q-bar class="entry-caption">
-        <span><strong>{{ pagetitle }}</strong></span>
+      <q-toolbar class="entry-caption">
+        <strong>{{ pagetitle }}</strong>
         <q-space />
-        <input v-model="filter" placeholder="Pencarian" debounce="500" class="input-normal"/>
-        <q-icon v-if="filter === ''" name="search" color="white" size="xs" />
-        <q-icon v-else name="clear" class="cursor-mouer" color="white" size="xs" @click="filter = ''" />
-      </q-bar>
-      <q-table square :rows="data" :columns="columns" no-data-label="data kosong" :dense="$q.screen.md"
+        <q-input dark v-model="filter" standout rounded dense outline debounce="500" label-color="white"
+          placeholder="Pencarian">
+          <template v-slot:append>
+            <q-icon v-if="filter === ''" name="search" size="sm" />
+            <q-icon v-else name="clear" class="cursor-pointer" size="sm" @click="filter = ''" />
+          </template>
+        </q-input>
+      </q-toolbar>
+      <q-table square :rows="data" :columns="columns" no-data-label="data kosong" 
         no-results-label="data yang cari tidak ditemukan" row-key="sysid" :filter="filter" separator="cell"
         selection="single" v-model:selected="selected" v-model:pagination="pagination" binary-state-sort
-        @request="onRequest" :loading="loading" virtual-scroll>
+        @request="onRequest" :loading="loading" virtual-scroll table-class="fix-table">
         <q-inner-loading showing>
           <q-spinner-ball size="75px" color="red-10" />
         </q-inner-loading>
@@ -105,7 +109,7 @@
             <div class="col-12">
               <q-input v-model="edit.wh_medical_name" dense outlined square label="Lokasi Obat" stack-label readonly>
                 <template v-slot:append>
-                  <q-icon name="search" color="green-10" size="sx"/>
+                  <q-icon name="search" color="green-10" size="sx" @click="open_warehouse('MEDICAL','wh_medical')"/>
                 </template>
               </q-input>  
             </div>
@@ -114,7 +118,7 @@
             <div class="col-12">
               <q-input v-model="edit.wh_general_name" dense outlined square label="Lokasi barang umum" stack-label readonly>
                 <template v-slot:append>
-                  <q-icon name="search" color="green-10" size="sx" />
+                  <q-icon name="search" color="green-10" size="sx" @click="open_warehouse('GENERAL','wh_general')"/>
                 </template>
               </q-input>
             </div>
@@ -141,21 +145,29 @@
         </q-card-section>
       </q-card>
     </q-dialog>
+
+    <warehouse v-if="dlgWarehouse" :show="dlgWarehouse" :warehouse_group="wh_group" @CloseData="getWarehouse"/>
   </q-page>
 </template>
 
 <script>
+import warehouse  from 'components/master/Warehouse.vue';
 import { defineComponent, ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useStore } from "vuex";
 import { useQuasar } from "quasar";
 
 export default defineComponent({
-  name: "PriceClass",
+  name: "Clinic",
+  components:{warehouse},
   setup() {
     const $q = useQuasar();
     const $store = useStore();
     const $router = useRouter();
+    
+    const dlgWarehouse=ref(false);
+    const wh_group=ref('MEDICAL');
+    const field=ref('');
 
     const edit = ref({});
     const dataevent = ref(false);
@@ -335,6 +347,24 @@ export default defineComponent({
       this[method](primary);
     }
 
+    function open_warehouse(group_name,field_name) {
+      wh_group.value=group_name;
+      field.value=field_name;
+      dlgWarehouse.value=true;
+    }
+
+    function getWarehouse (closed, data) {
+      dlgWarehouse.value = closed;
+      if (!(typeof data.sysid== "undefined")) {
+        if (field.value==='wh_medical'){
+          edit.value.wh_medical = data.sysid
+          edit.value.wh_medical_name = data.loc_code + ' - ' + data.location_name
+        } else {
+          edit.value.wh_general = data.sysid
+          edit.value.wh_general_name = data.loc_code + ' - ' + data.location_name
+        }
+      }
+    }
     onMounted(async () => {
       let property = await $store.dispatch(
         "home/GET_PAGEPROPERTY",
@@ -361,7 +391,10 @@ export default defineComponent({
       api_url,
       btns,
       access,
+      dlgWarehouse,
+      wh_group,
       loading,
+      field,
       runMethod,
       onRequest,
       add_event,
@@ -369,6 +402,8 @@ export default defineComponent({
       delete_event,
       loaddata,
       save_data,
+      open_warehouse,
+      getWarehouse
     };
   },
 });

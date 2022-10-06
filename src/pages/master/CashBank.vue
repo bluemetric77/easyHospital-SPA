@@ -8,7 +8,7 @@
           input-class="text-white">
           <template v-slot:append>
             <q-icon v-if="filter === ''" name="search" color="white" size="sm" />
-            <q-icon v-else name="clear" class="cursor-mouer" color="white" size="sm" @click="filter = ''" />
+            <q-icon v-else name="clear" class="cursor-pointer" color="white" size="sm" @click="filter = ''" />
           </template>
         </q-input>
       </q-bar>

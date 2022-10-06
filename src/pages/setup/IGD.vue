@@ -1,17 +1,21 @@
 <template>
   <q-page class="page-app">
     <q-card square class="icard">
-      <q-bar class="entry-caption">
-        <span><strong>{{ pagetitle }}</strong></span>
+      <q-toolbar class="entry-caption">
+        <strong>{{ pagetitle }}</strong>
         <q-space />
-        <input v-model="filter" placeholder="Pencarian" debounce="500" class="input-normal"/>
-        <q-icon v-if="filter === ''" name="search" color="white" size="xs" />
-        <q-icon v-else name="clear" class="cursor-mouer" color="white" size="xs" @click="filter = ''" />
-      </q-bar>
-      <q-table square :rows="data" :columns="columns" no-data-label="data kosong" :dense="$q.screen.md"
-        no-results-label="data yang cari tidak ditemukan" row-key="sysid" :filter="filter" separator="cell"
-        selection="single" v-model:selected="selected" v-model:pagination="pagination" binary-state-sort
-        @request="onRequest" :loading="loading" virtual-scroll>
+        <q-input dark v-model="filter" standout rounded dense outline debounce="500" label-color="white"
+          placeholder="Pencarian">
+          <template v-slot:append>
+            <q-icon v-if="filter === ''" name="search" size="sm" />
+            <q-icon v-else name="clear" class="cursor-pointer" size="sm" @click="filter = ''" />
+          </template>
+        </q-input>
+      </q-toolbar>
+      <q-table square :rows="data" :columns="columns" no-data-label="data kosong"
+        no-results-label="data yang cari tidak ditemukan" row-key="sysid" :filter="filter" separator="cell" selection="single"
+        v-model:selected="selected" v-model:pagination="pagination" binary-state-sort @request="onRequest" :loading="loading"
+        virtual-scroll table-class="fix-table">
         <q-inner-loading showing>
           <q-spinner-ball size="75px" color="red-10" />
         </q-inner-loading>

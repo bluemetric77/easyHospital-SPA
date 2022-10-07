@@ -1,8 +1,8 @@
 <template>
-    <q-dialog v-model="dlgWarehouse" persistent transition-show="scale" transition-hide="scale">
+    <q-dialog v-model="dlgDepartment" persistent transition-show="scale" transition-hide="scale">
       <q-card square class="icard" style="width: 500px; max-width: 80vw;">
       <q-toolbar class="entry-caption">
-        <strong>Gudang/Lokasi</strong>
+        <strong>{{title}}</strong>
         <q-space />
         <q-input dark v-model="filter" standout rounded dense outline debounce="500" label-color="white"
           placeholder="Pencarian">
@@ -13,7 +13,7 @@
         </q-input>
       </q-toolbar>
         <q-table square :rows="data" :columns="columns" no-data-label="data kosong"
-          no-results-label="data yang kamu cari tidak ditemukan" row-key="loc_code" :filter="filter" separator="cell"
+          no-results-label="data yang kamu cari tidak ditemukan" row-key="dept_code" :filter="filter" separator="cell"
           selection="single" virtual-scroll dense v-model:selected="selected" v-model:pagination="pagination"
           binary-state-sort @request="onRequest" class="fit-table-dialog"  :loading="loading">
           <template v-slot:loading>
@@ -39,9 +39,9 @@
             <q-tr :props="props" @click="props.selected = !props.selected">
               <q-td v-for="col in props.cols" :key="col.name" :props="props">
                 <div class="grid-data">
-                  <div v-if="col.name === 'loc_code'">
+                  <div v-if="col.name === 'dept_code'">
                       <span class="text-primary cursor-pointer" @click="selectdata(props.row.sysid)">
-                        {{props.row.loc_code}}
+                        {{props.row.dept_code}}
                       </span>
                   </div>
                   <div v-else>
@@ -66,34 +66,35 @@ import { defineComponent, ref, onMounted } from "vue";
 import { useStore } from "vuex";
 
 export default defineComponent({
-  name: "warehouse",
-  props: { show: Boolean, warehouse_group: String },
+  name: "depatment",
+  props: { show: Boolean, enumtype: String },
   setup(props, context) {
     const $store = useStore();
-    const dlgWarehouse = ref(false);
+    const dlgDepartment = ref(false);
+    const lblcolumn =ref('Klinik');
     const pagination = ref({
-      sortBy: "loc_code",
+      sortBy: "dept_code",
       descending: false,
       page: 1,
       rowsPerPage: 25,
       rowsNumber: 25,
     });
-
+    const title=ref('');
     const filter = ref("");
     const selected = ref([]);
     const columns = ref([
       {
-        name: "loc_code",
+        name: "dept_code",
         align: "left",
         label: "Kode",
-        field: "loc_code",
+        field: "dept_code",
         sortable: true,
       },
       {
-        name: "location_name",
+        name: "dept_name",
         align: "left",
-        label: "Nama Gudang/Lokasi",
-        field: "location_name",
+        label: lblcolumn.value,
+        field: "dept_name",
         sortable: true,
       },
     ]);
@@ -101,7 +102,7 @@ export default defineComponent({
     const vlastcolumn = ref("");
     const data = ref([]);
     const loading = ref(false);
-    const wh_group =ref("");
+    const group_name =ref("");
 
     async function loaddata() {
       await onRequest({
@@ -139,9 +140,9 @@ export default defineComponent({
           filter: filter,
           descending: descending,
           sortBy: sortBy,
-          group_name: wh_group.value,
+          group_name: group_name.value,
           is_active:true,
-          url: "master/inventory/warehouse",
+          url: "setup/department",
         };
         let respon = await $store.dispatch("master/GET_DATA", prop);
         data.value = respon.data;
@@ -159,15 +160,34 @@ export default defineComponent({
     }
 
     function closedata(record) {
-      dlgWarehouse.value = false;
+      dlgDepartment.value = false;
       filter.value = "";
       data.value = [];
       context.emit("CloseData", false, record);
     }
 
     onMounted(async () => {
-      dlgWarehouse.value = props.show;
-      wh_group.value=props.warehouse_group
+      dlgDepartment.value = props.show;
+      group_name.value=props.enumtype
+      if (props.enumtype==='PHARMACY') {
+        title.value='Farmasi'
+        lblcolumn.value='Lokasi Farmasi'
+      } else if (props.enumtype === 'OUTPATIENT') {
+          title.value = 'Rawat Jalan'
+          lblcolumn.value = 'Nama Klinik'
+      } else if (props.enumtype === 'DIAGNOSTIC') {
+        title.value = 'Penunjang Medis'
+        lblcolumn.value = 'Penunjang Medis'
+      } else if (props.enumtype === 'MCU') {
+        title.value = 'Medical Check Up'
+        lblcolumn.value = 'Medical Checkup'
+      } else if (props.enumtype === 'INPATIENT') {
+        title.value = 'Pelayanan Rawat Inap'
+        lblcolumn.value = 'Layanan Rawat Inap'
+      } else if (props.enumtype === 'IGD') {
+        title.value = 'Instalasi Gawat Darutat'
+        lblcolumn.value = 'Layanan IGD'
+      }
       loaddata();
     });
 
@@ -179,11 +199,13 @@ export default defineComponent({
       selected,
       columns,
       pagination,
+      dlgDepartment,
+      group_name,
+      title,
+      lblcolumn,
       selectdata,
       onRequest,
       closedata,
-      dlgWarehouse,
-      wh_group
     };
   },
 });

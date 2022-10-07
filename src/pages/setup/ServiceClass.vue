@@ -46,10 +46,10 @@
                   <q-toggle v-model="props.row.is_price_class" dense disable />
                 </div>
                 <div v-else-if="col.name === 'is_service_class'">
-                  <q-toggle v-model="props.row.is_service_class" disable />
+                  <q-toggle v-model="props.row.is_service_class" dense disable />
                 </div>
                 <div v-else-if="col.name === 'is_pharmacy_class'">
-                  <q-toggle v-model="props.row.is_pharmacy_class" disable />
+                  <q-toggle v-model="props.row.is_pharmacy_class" dense disable />
                 </div>
                 <div v-else-if="col.name === 'is_active'">
                   <q-toggle v-model="props.row.is_active" dense disable />
@@ -84,7 +84,7 @@
 
     <!-- Dialog UI Interface-->
     <q-dialog v-model="dataevent" persistent transition-show="flip-down" transition-hide="flip-up">
-      <q-card class="icard" style="width: 700px" square>
+      <q-card class="icard" style="width: 700px;max-width:80vw" square>
         <q-bar class="entry-caption">
           {{ title }}
           <q-space />

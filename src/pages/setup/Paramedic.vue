@@ -12,13 +12,15 @@
           </template>
         </q-input>
       </q-toolbar>
-      <q-table square :rows="data" :columns="columns" no-data-label="data kosong" 
-        no-results-label="data yang cari tidak ditemukan" row-key="sysid" :filter="filter" separator="cell"
+      <q-table square :rows="data" :columns="columns" no-data-label="data kosong" :dense="$q.screen.md"
+        no-results-label="data yang kamu cari tidak ditemukan" row-key="sysid" :filter="filter" separator="cell"
         selection="single" v-model:selected="selected" v-model:pagination="pagination" binary-state-sort
         @request="onRequest" :loading="loading" virtual-scroll table-class="fix-table">
-        <q-inner-loading showing>
-          <q-spinner-ball size="75px" color="red-10" />
-        </q-inner-loading>
+        <template v-slot:loading>
+          <q-inner-loading showing>
+            <q-spinner-ball size="75px" color="red-10" />
+          </q-inner-loading>
+        </template>
         <template v-slot:header="props">
           <q-tr :props="props">
             <q-th v-for="col in props.cols" :key="col.name" :props="props">
@@ -38,9 +40,6 @@
                       {{ btn.tooltips }}
                     </q-tooltip>
                   </q-icon>
-                </div>
-                <div v-else-if="col.name === 'is_active'">
-                  <q-toggle v-model="props.row.is_active" dense disable />
                 </div>
                 <div v-else-if="col.name === 'create_date'">
                   {{ $INDDateTime(props.row.create_date) }}
@@ -67,76 +66,110 @@
             {{ btn.tooltips }}
           </q-tooltip>
         </q-btn>
+        <q-space/>
+        <q-select
+          v-model="paramedic_group"
+          :options="paramedic_groups"
+          option-label="label"
+          option-value="value"
+          emit-value
+          map-options
+          outlined
+          label="Dokter/Paramedik"
+          style="min-width:200px"
+          dense
+          options-dense
+          square
+          class="bg-white text-white"
+        />
       </q-toolbar>
     </q-page-sticky>
 
-    <!-- Dialog UI Interface-->
+    <!-- Dialog UI -->
     <q-dialog v-model="dataevent" persistent transition-show="flip-down" transition-hide="flip-up">
-      <q-card class="icard" square>
+      <q-card class="icard" style="width: 700px;max-width:90vw" square>
         <q-bar class="entry-caption">
           {{ title }}
           <q-space />
-          <q-btn v-close-popup dense flat rounded icon="close" color="red-5" size="sm" >
-            <q-tooltip>Tutup</q-tooltip>
+          <q-btn v-close-popup dense glossy rounded icon="close" color="red-5" size="xs">
+            <q-tooltip>Close</q-tooltip>
           </q-btn>
         </q-bar>
-
         <q-card-section class="q-gutter-sm">
           <div class="row items-center q-col-gutter-sm q-mb-sm">
             <div class="col-3">
-              <q-input v-model="edit.dept_code" dense outlined square label="Kode Klinik" stack-label />
+              <q-input v-model="edit.paramedic_code" dense outlined square label="Kode" stack-label />
             </div>
-            <div class="col-6">
-              <q-input v-model="edit.dept_name" dense outlined square label="Nama Klinik" stack-label />
+            <div class="col-7">
+              <q-input v-model="edit.paramedic_name" dense outlined square label="Nama Dokter/Paramedic" stack-label />
             </div>
-            <div class="col-3">
-              <q-input v-model="edit.sort_name" dense outlined square label="Singkatan" stack-label />
-            </div>
-          </div>
-          <div class="row items-start q-col-gutter-sm q-mb-sm">
-            <div class="col-12">
-              <q-select v-model="edit.is_executive" dense outlined square label="Jenis Klinik" stack-label
-              :options="[{value:false,label:'Non Executive'},{value:true,label:'Executive'}]"
-              option-value="value" option-label="label" emit-value map-options/>
+            <div class="col-2">
+              <q-checkbox v-model="edit.is_active" dense label="Aktif" stack-label />
             </div>
           </div>
-          <div class="row items-start q-col-gutter-sm q-mb-sm">
-            <div class="col-12">
-              <q-input v-model="edit.wh_medical_name" dense outlined square label="Lokasi Obat" stack-label readonly>
-                <template v-slot:append>
-                  <q-icon name="search" color="green-10" size="sx" @click="open_warehouse('MEDICAL','wh_medical')"/>
-                </template>
-              </q-input>  
-            </div>
-          </div>
-          <div class="row items-start q-col-gutter-sm q-mb-sm">
-            <div class="col-12">
-              <q-input v-model="edit.wh_general_name" dense outlined square label="Lokasi barang umum" stack-label readonly>
-                <template v-slot:append>
-                  <q-icon name="search" color="green-10" size="sx" @click="open_warehouse('GENERAL','wh_general')"/>
-                </template>
-              </q-input>
-            </div>
-          </div>
-          <div class="row items-start q-col-gutter-sm q-mb-sm">
-            <div class="col-12">
-              <q-input v-model="edit.wh_pharmacy_name" dense outlined square label="Unit Farmasi" stack-label readonly>
-                <template v-slot:append>
-                  <q-icon name="search" color="green-10" size="sx" @click="dlgPharmacy=true"/>
-                </template>
-              </q-input>
-            </div>
-          </div>
-          <div class="row items-start q-col-gutter-sm q-mb-sm">
-            <div class="col-12">
-              <q-input v-model="edit.price_class_name" dense outlined square label="Acuan Kelas Tarif Jasa" stack-label readonly>
-                <template v-slot:append>
-                  <q-icon name="search" color="green-10" size="sx" @click="dlgPriceClass=true" />
-                </template>
-              </q-input>
+          <div class="row items-start q-col-gutter-sm q-mb-xs">
+            <div class="col-10">
+              <q-select v-model="edit.paramedic_type" :options="paramedic_groups" outlined dense options-dense label="Kelompok Paramedik"
+                option-value="value" option-label="label" emit-value map-options fill-input stack-label
+                square />
             </div>
           </div>
         </q-card-section>
+        <q-tabs v-model="tab" class="text-teal" dense no-caps  align="justify" narrow-indicator>
+          <q-tab name="general" icon="fas fa-address-card" label="Umum" />
+          <q-tab name="bank" icon="fas fa-money-bill" label="Akun Bank" />
+          <q-tab name="configuration" icon="fas fa-cog" label="Seting" />
+        </q-tabs>
+        <q-tab-panels v-model="tab" animated swipeable vertical transition-prev="jump-up" transition-next="jump-up">
+          <q-tab-panel name="general">
+            <div class="row items-start q-col-gutter-sm q-mb-xs">
+              <div class="col-6">
+                <q-input v-model="edit.citizen_number" dense outlined square label="No. KTP" stack-label />
+              </div>
+              <div class="col-6">
+                <q-input v-model="edit.tax_number" dense outlined square label="N.P.W.P" stack-label/>
+              </div>
+            </div>
+          </q-tab-panel>
+          <q-tab-panel name="bank">
+            <div class="row items-start q-col-gutter-sm q-mb-xs">
+              <div class="col-12">
+                <q-input v-model="edit.bank_name" dense outlined square label="Nama Bank" type="textarea" autogrow
+                  stack-label />
+              </div>
+            </div>
+            <div class="row items-start q-col-gutter-sm q-mb-xs">
+              <div class="col-12">
+                <q-input v-model="edit.account_name" dense outlined square label="Pemilik rekening" type="textarea"
+                  autogrow stack-label />
+              </div>
+            </div>
+            <div class="row items-start q-col-gutter-sm q-mb-xs">
+              <div class="col-12">
+                <q-input v-model="edit.account_number" dense outlined square label="Nomor rekening" type="textarea"
+                  autogrow stack-label />
+              </div>
+            </div>
+          </q-tab-panel>
+          <q-tab-panel name="configuration">
+            <div class="row items-start q-col-gutter-sm q-mb-sm">
+              <div class="col-6">
+                <q-toggle v-model="edit.is_internal" dense outlined square label="Dokter Dalam (Praktek)" stack-label />
+              </div>
+              <div class="col-6">
+                <q-toggle v-model="edit.is_permanent" dense outlined square label="Dokter Tetap (Purna Waktu)" stack-label />
+              </div>
+            </div>
+            <div class="row items-start q-col-gutter-sm q-mb-sm">
+              <div class="col-6">
+                <q-toggle v-model="edit.is_email_reports" dense outlined square label="Honor dokter diemail" stack-label />
+              </div>
+              <div class="col-6">
+                <q-input v-model="edit.email" dense outlined square label="Alamat email" stack-label />
+              </div>
+            </div>
+          </q-tab-panel>
+        </q-tab-panels>
         <q-separator />
         <q-card-section class="dialog-action q-pa-sm">
           <q-btn class="q-mr-sm" icon="save" label="Simpan" flat no-caps @click="save_data()">
@@ -149,42 +182,32 @@
         </q-card-section>
       </q-card>
     </q-dialog>
-
-    <warehouse v-if="dlgWarehouse" :show="dlgWarehouse" :warehouse_group="wh_group" @CloseData="getWarehouse"/>
-    <department v-if="dlgPharmacy" :show="dlgPharmacy" enumtype="PHARMACY" @CloseData="getPharmacy" />
-    <priceclass v-if="dlgPriceClass" :show="dlgPriceClass" enumtype="SERVICE" @CloseData="getPriceClass" />
   </q-page>
 </template>
 
 <script>
-import warehouse  from 'components/master/Warehouse.vue';
-import department  from 'components/master/Department.vue';
-import priceclass from 'components/master/PriceClass.vue';
 import { defineComponent, ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useStore } from "vuex";
-import { useQuasar } from "quasar";
+import { useQuasar, QSpinnerIos } from "quasar";
 
 export default defineComponent({
-  name: "Clinic",
-  components: { warehouse, department, priceclass },
+  name: "Paramedic",
   setup() {
     const $q = useQuasar();
     const $store = useStore();
     const $router = useRouter();
-    
-    const dlgWarehouse=ref(false);
-    const dlgPharmacy = ref(false);
-    const dlgPriceClass = ref(false);
-    const wh_group=ref('MEDICAL');
-    const field=ref('');
-
+    const loading = ref(false);
     const edit = ref({});
     const dataevent = ref(false);
     const title = ref("Tambah Data");
     const filter = ref("");
-    const loading=ref(false);
-
+    const tab=ref("general");
+    const url=ref("");
+    const photo=ref(null);
+    const ktp=ref(null);
+    const sim = ref(null);
+    const kartu_keluarga=ref(null);
     const pagination = ref({
       sortBy: "sysid",
       descending: false,
@@ -196,10 +219,20 @@ export default defineComponent({
     const selected = ref([]);
     const columns = ref([]);
 
+    const btn_loading = ref(false);
     const pagetitle = ref("");
     const api_url = ref({});
     const btns = ref([]);
     const access = ref({});
+
+    const pools = ref([]);
+    const paramedic_group =ref('DOCTOR');
+    const paramedic_groups=ref([
+      { value: 'DOCTOR', label: 'Dokter' },
+      { value: 'NURSE', label: 'Perawat' },
+      { value:'PHARMACIST',label:'Apoteker'},
+      { value: 'OTHERS', label: 'Lain-Lain' }
+    ]);
 
     async function onRequest(props) {
       let { page, rowsPerPage, rowsNumber, sortBy, descending } =
@@ -215,7 +248,7 @@ export default defineComponent({
           filter: filter,
           sortBy: sortBy,
           descending: descending,
-          group_name:'OUTPATIENT',
+          paramedic_type: paramedic_group.value,
           url: api_url.value.retrieve,
         };
         let respon = await $store.dispatch("master/GET_DATA", props);
@@ -234,55 +267,61 @@ export default defineComponent({
     }
 
     async function add_event() {
+      loading.value = false;
       dataevent.value = true;
-      title.value = "Tambah Data"
       edit.value = {
-        sysid: -1,
-        dept_code:'',
-        dept_name: "",
-        sort_name:"",
-        dept_group:'OUTPATIENT',
-        wh_medical: -1,
-        wh_general:-1,
-        wh_pharmacy:-1,
-        wh_medical_name:'',
-        wh_general_name:'',
-        wh_pharmacy_name:'',
-        is_executive:false,
-        price_class:-1,
-        price_class_name:'',
-        is_active: true
+        sysid:-1,
+        paramedic_code:'',
+        paramedic_name:'',
+        paramedic_type:'DOCTOR',
+        employee_id: "",
+        price_group:null,
+        email:'',
+        is_internal:true,
+        is_permanent:true,
+        is_transfer:false,
+        is_email_reports:false,
+        tax_number:'',
+        bank_name:'',
+        accout_name:'',
+        account_number:'',
+        cityzen_number:'',
+        bpjs_number:'',
+        is_active:true
       };
     }
 
-    async function edit_event(primary =-1) {
-      if (selected.value.length > 0 || !(primary === -1)) {
-        if (primary === -1) {
+    async function edit_event(primary ='') {
+      if (selected.value.length > 0 || !(primary === '')) {
+        if (primary === '') {
           let item = selected.value[0];
           primary = item.sysid;
         }
+        loading.value = false;
         let props = {};
         props.url = api_url.value.edit;
         props.sysid = primary;
-        props.progress=true;
+        edit.value={}
+        ktp.value = ""
+        sim.value = ""
+        photo.value = ""
         let respon = await $store.dispatch("master/GET_DATA", props);
         if (!(typeof respon === "undefined")) {
-          title.value = "Ubah Data"
           dataevent.value = true;
-          edit.value = respon;
+          edit.value=respon;
         }
       }
     }
 
-    async function delete_event (primary=-1) {
-      if (selected.value.length > 0 || !(primary === -1)) {
-        if (primary === -1) {
+    async function delete_event(primary='') {
+      if (selected.value.length > 0 || !(primary==='')) {
+        if (primary === '') {
           let item = selected.value[0];
           primary = item.sysid;
         }
         $q.dialog({
           title: "Konfirmasi",
-          message: "Apakah data ini akan di hapus?",
+          message: "Apakah data ini akan di hapus ?",
           cancel: true,
           persistent: true,
         }).onOk(() => {
@@ -318,33 +357,38 @@ export default defineComponent({
     }
 
     async function save_data() {
-      let app = {};
-      app.data = edit.value;
-      app.operation=(edit.value.sysid===-1) ? 'inserted' : 'updated'
-      app.url = api_url.value.save;
-      app.progress= true
-      let respon = await $store.dispatch("master/POST_DATA", app);
-      if (!(typeof respon === "undefined")) {
-        let msg = respon.data;
-        if (respon.success) {
-          dataevent.value = false;
-          $q.notify({
-            color: "positive",
-            textcolor: "white",
-            message: msg,
-            position: "top",
-            timeout: 2000,
-          });
-          loaddata();
-        } else {
-          $q.notify({
-            color: "negative",
-            textcolor: "white",
-            message: msg,
-            position: "top",
-            timeout: 2000,
-          });
+      let sysid = -1;
+      try {
+        let app = {};
+        app.data = edit.value;
+        app.url = api_url.value.save;
+        loading.value = true;
+        let respon = await $store.dispatch("master/POST_DATA", app);
+        if (!(typeof respon === "undefined")) {
+          let msg = respon.data;
+          if (respon.success) {
+            dataevent.value = false;
+            $q.notify({
+              color: "positive",
+              textcolor: "white",
+              message: msg,
+              position: "top",
+              timeout: 2000,
+            });
+            loaddata();
+          } else {
+            $q.loading.hide();
+            $q.notify({
+              color: "negative",
+              textcolor: "white",
+              message: msg,
+              position: "top",
+              timeout: 2000,
+            });
+          }
         }
+      } finally {
+        loading.value = false;
       }
     }
 
@@ -356,45 +400,9 @@ export default defineComponent({
       });
     }
 
-    function runMethod(method, primary = -1) {
+    function runMethod(method, primary = '') {
       this[method](primary);
     }
-
-    function open_warehouse(group_name,field_name) {
-      wh_group.value=group_name;
-      field.value=field_name;
-      dlgWarehouse.value=true;
-    }
-
-    function getWarehouse (closed, data) {
-      dlgWarehouse.value = closed;
-      if (!(typeof data.sysid== "undefined")) {
-        if (field.value==='wh_medical'){
-          edit.value.wh_medical = data.sysid
-          edit.value.wh_medical_name = data.loc_code + ' - ' + data.location_name
-        } else {
-          edit.value.wh_general = data.sysid
-          edit.value.wh_general_name = data.loc_code + ' - ' + data.location_name
-        }
-      }
-    }
-
-    function getPharmacy (closed, data) {
-      dlgPharmacy.value = closed;
-      if (!(typeof data.sysid == "undefined")) {
-        edit.value.wh_pharmacy = data.sysid
-        edit.value.wh_pharmacy_name = data.dept_code + ' - ' + data.dept_name
-      }
-    }
-
-    function getPriceClass (closed, data) {
-      dlgPriceClass.value = closed;
-      if (!(typeof data.sysid == "undefined")) {
-        edit.value.price_class = data.sysid
-        edit.value.price_class_name = data.price_code + ' - ' + data.descriptions
-      }
-    }
-
     onMounted(async () => {
       let property = await $store.dispatch(
         "home/GET_PAGEPROPERTY",
@@ -409,6 +417,7 @@ export default defineComponent({
     });
 
     return {
+      loading,
       data,
       edit,
       dataevent,
@@ -421,12 +430,7 @@ export default defineComponent({
       api_url,
       btns,
       access,
-      dlgWarehouse,
-      dlgPharmacy,
-      dlgPriceClass,
-      wh_group,
-      loading,
-      field,
+      tab,
       runMethod,
       onRequest,
       add_event,
@@ -434,10 +438,10 @@ export default defineComponent({
       delete_event,
       loaddata,
       save_data,
-      open_warehouse,
-      getWarehouse,
-      getPharmacy,
-      getPriceClass
+      btn_loading,
+      kartu_keluarga,
+      paramedic_group,
+      paramedic_groups
     };
   },
 });

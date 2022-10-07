@@ -1,8 +1,8 @@
 <template>
-    <q-dialog v-model="dlgWarehouse" persistent transition-show="scale" transition-hide="scale">
+    <q-dialog v-model="dlgPriceClass" persistent transition-show="scale" transition-hide="scale">
       <q-card square class="icard" style="width: 500px; max-width: 80vw;">
       <q-toolbar class="entry-caption">
-        <strong>Gudang/Lokasi</strong>
+        <strong>{{title}}</strong>
         <q-space />
         <q-input dark v-model="filter" standout rounded dense outline debounce="500" label-color="white"
           placeholder="Pencarian">
@@ -13,7 +13,7 @@
         </q-input>
       </q-toolbar>
         <q-table square :rows="data" :columns="columns" no-data-label="data kosong"
-          no-results-label="data yang kamu cari tidak ditemukan" row-key="loc_code" :filter="filter" separator="cell"
+          no-results-label="data yang kamu cari tidak ditemukan" row-key="price_code" :filter="filter" separator="cell"
           selection="single" virtual-scroll dense v-model:selected="selected" v-model:pagination="pagination"
           binary-state-sort @request="onRequest" class="fit-table-dialog"  :loading="loading">
           <template v-slot:loading>
@@ -39,9 +39,9 @@
             <q-tr :props="props" @click="props.selected = !props.selected">
               <q-td v-for="col in props.cols" :key="col.name" :props="props">
                 <div class="grid-data">
-                  <div v-if="col.name === 'loc_code'">
+                  <div v-if="col.name === 'price_code'">
                       <span class="text-primary cursor-pointer" @click="selectdata(props.row.sysid)">
-                        {{props.row.loc_code}}
+                        {{props.row.price_code}}
                       </span>
                   </div>
                   <div v-else>
@@ -66,34 +66,41 @@ import { defineComponent, ref, onMounted } from "vue";
 import { useStore } from "vuex";
 
 export default defineComponent({
-  name: "warehouse",
-  props: { show: Boolean, warehouse_group: String },
+  name: "priceclass",
+  props: { show: Boolean, enumtype: String },
   setup(props, context) {
     const $store = useStore();
-    const dlgWarehouse = ref(false);
+    const dlgPriceClass = ref(false);
     const pagination = ref({
-      sortBy: "loc_code",
+      sortBy: "price_code",
       descending: false,
       page: 1,
       rowsPerPage: 25,
       rowsNumber: 25,
     });
-
+    const title=ref('Kelas Tarif/Perawatan');
     const filter = ref("");
     const selected = ref([]);
     const columns = ref([
       {
-        name: "loc_code",
+        name: "price_code",
         align: "left",
-        label: "Kode",
-        field: "loc_code",
+        label: "Kelas",
+        field: "price_code",
         sortable: true,
       },
       {
-        name: "location_name",
+        name: "descriptions",
         align: "left",
-        label: "Nama Gudang/Lokasi",
-        field: "location_name",
+        label: 'Keterangan',
+        field: "descriptions",
+        sortable: true,
+      },
+      {
+        name: "sort_name",
+        align: "left",
+        label: "Singkatan",
+        field: "sort_name",
         sortable: true,
       },
     ]);
@@ -101,7 +108,7 @@ export default defineComponent({
     const vlastcolumn = ref("");
     const data = ref([]);
     const loading = ref(false);
-    const wh_group =ref("");
+    const models =ref("");
 
     async function loaddata() {
       await onRequest({
@@ -139,9 +146,8 @@ export default defineComponent({
           filter: filter,
           descending: descending,
           sortBy: sortBy,
-          group_name: wh_group.value,
-          is_active:true,
-          url: "master/inventory/warehouse",
+          models: models.value,
+          url: "setup/class/open",
         };
         let respon = await $store.dispatch("master/GET_DATA", prop);
         data.value = respon.data;
@@ -159,15 +165,15 @@ export default defineComponent({
     }
 
     function closedata(record) {
-      dlgWarehouse.value = false;
+      dlgPriceClass.value = false;
       filter.value = "";
       data.value = [];
       context.emit("CloseData", false, record);
     }
 
     onMounted(async () => {
-      dlgWarehouse.value = props.show;
-      wh_group.value=props.warehouse_group
+      dlgPriceClass.value = props.show;
+      models.value=props.enumtype
       loaddata();
     });
 
@@ -179,11 +185,12 @@ export default defineComponent({
       selected,
       columns,
       pagination,
+      dlgPriceClass,
+      models,
+      title,
       selectdata,
       onRequest,
       closedata,
-      dlgWarehouse,
-      wh_group
     };
   },
 });

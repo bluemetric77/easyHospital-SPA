@@ -39,6 +39,7 @@ const routes = [
       { path: 'inpatient', name: 'inpatient', component: () => import('pages/setup/Inpatient.vue') },
       { path: 'class', name: 'class', component: () => import('pages/setup/ServiceClass.vue') },
       { path: 'pricelevel', name: 'pricelevel', component: () => import('pages/setup/PriceLevel.vue') },
+      { path: 'paramedic', name: 'paramedic', component: () => import('pages/setup/Paramedic.vue') },
     ]
   },
 

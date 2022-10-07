@@ -12,10 +12,10 @@
           </template>
         </q-input>
       </q-toolbar>
-      <q-table square :rows="data" :columns="columns" no-data-label="data kosong"
-        no-results-label="data yang cari tidak ditemukan" row-key="sysid" :filter="filter" separator="cell" selection="single"
-        v-model:selected="selected" v-model:pagination="pagination" binary-state-sort @request="onRequest" :loading="loading"
-        virtual-scroll table-class="fix-table">
+      <q-table square :rows="data" :columns="columns" no-data-label="data kosong" 
+        no-results-label="data yang cari tidak ditemukan" row-key="sysid" :filter="filter" separator="cell"
+        selection="single" v-model:selected="selected" v-model:pagination="pagination" binary-state-sort
+        @request="onRequest" :loading="loading" virtual-scroll table-class="fix-table">
         <q-inner-loading showing>
           <q-spinner-ball size="75px" color="red-10" />
         </q-inner-loading>
@@ -38,18 +38,6 @@
                       {{ btn.tooltips }}
                     </q-tooltip>
                   </q-icon>
-                </div>
-                <div v-else-if="col.name === 'is_base_price'">
-                  <q-toggle v-model="props.row.is_base_price" disable />
-                </div>
-                <div v-else-if="col.name === 'is_price_class'">
-                  <q-toggle v-model="props.row.is_price_class" dense disable />
-                </div>
-                <div v-else-if="col.name === 'is_service_class'">
-                  <q-toggle v-model="props.row.is_service_class" disable />
-                </div>
-                <div v-else-if="col.name === 'is_pharmacy_class'">
-                  <q-toggle v-model="props.row.is_pharmacy_class" disable />
                 </div>
                 <div v-else-if="col.name === 'is_active'">
                   <q-toggle v-model="props.row.is_active" dense disable />
@@ -107,9 +95,16 @@
           </div>
           <div class="row items-start q-col-gutter-sm q-mb-sm">
             <div class="col-12">
+              <q-select v-model="edit.is_executive" dense outlined square label="Jenis Klinik" stack-label
+              :options="[{value:false,label:'Non Executive'},{value:true,label:'Executive'}]"
+              option-value="value" option-label="label" emit-value map-options/>
+            </div>
+          </div>
+          <div class="row items-start q-col-gutter-sm q-mb-sm">
+            <div class="col-12">
               <q-input v-model="edit.wh_medical_name" dense outlined square label="Lokasi Obat" stack-label readonly>
                 <template v-slot:append>
-                  <q-icon name="search" color="green-10" size="sx"/>
+                  <q-icon name="search" color="green-10" size="sx" @click="open_warehouse('MEDICAL','wh_medical')"/>
                 </template>
               </q-input>  
             </div>
@@ -118,20 +113,29 @@
             <div class="col-12">
               <q-input v-model="edit.wh_general_name" dense outlined square label="Lokasi barang umum" stack-label readonly>
                 <template v-slot:append>
-                  <q-icon name="search" color="green-10" size="sx" />
+                  <q-icon name="search" color="green-10" size="sx" @click="open_warehouse('GENERAL','wh_general')"/>
+                </template>
+              </q-input>
+            </div>
+          </div>
+          <!--<div class="row items-start q-col-gutter-sm q-mb-sm">
+            <div class="col-12">
+              <q-input v-model="edit.wh_pharmacy_name" dense outlined square label="Unit Farmasi" stack-label readonly>
+                <template v-slot:append>
+                  <q-icon name="search" color="green-10" size="sx" @click="dlgPharmacy=true"/>
                 </template>
               </q-input>
             </div>
           </div>
           <div class="row items-start q-col-gutter-sm q-mb-sm">
             <div class="col-12">
-              <q-input v-model="edit.wh_pharmacy_name" dense outlined square label="Unit Farmasi" stack-label readonly>
+              <q-input v-model="edit.price_class_name" dense outlined square label="Acuan Kelas Tarif Jasa" stack-label readonly>
                 <template v-slot:append>
-                  <q-icon name="search" color="green-10" size="sx" />
+                  <q-icon name="search" color="green-10" size="sx" @click="dlgPriceClass=true" />
                 </template>
               </q-input>
             </div>
-          </div>
+          </div> -->
         </q-card-section>
         <q-separator />
         <q-card-section class="dialog-action q-pa-sm">
@@ -145,21 +149,35 @@
         </q-card-section>
       </q-card>
     </q-dialog>
+
+    <warehouse v-if="dlgWarehouse" :show="dlgWarehouse" :warehouse_group="wh_group" @CloseData="getWarehouse"/>
+    <department v-if="dlgPharmacy" :show="dlgPharmacy" enumtype="PHARMACY" @CloseData="getPharmacy" />
+    <priceclass v-if="dlgPriceClass" :show="dlgPriceClass" enumtype="SERVICE" @CloseData="getPriceClass" />
   </q-page>
 </template>
 
 <script>
+import warehouse  from 'components/master/Warehouse.vue';
+import department  from 'components/master/Department.vue';
+import priceclass from 'components/master/PriceClass.vue';
 import { defineComponent, ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useStore } from "vuex";
 import { useQuasar } from "quasar";
 
 export default defineComponent({
-  name: "PriceClass",
+  name: "Clinic",
+  components: { warehouse, department, priceclass },
   setup() {
     const $q = useQuasar();
     const $store = useStore();
     const $router = useRouter();
+    
+    const dlgWarehouse=ref(false);
+    const dlgPharmacy = ref(false);
+    const dlgPriceClass = ref(false);
+    const wh_group=ref('MEDICAL');
+    const field=ref('');
 
     const edit = ref({});
     const dataevent = ref(false);
@@ -224,12 +242,15 @@ export default defineComponent({
         dept_name: "",
         sort_name:"",
         dept_group:'DIAGNOSTIC',
-        wh_medical: '',
-        wh_general:'',
-        wh_pharmacy:'',
+        wh_medical: -1,
+        wh_general:-1,
+        wh_pharmacy:-1,
         wh_medical_name:'',
         wh_general_name:'',
-        wg_pharmacy_name:'',
+        wh_pharmacy_name:'',
+        is_executive:false,
+        price_class:-1,
+        price_class_name:'',
         is_active: true
       };
     }
@@ -339,6 +360,41 @@ export default defineComponent({
       this[method](primary);
     }
 
+    function open_warehouse(group_name,field_name) {
+      wh_group.value=group_name;
+      field.value=field_name;
+      dlgWarehouse.value=true;
+    }
+
+    function getWarehouse (closed, data) {
+      dlgWarehouse.value = closed;
+      if (!(typeof data.sysid== "undefined")) {
+        if (field.value==='wh_medical'){
+          edit.value.wh_medical = data.sysid
+          edit.value.wh_medical_name = data.loc_code + ' - ' + data.location_name
+        } else {
+          edit.value.wh_general = data.sysid
+          edit.value.wh_general_name = data.loc_code + ' - ' + data.location_name
+        }
+      }
+    }
+
+    function getPharmacy (closed, data) {
+      dlgPharmacy.value = closed;
+      if (!(typeof data.sysid == "undefined")) {
+        edit.value.wh_pharmacy = data.sysid
+        edit.value.wh_pharmacy_name = data.dept_code + ' - ' + data.dept_name
+      }
+    }
+
+    function getPriceClass (closed, data) {
+      dlgPriceClass.value = closed;
+      if (!(typeof data.sysid == "undefined")) {
+        edit.value.price_class = data.sysid
+        edit.value.price_class_name = data.price_code + ' - ' + data.descriptions
+      }
+    }
+
     onMounted(async () => {
       let property = await $store.dispatch(
         "home/GET_PAGEPROPERTY",
@@ -365,7 +421,12 @@ export default defineComponent({
       api_url,
       btns,
       access,
+      dlgWarehouse,
+      dlgPharmacy,
+      dlgPriceClass,
+      wh_group,
       loading,
+      field,
       runMethod,
       onRequest,
       add_event,
@@ -373,6 +434,10 @@ export default defineComponent({
       delete_event,
       loaddata,
       save_data,
+      open_warehouse,
+      getWarehouse,
+      getPharmacy,
+      getPriceClass
     };
   },
 });

@@ -16,9 +16,12 @@
         no-results-label="data yang cari tidak ditemukan" row-key="sysid" :filter="filter" separator="cell"
         selection="single" v-model:selected="selected" v-model:pagination="pagination" binary-state-sort
         @request="onRequest" :loading="loading" virtual-scroll table-class="fix-table">
-        <q-inner-loading showing>
-          <q-spinner-ball size="75px" color="red-10" />
-        </q-inner-loading>
+          <template v-slot:loading>
+            <q-inner-loading showing>
+              <q-spinner-ball size="75px" color="red-10" />
+            </q-inner-loading>
+          </template>
+
         <template v-slot:header="props">
           <q-tr :props="props">
             <q-th v-for="col in props.cols" :key="col.name" :props="props">
@@ -98,34 +101,6 @@
               <q-select v-model="edit.is_executive" dense outlined square label="Jenis Klinik" stack-label
                 :options="[{value:false,label:'Non Executive'},{value:true,label:'Executive'}]" option-value="value"
                 option-label="label" emit-value map-options />
-            </div>
-          </div>
-          <div class="row items-start q-col-gutter-sm q-mb-sm">
-            <div class="col-12">
-              <q-input v-model="edit.wh_medical_name" dense outlined square label="Lokasi Obat" stack-label readonly>
-                <template v-slot:append>
-                  <q-icon name="search" color="green-10" size="sx" @click="open_warehouse('MEDICAL','wh_medical')" />
-                </template>
-              </q-input>
-            </div>
-          </div>
-          <div class="row items-start q-col-gutter-sm q-mb-sm">
-            <div class="col-12">
-              <q-input v-model="edit.wh_general_name" dense outlined square label="Lokasi barang umum" stack-label
-                readonly>
-                <template v-slot:append>
-                  <q-icon name="search" color="green-10" size="sx" @click="open_warehouse('GENERAL','wh_general')" />
-                </template>
-              </q-input>
-            </div>
-          </div>
-          <div class="row items-start q-col-gutter-sm q-mb-sm">
-            <div class="col-12">
-              <q-input v-model="edit.wh_pharmacy_name" dense outlined square label="Unit Farmasi" stack-label readonly>
-                <template v-slot:append>
-                  <q-icon name="search" color="green-10" size="sx" @click="dlgPharmacy=true" />
-                </template>
-              </q-input>
             </div>
           </div>
         </q-card-section>

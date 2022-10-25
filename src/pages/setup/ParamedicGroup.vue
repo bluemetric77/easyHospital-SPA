@@ -16,11 +16,11 @@
         no-results-label="data yang cari tidak ditemukan" row-key="sysid" :filter="filter" separator="cell" selection="single"
         v-model:selected="selected" v-model:pagination="pagination" binary-state-sort @request="onRequest" :loading="loading"
         virtual-scroll table-class="fix-table">
-          <template v-slot:loading>
-            <q-inner-loading showing>
-              <q-spinner-ball size="75px" color="red-10" />
-            </q-inner-loading>
-          </template>
+        <template v-slot:loading>
+          <q-inner-loading showing>
+            <q-spinner-ball size="75px" color="red-10" />
+          </q-inner-loading>
+        </template>
 
         <template v-slot:header="props">
           <q-tr :props="props">
@@ -41,18 +41,6 @@
                       {{ btn.tooltips }}
                     </q-tooltip>
                   </q-icon>
-                </div>
-                <div v-else-if="col.name === 'is_base_price'">
-                  <q-toggle v-model="props.row.is_base_price" disable />
-                </div>
-                <div v-else-if="col.name === 'is_price_class'">
-                  <q-toggle v-model="props.row.is_price_class" dense disable />
-                </div>
-                <div v-else-if="col.name === 'is_service_class'">
-                  <q-toggle v-model="props.row.is_service_class" dense disable />
-                </div>
-                <div v-else-if="col.name === 'is_pharmacy_class'">
-                  <q-toggle v-model="props.row.is_pharmacy_class" dense disable />
                 </div>
                 <div v-else-if="col.name === 'is_active'">
                   <q-toggle v-model="props.row.is_active" dense disable />
@@ -99,31 +87,19 @@
         <q-card-section class="q-gutter-sm">
           <div class="row items-center q-col-gutter-sm q-mb-sm">
             <div class="col-3">
-              <q-input v-model="edit.price_code" dense outlined square label="Kode Kelas" stack-label />
+              <q-input v-model="edit.group_code" dense outlined square label="Kode" stack-label />
             </div>
-            <div class="col-6">
-              <q-input v-model="edit.descriptions" dense outlined square label="Nama Kelas" stack-label />
-            </div>
-            <div class="col-3">
-              <q-input v-model="edit.sort_name" dense outlined square label="Singkatan" stack-label />
+          </div>
+          <div class="row items-center q-col-gutter-sm q-mb-sm">
+            <div class="col-12">
+              <q-input v-model="edit.group_name" dense outlined square label="Golongan Dokter/Paramedik" stack-label />
             </div>
           </div>
           <div class="row items-start q-col-gutter-sm q-mb-sm">
             <div class="col-6">
-              <q-checkbox v-model="edit.is_base_price" label="Dasar Tarif" stack-label />
-            </div>
-            <div class="col-6">
-              <q-checkbox v-model="edit.is_price_class" label="Kelas rawat inap" stack-label />
+              <q-checkbox v-model="edit.is_active" label="Aktif" stack-label />
             </div>
           </div>  
-          <div class="row items-start q-col-gutter-sm q-mb-sm">
-            <div class="col-6">
-              <q-checkbox v-model="edit.is_service_class" label="Kelas tarif pelayanan" stack-label />
-            </div>
-            <div class="col-6">
-              <q-checkbox v-model="edit.is_pharmacy_class" label="Kelas tarif farmasi" stack-label />
-            </div>
-          </div>
         </q-card-section>
         <q-separator />
         <q-card-section class="dialog-action q-pa-sm">
@@ -175,10 +151,6 @@ export default defineComponent({
     const btns = ref([]);
     const access = ref({});
 
-    const dlgAccount = ref(false);
-    const pools=ref([]);
-    const vouchers=ref([]);
-
     async function onRequest(props) {
       let { page, rowsPerPage, rowsNumber, sortBy, descending } =
         props.pagination;
@@ -215,18 +187,9 @@ export default defineComponent({
       title.value = "Tambah Data"
       edit.value = {
         sysid: -1,
-        price_code:'',
-        descriptions: "",
-        sort_name:"",
-        is_base_price:false,
-        is_price_class: false,
-        is_service_class: false,
-        is_pharmacy_class: false,
-        is_bpjs_class: false,
-        factor_inpatient: 100,
-        factor_service: 100,
-        factor_pharmacy: 100,
-        minimum_deposit:0
+        group_code:'',
+        group_name: "",
+        is_active:true
       };
     }
 

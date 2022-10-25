@@ -6,7 +6,8 @@
           style="border: 1px solid #027be3"
           text-color="primary" :options="[
                 {label: 'Gudang Medis', value: 'MEDICAL'},
-                {label: 'Gudang Umum', value: 'GENERAL'}
+                {label: 'Gudang Umum', value: 'GENERAL'},
+                {label: 'Gudang Gizi/Dapur', value: 'NUTRITION'}
               ]" 
             @update:model-value="loaddata()" />
       </q-card-section>
@@ -20,13 +21,15 @@
           </template>
         </q-input>
       </q-toolbar>      
-      <q-table square :rows="data" :columns="columns" no-data-label="data kosong" :dense="$q.screen.md"
-        no-results-label="data yang cari tidak ditemukan" row-key="sysid" :filter="filter" separator="cell"
+      <q-table square :rows="data" :columns="columns" no-data-label="data kosong" no-results-label="data yang cari tidak ditemukan" row-key="sysid" :filter="filter" separator="cell"
         selection="single" v-model:selected="selected" v-model:pagination="pagination" binary-state-sort
         @request="onRequest" :loading="loading" virtual-scroll table-class="fix-height">
-        <q-inner-loading showing>
-          <q-spinner-ball size="75px" color="red-10" />
-        </q-inner-loading>
+          <template v-slot:loading>
+            <q-inner-loading showing>
+              <q-spinner-ball size="75px" color="red-10" />
+            </q-inner-loading>
+          </template>
+
         <template v-slot:header="props">
           <q-tr :props="props">
             <q-th v-for="col in props.cols" :key="col.name" :props="props">
@@ -89,7 +92,7 @@
 
     <!-- Dialog UI Interface-->
     <q-dialog v-model="dataevent" persistent transition-show="flip-down" transition-hide="flip-up">
-      <q-card class="icard" square>
+      <q-card class="icard" square style="width:500px;max-width:90vw">
         <q-bar class="entry-caption">
           {{ title }}
           <q-space />
@@ -129,7 +132,7 @@
           </div>
         </q-card-section>
         <q-separator />
-        <q-card-section class="dialog-action q-pa-sm">
+        <q-card-section class="dialog-action q-pa-sm" align="right">
           <q-btn class="q-mr-sm" icon="save" label="Simpan" flat no-caps @click="save_data()">
             <template v-slot:loading>
               <q-spinner class="on-left" />

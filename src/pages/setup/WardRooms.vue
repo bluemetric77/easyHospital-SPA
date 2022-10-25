@@ -1,10 +1,17 @@
 <template>
   <q-page class="page-app">
     <q-card square class="icard">
+      <q-card-section class="q-pa-sm">
+        <div class="row items-center">
+          <q-select v-model="ward_sysid" outlined dense :options="wards" option-value="sysid"  option-label="ward_name"
+          emit-value map-options label="Ruang Perawatan" style="width:300px" square
+          @update:model-value="loaddata()"/>
+        </div>
+      </q-card-section>
       <q-toolbar class="entry-caption">
         <strong>{{ pagetitle }}</strong>
         <q-space />
-        <q-input dark v-model="filter" standout dense outline rounded debounce="500" label-color="white"
+        <q-input dark v-model="filter" standout rounded dense outline debounce="500" label-color="white"
           placeholder="Pencarian">
           <template v-slot:append>
             <q-icon v-if="filter === ''" name="search" size="sm" />
@@ -13,17 +20,18 @@
         </q-input>
       </q-toolbar>
       <q-table square :rows="data" :columns="columns" no-data-label="data kosong"
-        no-results-label="data yang cari tidak ditemukan" row-key="sysid" :filter="filter" separator="cell" selection="single"
-        v-model:selected="selected" v-model:pagination="pagination" binary-state-sort @request="onRequest" :loading="loading"
-        virtual-scroll table-class="fix-table">
-          <template v-slot:loading>
-            <q-inner-loading showing>
-              <q-spinner-ball size="75px" color="red-10" />
-            </q-inner-loading>
-          </template>
-
+        no-results-label="data yang cari tidak ditemukan" row-key="sysid" :filter="filter" separator="cell"
+        selection="single" v-model:selected="selected" v-model:pagination="pagination" binary-state-sort
+        @request="onRequest" :loading="loading" virtual-scroll table-class="fix-table">
+        <template v-slot:loading>
+          <q-inner-loading showing>
+            <q-spinner-ball size="75px" color="red-10" />
+          </q-inner-loading>
+        </template>
         <template v-slot:header="props">
           <q-tr :props="props">
+            <q-th class="bg-blue-grey-14">
+            </q-th>
             <q-th v-for="col in props.cols" :key="col.name" :props="props">
               {{ col.label }}
             </q-th>
@@ -31,6 +39,10 @@
         </template>
         <template v-slot:body="props">
           <q-tr :props="props" @click="props.selected = !props.selected">
+            <q-td auto-width>
+              <q-btn size="sm" color="accent" round dense @click="props.expand = !props.expand"
+                :icon="props.expand ? 'remove' : 'add'" />
+            </q-td>
             <q-td v-for="col in props.cols" :key="col.name" :props="props">
               <div class="grid-data">
                 <div v-if="col.name === 'action'">
@@ -42,20 +54,8 @@
                     </q-tooltip>
                   </q-icon>
                 </div>
-                <div v-else-if="col.name === 'is_base_price'">
-                  <q-toggle v-model="props.row.is_base_price" disable />
-                </div>
-                <div v-else-if="col.name === 'is_price_class'">
-                  <q-toggle v-model="props.row.is_price_class" dense disable />
-                </div>
-                <div v-else-if="col.name === 'is_service_class'">
-                  <q-toggle v-model="props.row.is_service_class" dense disable />
-                </div>
-                <div v-else-if="col.name === 'is_pharmacy_class'">
-                  <q-toggle v-model="props.row.is_pharmacy_class" dense disable />
-                </div>
-                <div v-else-if="col.name === 'is_active'">
-                  <q-toggle v-model="props.row.is_active" dense disable />
+                <div v-else-if="col.name === 'is_temporary'">
+                  <q-toggle v-model="props.row.is_temporary" dense disable />
                 </div>
                 <div v-else-if="col.name === 'create_date'">
                   {{ $INDDateTime(props.row.create_date) }}
@@ -67,6 +67,11 @@
                   {{ col.value }}
                 </div>
               </div>
+            </q-td>
+          </q-tr>
+          <q-tr v-show="props.expand" :props="props">
+            <q-td colspan="100%">
+              <div class="text-left">This is expand slot for row above: {{props.row.sysid}} - {{ props.row.room_number }}.</div>
             </q-td>
           </q-tr>
         </template>
@@ -87,7 +92,7 @@
 
     <!-- Dialog UI Interface-->
     <q-dialog v-model="dataevent" persistent transition-show="flip-down" transition-hide="flip-up">
-      <q-card class="icard" style="width: 700px;max-width:80vw" square>
+      <q-card class="icard" square style="width:500px;max-width:90vw">
         <q-bar class="entry-caption">
           {{ title }}
           <q-space />
@@ -98,30 +103,40 @@
 
         <q-card-section class="q-gutter-sm">
           <div class="row items-center q-col-gutter-sm q-mb-sm">
-            <div class="col-3">
-              <q-input v-model="edit.price_code" dense outlined square label="Kode Kelas" stack-label />
-            </div>
-            <div class="col-6">
-              <q-input v-model="edit.descriptions" dense outlined square label="Nama Kelas" stack-label />
-            </div>
-            <div class="col-3">
-              <q-input v-model="edit.sort_name" dense outlined square label="Singkatan" stack-label />
+            <div class="col-12">
+              <q-select v-model="edit.ward_sysid" outlined dense :options="wards" option-value="sysid" option-label="ward_name" emit-value
+                map-options label="Ruang Perawatan" square stack-label readonly/>
             </div>
           </div>
-          <div class="row items-start q-col-gutter-sm q-mb-sm">
+          <div class="row items-center q-col-gutter-sm q-mb-sm">
             <div class="col-6">
-              <q-checkbox v-model="edit.is_base_price" label="Dasar Tarif" stack-label />
+              <q-input v-model="edit.room_number" outlined dense square stack-label label="Nomor Kamar"/>
             </div>
-            <div class="col-6">
-              <q-checkbox v-model="edit.is_price_class" label="Kelas rawat inap" stack-label />
+          </div>
+          <div class="row items-center q-col-gutter-sm q-mb-sm">
+            <div class="col-12">
+              <q-select v-model="edit.room_class_sysid" outlined dense :options="room_class" option-value="sysid" option-label="descriptions"
+                emit-value map-options label="Kelas perawatan" square stack-label/>
             </div>
-          </div>  
-          <div class="row items-start q-col-gutter-sm q-mb-sm">
-            <div class="col-6">
-              <q-checkbox v-model="edit.is_service_class" label="Kelas tarif pelayanan" stack-label />
+          </div>
+          <div class="row items-center q-col-gutter-sm q-mb-sm">
+            <div class="col-12">
+              <q-select v-model="edit.service_class_sysid" outlined dense :options="service_class" option-value="sysid"
+                option-label="descriptions" emit-value map-options label="Kelas tarif pelayanan/jasa" square stack-label />
             </div>
-            <div class="col-6">
-              <q-checkbox v-model="edit.is_pharmacy_class" label="Kelas tarif farmasi" stack-label />
+          </div>
+          <div class="row items-center q-col-gutter-sm q-mb-sm">
+            <div class="col-4">
+                <q-field square outlined stack-label dense :model-value="edit.capacity" label="Kapasitas tempat tidur" >
+                  <template v-slot:control>
+                    <vue-numeric v-model="edit.capacity" class="q-field__input text-right" separator="." />
+                  </template>
+                </q-field>
+            </div>
+          </div>
+          <div class="row items-center q-col-gutter-sm q-mb-sm">
+            <div class="col-12">
+              <q-toggle v-model="edit.is_temporary" label="Kamar Titipan/Sementara" dense/>
             </div>
           </div>
         </q-card-section>
@@ -147,17 +162,19 @@ import { useStore } from "vuex";
 import { useQuasar } from "quasar";
 
 export default defineComponent({
-  name: "PriceClass",
-  setup() {
+  name: "Clinic",
+  setup () {
     const $q = useQuasar();
     const $store = useStore();
     const $router = useRouter();
+
+    const field = ref('');
 
     const edit = ref({});
     const dataevent = ref(false);
     const title = ref("Tambah Data");
     const filter = ref("");
-    const loading=ref(false);
+    const loading = ref(false);
 
     const pagination = ref({
       sortBy: "sysid",
@@ -174,12 +191,12 @@ export default defineComponent({
     const api_url = ref({});
     const btns = ref([]);
     const access = ref({});
+    const ward_sysid=ref(null);
+    const wards=ref([]);
+    const room_class=ref([]);
+    const service_class=ref([]);
 
-    const dlgAccount = ref(false);
-    const pools=ref([]);
-    const vouchers=ref([]);
-
-    async function onRequest(props) {
+    async function onRequest (props) {
       let { page, rowsPerPage, rowsNumber, sortBy, descending } =
         props.pagination;
       let filter = props.filter;
@@ -193,6 +210,7 @@ export default defineComponent({
           filter: filter,
           sortBy: sortBy,
           descending: descending,
+          ward:ward_sysid.value,
           url: api_url.value.retrieve,
         };
         let respon = await $store.dispatch("master/GET_DATA", props);
@@ -210,27 +228,22 @@ export default defineComponent({
       }
     }
 
-    async function add_event() {
+    async function add_event () {
       dataevent.value = true;
       title.value = "Tambah Data"
       edit.value = {
         sysid: -1,
-        price_code:'',
-        descriptions: "",
-        sort_name:"",
-        is_base_price:false,
-        is_price_class: false,
-        is_service_class: false,
-        is_pharmacy_class: false,
-        is_bpjs_class: false,
-        factor_inpatient: 100,
-        factor_service: 100,
-        factor_pharmacy: 100,
-        minimum_deposit:0
+        ward_sysid: ward_sysid.value,
+        room_number: "",
+        capacity: 1,
+        is_temporary: false,
+        room_class_sysid:null,
+        service_class_sysid:null,
+        is_active: true
       };
     }
 
-    async function edit_event(primary =-1) {
+    async function edit_event (primary = -1) {
       if (selected.value.length > 0 || !(primary === -1)) {
         if (primary === -1) {
           let item = selected.value[0];
@@ -239,7 +252,7 @@ export default defineComponent({
         let props = {};
         props.url = api_url.value.edit;
         props.sysid = primary;
-        props.progress=true;
+        props.progress = true;
         let respon = await $store.dispatch("master/GET_DATA", props);
         if (!(typeof respon === "undefined")) {
           title.value = "Ubah Data"
@@ -249,7 +262,7 @@ export default defineComponent({
       }
     }
 
-    async function delete_event (primary=-1) {
+    async function delete_event (primary = -1) {
       if (selected.value.length > 0 || !(primary === -1)) {
         if (primary === -1) {
           let item = selected.value[0];
@@ -257,7 +270,7 @@ export default defineComponent({
         }
         $q.dialog({
           title: "Konfirmasi",
-          message: "Apakah data ini akan di hapus?",
+          message: "Apakah data ini akan di hapus ?",
           cancel: true,
           persistent: true,
         }).onOk(() => {
@@ -292,12 +305,12 @@ export default defineComponent({
       }
     }
 
-    async function save_data() {
+    async function save_data () {
       let app = {};
       app.data = edit.value;
-      app.operation=(edit.value.sysid===-1) ? 'inserted' : 'updated'
+      app.operation = (edit.value.sysid === -1) ? 'inserted' : 'updated'
       app.url = api_url.value.save;
-      app.progress= true
+      app.progress = true
       let respon = await $store.dispatch("master/POST_DATA", app);
       if (!(typeof respon === "undefined")) {
         let msg = respon.data;
@@ -323,7 +336,7 @@ export default defineComponent({
       }
     }
 
-    async function loaddata() {
+    async function loaddata () {
       selected.value = [];
       onRequest({
         pagination: pagination.value,
@@ -331,7 +344,7 @@ export default defineComponent({
       });
     }
 
-    function runMethod(method, primary = -1) {
+    function runMethod (method, primary = -1) {
       this[method](primary);
     }
 
@@ -345,6 +358,21 @@ export default defineComponent({
       api_url.value = property.url;
       btns.value = property.btn;
       access.value = property.access;
+      let props = {}
+      props.url = 'setup/ward/open'
+      $store.dispatch("master/GET_DATA", props).then((response) => {
+        wards.value = response;
+      });
+      props.url = 'setup/class/list'
+      props.models='INPATIENT'
+      $store.dispatch("master/GET_DATA", props).then((response) => {
+        room_class.value = response;
+      });
+      props.url = 'setup/class/list'
+      props.models = 'SERVICE'
+      $store.dispatch("master/GET_DATA", props).then((response) => {
+        service_class.value = response;
+      });
       loaddata();
     });
 
@@ -362,6 +390,11 @@ export default defineComponent({
       btns,
       access,
       loading,
+      field,
+      ward_sysid,
+      wards,
+      room_class,
+      service_class,
       runMethod,
       onRequest,
       add_event,

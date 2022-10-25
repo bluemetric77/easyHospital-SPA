@@ -38,8 +38,12 @@ const routes = [
       { path: 'medicalcheckup', name: 'mcu', component: () => import('pages/setup/MedicalCheckup.vue') },
       { path: 'inpatient', name: 'inpatient', component: () => import('pages/setup/Inpatient.vue') },
       { path: 'class', name: 'class', component: () => import('pages/setup/ServiceClass.vue') },
+      { path: 'ward', name: 'ward', component: () => import('pages/setup/Ward.vue') },
+      { path: 'rooms', name: 'rooms', component: () => import('pages/setup/WardRooms.vue') },
       { path: 'pricelevel', name: 'pricelevel', component: () => import('pages/setup/PriceLevel.vue') },
       { path: 'paramedic', name: 'paramedic', component: () => import('pages/setup/Paramedic.vue') },
+      { path: 'paramedic-group', name: 'paramedic-group', component: () => import('pages/setup/ParamedicGroup.vue') },
+      { path: 'specialist', name: 'specialist', component: () => import('pages/setup/ParamedicSpecialist.vue') },
     ]
   },
 
@@ -50,6 +54,8 @@ const routes = [
     children: [
       { path: '', component: () => import('pages/Index.vue') },
       { path: 'inventory/warehouse', name: 'warehouse', component: () => import('pages/master/inventory/Warehouse.vue') },
+      { path: 'inventory/mou', name: 'mou', component: () => import('pages/master/inventory/MOU.vue') },
+      { path: 'inventory/inventory-group', name: 'item-groups', component: () => import('pages/master/inventory/InventoryGroups.vue') },
     ]
   },
 

@@ -12,7 +12,7 @@
           </template>
         </q-input>
       </q-toolbar>
-      <q-table square :rows="data" :columns="columns" no-data-label="data kosong" :dense="$q.screen.md"
+      <q-table square :rows="data" :columns="columns" no-data-label="data kosong" 
         no-results-label="data yang kamu cari tidak ditemukan" row-key="sysid" :filter="filter" separator="cell"
         selection="single" v-model:selected="selected" v-model:pagination="pagination" binary-state-sort
         @request="onRequest" :loading="loading" virtual-scroll table-class="fix-table">
@@ -40,6 +40,21 @@
                       {{ btn.tooltips }}
                     </q-tooltip>
                   </q-icon>
+                </div>
+                <div v-else-if="col.name === 'is_internal'">
+                  <q-toggle v-model="props.row.is_internal" dense disable />
+                </div>
+                <div v-else-if="col.name === 'is_permanent'">
+                  <q-toggle v-model="props.row.is_permanent" dense disable />
+                </div>
+                <div v-else-if="col.name === 'is_transfer'">
+                  <q-toggle v-model="props.row.is_transfer" dense disable />
+                </div>
+                <div v-else-if="col.name === 'is_email_reports'">
+                  <q-toggle v-model="props.row.is_email_reports" dense disable />
+                </div>
+                <div v-else-if="col.name === 'is_active'">
+                  <q-toggle v-model="props.row.is_active" dense disable />
                 </div>
                 <div v-else-if="col.name === 'create_date'">
                   {{ $INDDateTime(props.row.create_date) }}
@@ -81,6 +96,7 @@
           options-dense
           square
           class="bg-white text-white"
+          @update:model-value="loaddata()"
         />
       </q-toolbar>
     </q-page-sticky>
@@ -108,50 +124,100 @@
             </div>
           </div>
           <div class="row items-start q-col-gutter-sm q-mb-xs">
-            <div class="col-10">
+            <div class="col-3">
               <q-select v-model="edit.paramedic_type" :options="paramedic_groups" outlined dense options-dense label="Kelompok Paramedik"
                 option-value="value" option-label="label" emit-value map-options fill-input stack-label
                 square />
             </div>
+            <div class="col-7">
+              <q-select v-model="edit.price_group" :options="price_groups" outlined dense options-dense
+                label="Grup tarif jasa" option-value="sysid" option-label="group_name" emit-value map-options fill-input stack-label
+                square />
+            </div>
           </div>
         </q-card-section>
-        <q-tabs v-model="tab" class="text-teal" dense no-caps  align="justify" narrow-indicator>
+        <div style="height:55vh">
+        <q-tabs v-model="tab" dense no-caps  align="justify" narrow-indicator
+          class="bg-teal-10 text-white shadow-2">
           <q-tab name="general" icon="fas fa-address-card" label="Umum" />
           <q-tab name="bank" icon="fas fa-money-bill" label="Akun Bank" />
           <q-tab name="configuration" icon="fas fa-cog" label="Seting" />
         </q-tabs>
         <q-tab-panels v-model="tab" animated swipeable vertical transition-prev="jump-up" transition-next="jump-up">
           <q-tab-panel name="general">
-            <div class="row items-start q-col-gutter-sm q-mb-xs">
+            <div class="row items-start q-col-gutter-sm q-mb-sm">
+              <div class="col-4">
+                <q-input v-model="edit.dob" dense outlined square label="Tanggal Lahir" stack-label type="date"/>
+              </div>
+            </div>
+            <div class="row items-start q-col-gutter-sm q-mb-sm">
+              <div class="col-12">
+                <q-input v-model="edit.address" dense outlined square label="Alamat" stack-label type="textarea" input-style="max-height:40px"/>
+              </div>
+            </div>
+            <div class="row items-start q-col-gutter-sm q-mb-sm">
               <div class="col-6">
-                <q-input v-model="edit.citizen_number" dense outlined square label="No. KTP" stack-label />
+                <q-input v-model="edit.phone1" dense outlined square label="Telepon 1" stack-label />
               </div>
               <div class="col-6">
-                <q-input v-model="edit.tax_number" dense outlined square label="N.P.W.P" stack-label/>
+                <q-input v-model="edit.phone2" dense outlined square label="Telepon 2" stack-label/>
+              </div>
+            </div>
+            <div class="row items-start q-col-gutter-sm q-mb-sm">
+              <div class="col-6">
+                <q-input v-model="edit.handphone1" dense outlined square label="Handphone 1" stack-label />
+              </div>
+              <div class="col-6">
+                <q-input v-model="edit.handphone2" dense outlined square label="Handphone 2" stack-label />
+              </div>
+            </div>
+            <div class="row items-start q-col-gutter-sm q-mb-sm">
+              <div class="col-12">
+                <q-input v-model="edit.email_personal" dense outlined square label="Email" stack-label />
               </div>
             </div>
           </q-tab-panel>
           <q-tab-panel name="bank">
-            <div class="row items-start q-col-gutter-sm q-mb-xs">
+            <div class="row items-start q-col-gutter-sm q-mb-sm">
               <div class="col-12">
                 <q-input v-model="edit.bank_name" dense outlined square label="Nama Bank" type="textarea" autogrow
                   stack-label />
               </div>
             </div>
-            <div class="row items-start q-col-gutter-sm q-mb-xs">
+            <div class="row items-start q-col-gutter-sm q-mb-sm">
               <div class="col-12">
                 <q-input v-model="edit.account_name" dense outlined square label="Pemilik rekening" type="textarea"
                   autogrow stack-label />
               </div>
             </div>
-            <div class="row items-start q-col-gutter-sm q-mb-xs">
+            <div class="row items-start q-col-gutter-sm q-mb-sm">
               <div class="col-12">
                 <q-input v-model="edit.account_number" dense outlined square label="Nomor rekening" type="textarea"
                   autogrow stack-label />
               </div>
             </div>
+            <div class="row items-start q-col-gutter-sm q-mb-sm">
+              <div class="col-6">
+                <q-toggle v-model="edit.is_transfer" dense outlined square label="Honor dokter/paramedik ditransfer" stack-label />
+              </div>
+            </div>
           </q-tab-panel>
           <q-tab-panel name="configuration">
+            <div class="row items-start q-col-gutter-sm q-mb-sm">
+              <div class="col-12">
+                <q-input v-model="edit.dept_name" dense outlined square label="Klinik Rawat Jalan (Default)" stack-label readonly>
+                  <template v-slot:append>
+                    <q-icon name="search" color="green-10" size="sm" @click="dlgClinic=true" />
+                  </template>
+                </q-input>
+              </div>
+            </div>
+            <div class="row items-start q-col-gutter-sm q-mb-sm">
+              <div class="col-12">
+              <q-select v-model="edit.specialist_sysid" :options="specialists" outlined dense options-dense label="Spesialisasi Dokter/Paramedik"
+                option-value="sysid" option-label="specialist_name" emit-value map-options fill-input stack-label square />
+              </div>
+            </div>
             <div class="row items-start q-col-gutter-sm q-mb-sm">
               <div class="col-6">
                 <q-toggle v-model="edit.is_internal" dense outlined square label="Dokter Dalam (Praktek)" stack-label />
@@ -162,16 +228,17 @@
             </div>
             <div class="row items-start q-col-gutter-sm q-mb-sm">
               <div class="col-6">
-                <q-toggle v-model="edit.is_email_reports" dense outlined square label="Honor dokter diemail" stack-label />
+                <q-input v-model="edit.email" dense outlined square label="Alamat email (Honor Dokter/Paramedic)" stack-label />
               </div>
               <div class="col-6">
-                <q-input v-model="edit.email" dense outlined square label="Alamat email" stack-label />
+                <q-toggle v-model="edit.is_email_reports" dense outlined square label="Honor dokter diemail" stack-label />
               </div>
             </div>
           </q-tab-panel>
         </q-tab-panels>
+        </div>
         <q-separator />
-        <q-card-section class="dialog-action q-pa-sm">
+        <q-card-section class="dialog-action q-pa-sm" position="bottom">
           <q-btn class="q-mr-sm" icon="save" label="Simpan" flat no-caps @click="save_data()">
             <template v-slot:loading>
               <q-spinner class="on-left" />
@@ -182,10 +249,12 @@
         </q-card-section>
       </q-card>
     </q-dialog>
-  </q-page>
+    <department v-if="dlgClinic" :show="dlgClinic" enumtype="OUTPATIENT" @CloseData="getClinic" />
+</q-page>
 </template>
 
 <script>
+import department from 'components/master/Department.vue'
 import { defineComponent, ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useStore } from "vuex";
@@ -193,6 +262,7 @@ import { useQuasar, QSpinnerIos } from "quasar";
 
 export default defineComponent({
   name: "Paramedic",
+  components:{department},
   setup() {
     const $q = useQuasar();
     const $store = useStore();
@@ -225,7 +295,8 @@ export default defineComponent({
     const btns = ref([]);
     const access = ref({});
 
-    const pools = ref([]);
+    const dlgSpecialist = ref(false);
+    const dlgClinic= ref(false);
     const paramedic_group =ref('DOCTOR');
     const paramedic_groups=ref([
       { value: 'DOCTOR', label: 'Dokter' },
@@ -233,6 +304,9 @@ export default defineComponent({
       { value:'PHARMACIST',label:'Apoteker'},
       { value: 'OTHERS', label: 'Lain-Lain' }
     ]);
+
+    const price_groups=ref([]);
+    const specialists=ref([]);
 
     async function onRequest(props) {
       let { page, rowsPerPage, rowsNumber, sortBy, descending } =
@@ -287,7 +361,17 @@ export default defineComponent({
         account_number:'',
         cityzen_number:'',
         bpjs_number:'',
-        is_active:true
+        is_active:true,
+        dept_sysid:-1,
+        dept_name:'',
+        specialist_sysid:null,
+        dob:null,
+        address:'',
+        phone1:'',
+        phone2:'',
+        handphone1:'',
+        handphone2:'',
+        email_personal:''
       };
     }
 
@@ -403,6 +487,14 @@ export default defineComponent({
     function runMethod(method, primary = '') {
       this[method](primary);
     }
+
+    function getClinic (closed, data) {
+      dlgClinic.value = closed;
+      if (!(typeof data.sysid == "undefined")) {
+        edit.value.dept_sysid = data.sysid
+        edit.value.dept_name = data.dept_code + ' - ' + data.dept_name
+      }
+    }    
     onMounted(async () => {
       let property = await $store.dispatch(
         "home/GET_PAGEPROPERTY",
@@ -413,6 +505,15 @@ export default defineComponent({
       api_url.value = property.url;
       btns.value = property.btn;
       access.value = property.access;
+      let props={}
+      props.url='setup/price-group/open'
+      $store.dispatch("master/GET_DATA", props).then((response) => {
+        price_groups.value = response;
+      });
+      props.url = 'setup/specialist/open'
+      $store.dispatch("master/GET_DATA", props).then((response) => {
+        specialists.value = response;
+      });
       loaddata();
     });
 
@@ -431,6 +532,8 @@ export default defineComponent({
       btns,
       access,
       tab,
+      dlgClinic,
+      dlgSpecialist,
       runMethod,
       onRequest,
       add_event,
@@ -441,7 +544,10 @@ export default defineComponent({
       btn_loading,
       kartu_keluarga,
       paramedic_group,
-      paramedic_groups
+      paramedic_groups,
+      price_groups,
+      specialists,
+      getClinic
     };
   },
 });

@@ -16,6 +16,11 @@
         no-results-label="data yang kamu cari tidak ditemukan" row-key="sysid" :filter="filter" separator="cell"
         selection="single" v-model:selected="selected" v-model:pagination="pagination" binary-state-sort
         @request="onRequest" wrap-cells>
+        <template v-slot:loading>
+          <q-inner-loading showing>
+            <q-spinner-ball size="75px" color="red-10" />
+          </q-inner-loading>
+        </template>
         <template v-slot:no-data="{ icon, message, filter }">
           <div class="full-width row flex-center text-accent q-gutter-sm">
             <q-icon size="2em" name="sentiment_dissatisfied" />

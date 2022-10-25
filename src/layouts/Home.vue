@@ -73,12 +73,12 @@
     </q-header>
 
     <q-drawer v-model="drawer" :mini="miniState" mini-to-overlay @click.capture="drawerClick"
-      @mouseover="miniState = false" :width="300" :breakpoint="400" class="background-drawer text-white">
-      <q-scroll-area :thumb-style="thumbStyle" :bar-style="barStyle" style="
-          height: calc(100% - 85px);
-          margin-top: 85px;
-          border-right: 1px solid #ddd;
-        ">
+      @mouseover="miniState = false" :width="300" :breakpoint="300" class="background-drawer text-white">
+      <q-scroll-area 
+       :thumb-style="thumbStyle" 
+       :bar-style="barStyle" 
+       style="height: calc(100% - 10px);margin-top: 10px;border-right: 1px solid #ddd"
+       class="q-pa-sm">
         <q-list dense  class="text-white" transition="scale">
           <q-expansion-item 
             v-for="(items, index) in detail(-1, 0)" :key="index"
@@ -88,7 +88,7 @@
             header-class="bg-teal-9 text-white"
             :content-inset-level="0.2" 
             class="shadow-5 overflow-hidden q-mb-sm"
-            style="border-radius: 20px;border-style: solid;border-width: 0.1px;border-color:teal"
+            style="border-radius: 25px;border-style: solid;border-width: 0.1px;border-color:teal"
           >
             <q-list padding>
               <div v-for="(itmdtl, idxdtl) in detail(items.sort_number, 1)" :key="idxdtl">
@@ -107,8 +107,13 @@
                   </q-item>
                 </div>
                 <div v-else>
-                  <q-list class="rounded-borders">
-                    <q-expansion-item dense-toggle expand-separator :icon="itmdtl.icons" :label="itmdtl.title"
+                  <q-list padding class="rounded-borders">
+                    <q-expansion-item dense-toggle 
+                      expand-separator 
+                      :icon="itmdtl.icons" 
+                      :label="itmdtl.title"
+                      :header-inset-level="0.4" 
+                      :content-inset-level="0.6"            
                       header-class="text-green">
                       <q-list>
                         <div v-for="(itmsub, idxsub) in detail(itmdtl.sort_number, 2)" :key="idxsub">
@@ -155,13 +160,6 @@
           </q-expansion-item>
         </q-list>
       </q-scroll-area>
-      <q-img class="absolute-top" src="https://cdn.quasar.dev/img/material.png" style="height: 80px">
-        <div class="absolute-bottom bg-transparent">
-          <q-avatar size="60px" class="q-mb-xs">
-            <q-img :src="userprofile.photo" />
-          </q-avatar>
-        </div>
-      </q-img>
       <div class="q-mini-drawer-hide absolute" style="top: 90px; right: -17px">
         <q-btn dense round unelevated color="primary" icon="chevron_left" @click="miniState = true" />
       </div>

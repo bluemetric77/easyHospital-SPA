@@ -16,9 +16,11 @@
         no-results-label="data yang cari tidak ditemukan" row-key="sysid" :filter="filter" separator="cell"
         selection="single" v-model:selected="selected" v-model:pagination="pagination" binary-state-sort
         @request="onRequest" :loading="loading" virtual-scroll table-class="fix-table">
-        <q-inner-loading showing>
-          <q-spinner-ball size="75px" color="red-10" />
-        </q-inner-loading>
+          <template v-slot:loading>
+            <q-inner-loading showing>
+              <q-spinner-ball size="75px" color="red-10" />
+            </q-inner-loading>
+          </template>
         <template v-slot:header="props">
           <q-tr :props="props">
             <q-th v-for="col in props.cols" :key="col.name" :props="props">

@@ -1,21 +1,20 @@
 <template>
   <q-page class="page-app">
-    <q-card square class="icard">
+      <q-card square class="icard">
       <q-toolbar class="entry-caption">
         <strong>{{ pagetitle }}</strong>
         <q-space />
-        <q-input dark v-model="filter" standout dense outline rounded debounce="500" label-color="white"
-          placeholder="Pencarian">
+        <q-input dark v-model="filter" standout rounded dense outline debounce="500" label-color="white" placeholder="Pencarian">
           <template v-slot:append>
             <q-icon v-if="filter === ''" name="search" size="sm" />
             <q-icon v-else name="clear" class="cursor-pointer" size="sm" @click="filter = ''" />
           </template>
         </q-input>
-      </q-toolbar>
+      </q-toolbar>      
       <q-table square :rows="data" :columns="columns" no-data-label="data kosong"
-        no-results-label="data yang cari tidak ditemukan" row-key="sysid" :filter="filter" separator="cell" selection="single"
-        v-model:selected="selected" v-model:pagination="pagination" binary-state-sort @request="onRequest" :loading="loading"
-        virtual-scroll table-class="fix-table">
+        no-results-label="data yang cari tidak ditemukan" row-key="sysid" :filter="filter" separator="cell"
+        selection="single" v-model:selected="selected" v-model:pagination="pagination" binary-state-sort
+        @request="onRequest" :loading="loading" virtual-scroll table-class="fix-height">
           <template v-slot:loading>
             <q-inner-loading showing>
               <q-spinner-ball size="75px" color="red-10" />
@@ -41,18 +40,6 @@
                       {{ btn.tooltips }}
                     </q-tooltip>
                   </q-icon>
-                </div>
-                <div v-else-if="col.name === 'is_base_price'">
-                  <q-toggle v-model="props.row.is_base_price" disable />
-                </div>
-                <div v-else-if="col.name === 'is_price_class'">
-                  <q-toggle v-model="props.row.is_price_class" dense disable />
-                </div>
-                <div v-else-if="col.name === 'is_service_class'">
-                  <q-toggle v-model="props.row.is_service_class" dense disable />
-                </div>
-                <div v-else-if="col.name === 'is_pharmacy_class'">
-                  <q-toggle v-model="props.row.is_pharmacy_class" dense disable />
                 </div>
                 <div v-else-if="col.name === 'is_active'">
                   <q-toggle v-model="props.row.is_active" dense disable />
@@ -87,46 +74,34 @@
 
     <!-- Dialog UI Interface-->
     <q-dialog v-model="dataevent" persistent transition-show="flip-down" transition-hide="flip-up">
-      <q-card class="icard" style="width: 700px;max-width:80vw" square>
+      <q-card class="icard" square style="width:500px;max-width:90vw">
         <q-bar class="entry-caption">
           {{ title }}
           <q-space />
-          <q-btn v-close-popup dense flat rounded icon="close" color="red-5" size="sm">
+          <q-btn v-close-popup dense flat rounded icon="close" color="red-5" size="sm" >
             <q-tooltip>Tutup</q-tooltip>
           </q-btn>
         </q-bar>
 
         <q-card-section class="q-gutter-sm">
           <div class="row items-center q-col-gutter-sm q-mb-sm">
-            <div class="col-3">
-              <q-input v-model="edit.price_code" dense outlined square label="Kode Kelas" stack-label />
-            </div>
             <div class="col-6">
-              <q-input v-model="edit.descriptions" dense outlined square label="Nama Kelas" stack-label />
+              <q-input v-model="edit.mou_name" dense outlined square label="Satuan/Unit" stack-label />
             </div>
-            <div class="col-3">
-              <q-input v-model="edit.sort_name" dense outlined square label="Singkatan" stack-label />
+          </div>
+          <div class="row items-center q-col-gutter-sm q-mb-sm">
+            <div class="col-12">
+              <q-input v-model="edit.descriptions" dense outlined square label="Keterangan/Catatan" stack-label />
             </div>
           </div>
           <div class="row items-start q-col-gutter-sm q-mb-sm">
-            <div class="col-6">
-              <q-checkbox v-model="edit.is_base_price" label="Dasar Tarif" stack-label />
-            </div>
-            <div class="col-6">
-              <q-checkbox v-model="edit.is_price_class" label="Kelas rawat inap" stack-label />
-            </div>
-          </div>  
-          <div class="row items-start q-col-gutter-sm q-mb-sm">
-            <div class="col-6">
-              <q-checkbox v-model="edit.is_service_class" label="Kelas tarif pelayanan" stack-label />
-            </div>
-            <div class="col-6">
-              <q-checkbox v-model="edit.is_pharmacy_class" label="Kelas tarif farmasi" stack-label />
+            <div class="col-12">
+              <q-checkbox v-model="edit.is_active" dense outlined square label="Status Unit/Satuan (Aktif)" stack-label />
             </div>
           </div>
         </q-card-section>
         <q-separator />
-        <q-card-section class="dialog-action q-pa-sm">
+        <q-card-section class="dialog-action q-pa-sm" align="right">
           <q-btn class="q-mr-sm" icon="save" label="Simpan" flat no-caps @click="save_data()">
             <template v-slot:loading>
               <q-spinner class="on-left" />
@@ -147,7 +122,7 @@ import { useStore } from "vuex";
 import { useQuasar } from "quasar";
 
 export default defineComponent({
-  name: "PriceClass",
+  name: "MeasureOfUnit",
   setup() {
     const $q = useQuasar();
     const $store = useStore();
@@ -158,7 +133,6 @@ export default defineComponent({
     const title = ref("Tambah Data");
     const filter = ref("");
     const loading=ref(false);
-
     const pagination = ref({
       sortBy: "sysid",
       descending: false,
@@ -174,10 +148,6 @@ export default defineComponent({
     const api_url = ref({});
     const btns = ref([]);
     const access = ref({});
-
-    const dlgAccount = ref(false);
-    const pools=ref([]);
-    const vouchers=ref([]);
 
     async function onRequest(props) {
       let { page, rowsPerPage, rowsNumber, sortBy, descending } =
@@ -215,18 +185,9 @@ export default defineComponent({
       title.value = "Tambah Data"
       edit.value = {
         sysid: -1,
-        price_code:'',
+        mou_name:'',
         descriptions: "",
-        sort_name:"",
-        is_base_price:false,
-        is_price_class: false,
-        is_service_class: false,
-        is_pharmacy_class: false,
-        is_bpjs_class: false,
-        factor_inpatient: 100,
-        factor_service: 100,
-        factor_pharmacy: 100,
-        minimum_deposit:0
+        is_active: true
       };
     }
 
@@ -257,7 +218,7 @@ export default defineComponent({
         }
         $q.dialog({
           title: "Konfirmasi",
-          message: "Apakah data ini akan di hapus?",
+          message: "Apakah data ini akan di hapus ?",
           cancel: true,
           persistent: true,
         }).onOk(() => {
@@ -373,3 +334,9 @@ export default defineComponent({
   },
 });
 </script>
+<style lang="sass">
+.fix-height 
+    height: -webkit-calc(100vh - 180px) !important
+    height:    -moz-calc(100vh - 180px) !important
+    height:         calc(100vh - 180px) !important
+</style>

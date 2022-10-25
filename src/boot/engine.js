@@ -463,7 +463,7 @@ async function deleteapi (apiname, apidata = null, progress = false) {
   }
 }
 
-async function pageauth () {
+async function pageauth (url) {
   let config = new Config()
   let timeoutlink = config.Environment().timeout
   let jwt = config.JWTToken()
@@ -475,13 +475,15 @@ async function pageauth () {
       method: 'get',
       timeout: timeoutlink,
       withCredentials: true,
-      headers: {
-        'x-jwt': jwt
-      },
       params: {
-        jwt: jwt
+        jwt: jwt,
+        objects: url
       }
     })
+    var result = {
+      is_login: false,
+      is_allowed: false,
+    }
     if (!(typeof respon === 'undefined')) {
       if (respon.data.header.status === 'OK') {
         home.mutations.UPDATE_LOCK_PAGE(home.state, respon.data.contents.data.is_locked)
@@ -490,14 +492,18 @@ async function pageauth () {
           sessionStorage.set('auth-jwt', newjwt)
         }
         Loading.hide()
-        return respon.data.contents.data.allowed
+        var result = {
+          is_login: respon.data.contents.data.is_login,
+          is_allowed: respon.data.contents.data.is_allowed,
+        }
+        return result
       } else {
         Loading.hide()
-        return false
+        return result
       }
     } else {
       Loading.hide()
-      return false
+      return result
     }
   } catch (error) {
     Loading.hide()

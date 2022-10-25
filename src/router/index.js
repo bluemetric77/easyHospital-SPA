@@ -30,11 +30,14 @@ export default route(function ({ store }/* { store, ssrContext } */) {
   Router.beforeEach((to, from, next) => {
     if (to.matched.some(item => item.meta.auth)) {
       let jwt = store.state.home.jwt
-      pageauth(jwt).then((isAuth) => {
-        if (!(isAuth)) {
+      pageauth(to.path).then((respons) => {
+        console.info(JSON.stringify(respons))
+        if ((respons.is_login) && (respons.is_allowed)) {
+          next()
+        } else if (respons.is_login) {
           next('/auth')
         } else {
-          next()
+          next('not-allowed')
         }
       })
         .catch(function () {

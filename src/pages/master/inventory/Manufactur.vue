@@ -1,16 +1,6 @@
 <template>
   <q-page class="page-app">
       <q-card square class="icard">
-      <q-card-section clas="q-pa-sm q-mb-sm">
-        <q-btn-toggle v-model="warehouse_group" class="my-custom-toggle" no-caps rounded unelevated toggle-color="primary" color="white"
-          style="border: 1px solid #027be3"
-          text-color="primary" :options="[
-                {label: 'Gudang Medis', value: 'MEDICAL'},
-                {label: 'Gudang Umum', value: 'GENERAL'},
-                {label: 'Gudang Gizi/Dapur', value: 'NUTRITION'}
-              ]" 
-            @update:model-value="loaddata()" />
-      </q-card-section>
       <q-toolbar class="entry-caption">
         <strong>{{ pagetitle }}</strong>
         <q-space />
@@ -21,7 +11,8 @@
           </template>
         </q-input>
       </q-toolbar>      
-      <q-table square :rows="data" :columns="columns" no-data-label="data kosong" no-results-label="data yang cari tidak ditemukan" row-key="sysid" :filter="filter" separator="cell"
+      <q-table square :rows="data" :columns="columns" no-data-label="data kosong"
+        no-results-label="data yang cari tidak ditemukan" row-key="sysid" :filter="filter" separator="cell"
         selection="single" v-model:selected="selected" v-model:pagination="pagination" binary-state-sort
         @request="onRequest" :loading="loading" virtual-scroll table-class="fix-height">
           <template v-slot:loading>
@@ -49,15 +40,6 @@
                       {{ btn.tooltips }}
                     </q-tooltip>
                   </q-icon>
-                </div>
-                <div v-else-if="col.name === 'is_received'">
-                  <q-toggle v-model="props.row.is_received" disable />
-                </div>
-                <div v-else-if="col.name === 'is_sales'">
-                  <q-toggle v-model="props.row.is_sales" dense disable />
-                </div>
-                <div v-else-if="col.name === 'is_distribution'">
-                  <q-toggle v-model="props.row.is_distribution" disable />
                 </div>
                 <div v-else-if="col.name === 'is_active'">
                   <q-toggle v-model="props.row.is_active" dense disable />
@@ -92,7 +74,7 @@
 
     <!-- Dialog UI Interface-->
     <q-dialog v-model="dataevent" persistent transition-show="flip-down" transition-hide="flip-up">
-      <q-card class="icard" square style="width:600px;max-width:90vw">
+      <q-card class="icard" square style="width:500px;max-width:90vw">
         <q-bar class="entry-caption">
           {{ title }}
           <q-space />
@@ -103,74 +85,18 @@
 
         <q-card-section class="q-gutter-sm">
           <div class="row items-center q-col-gutter-sm q-mb-sm">
-            <div class="col-4">
-              <q-input v-model="edit.loc_code" dense outlined square label="Kode Gudang" stack-label />
+            <div class="col-6">
+              <q-input v-model="edit.manufactur_code" dense outlined square label="Kode" stack-label />
             </div>
-            <div class="col-8">
-              <q-input v-model="edit.location_name" dense outlined square label="Nama Gudang/Lokasi" stack-label />
+          </div>
+          <div class="row items-center q-col-gutter-sm q-mb-sm">
+            <div class="col-12">
+              <q-input v-model="edit.manufactur_name" dense outlined square label="Nama Pabrik/Manufactur" stack-label />
             </div>
           </div>
           <div class="row items-start q-col-gutter-sm q-mb-sm">
             <div class="col-12">
-              <q-input v-model="edit.inventory_account" dense outlined square label="Akun Inventory/stock" stack-label>
-                <template v-slot:append>
-                  <q-icon name="search" size="sm" />
-                </template>
-              </q-input>
-            </div>
-          </div>
-          <div class="row items-start q-col-gutter-sm q-mb-sm">
-            <div class="col-12">
-              <q-input v-model="edit.cogs_account" dense outlined square label="Akun HPP/COGS" stack-label>
-                <template v-slot:append>
-                  <q-icon name="search" size="sm" />
-                </template>
-              </q-input>
-            </div>
-          </div>
-          <div class="row items-start q-col-gutter-sm q-mb-sm">
-            <div class="col-12">
-              <q-input v-model="edit.cost_account" dense outlined square label="Akun Biaya" stack-label>
-                <template v-slot:append>
-                  <q-icon name="search" size="sm" />
-                </template>
-              </q-input>
-            </div>
-          </div>
-          <div class="row items-start q-col-gutter-sm q-mb-sm">
-            <div class="col-12">
-              <q-input v-model="edit.variant_account" dense outlined square label="Akun Varian" stack-label>
-                <template v-slot:append>
-                  <q-icon name="search" size="sm" />
-                </template>
-              </q-input>
-            </div>
-          </div>
-          <div class="row items-start q-col-gutter-sm q-mb-sm">
-            <div class="col-12">
-              <q-select v-model="edit.warehouse_type" dense outlined square label="Tipe Gudang"
-              :options="['Gudang Utama','Gudang Unit']" options-dense
-              stack-label/>
-            </div>
-          </div>
-          <div class="row items-start q-col-gutter-sm q-mb-sm">
-            <div class="col-12">
-              <q-checkbox v-model="edit.is_sales" dense outlined square label="Diizinkan untuk penjualan" stack-label/>
-            </div>
-          </div>
-          <div class="row items-start q-col-gutter-sm q-mb-sm">
-            <div class="col-12">
-              <q-checkbox v-model="edit.is_received" dense outlined square label="Diizinkan untuk penerimaan stock" stack-label />
-            </div>
-          </div>
-          <div class="row items-start q-col-gutter-sm q-mb-sm">
-            <div class="col-12">
-              <q-checkbox v-model="edit.is_distribution" dense outlined square label="Diizinkan untuk distribusi" stack-label />
-            </div>
-          </div>
-          <div class="row items-start q-col-gutter-sm q-mb-sm">
-            <div class="col-12">
-              <q-checkbox v-model="edit.is_active" dense outlined square label="Status gudang (Aktif)" stack-label />
+              <q-checkbox v-model="edit.is_active" dense outlined square label="Status Pabrik (Aktif)" stack-label />
             </div>
           </div>
         </q-card-section>
@@ -196,7 +122,7 @@ import { useStore } from "vuex";
 import { useQuasar } from "quasar";
 
 export default defineComponent({
-  name: "PriceClass",
+  name: "Manufactur",
   setup() {
     const $q = useQuasar();
     const $store = useStore();
@@ -207,8 +133,6 @@ export default defineComponent({
     const title = ref("Tambah Data");
     const filter = ref("");
     const loading=ref(false);
-    const warehouse_group=ref('MEDICAL');
-
     const pagination = ref({
       sortBy: "sysid",
       descending: false,
@@ -239,7 +163,6 @@ export default defineComponent({
           filter: filter,
           sortBy: sortBy,
           descending: descending,
-          group_name:warehouse_group.value,
           url: api_url.value.retrieve,
         };
         let respon = await $store.dispatch("master/GET_DATA", props);
@@ -262,17 +185,8 @@ export default defineComponent({
       title.value = "Tambah Data"
       edit.value = {
         sysid: -1,
-        loc_code:'',
-        location_name: "",
-        inventory_account:'',
-        cogs_account:'',
-        expense_account: '',
-        variant_account: '',
-        warehouse_type:'Gudang utama',
-        is_sales:true,
-        is_distribution: true,
-        is_received: true,
-        warehouse_group:warehouse_group.value,
+        manufactur_code:'',
+        manufactur_name: "",
         is_active: true
       };
     }
@@ -409,7 +323,6 @@ export default defineComponent({
       btns,
       access,
       loading,
-      warehouse_group,
       runMethod,
       onRequest,
       add_event,
@@ -423,7 +336,7 @@ export default defineComponent({
 </script>
 <style lang="sass">
 .fix-height 
-    height: -webkit-calc(100vh - 230px) !important
-    height:    -moz-calc(100vh - 230px) !important
-    height:         calc(100vh - 230px) !important
+    height: -webkit-calc(100vh - 180px) !important
+    height:    -moz-calc(100vh - 180px) !important
+    height:         calc(100vh - 180px) !important
 </style>

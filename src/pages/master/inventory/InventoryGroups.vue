@@ -120,7 +120,7 @@
           </div>
           <div class="row items-start q-col-gutter-sm q-mb-sm">
             <div class="col-12">
-              <q-input v-model="edit.cost_account" dense outlined square label="Akun Biaya" stack-label>
+              <q-input v-model="edit.expense_account" dense outlined square label="Akun Biaya" stack-label>
                 <template v-slot:append>
                   <q-icon name="search" size="sm"/>
                 </template>
@@ -229,7 +229,7 @@ export default defineComponent({
         group_name: "",
         inventory_account:"",
         cogs_account:"",
-        cost_account: "",
+        expense_account: "",
         variant_account:"",
         inventory_group: inventory_group.value,
         is_active: true

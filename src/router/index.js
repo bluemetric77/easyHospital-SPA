@@ -34,7 +34,7 @@ export default route(function ({ store }/* { store, ssrContext } */) {
         console.info(JSON.stringify(respons))
         if ((respons.is_login) && (respons.is_allowed)) {
           next()
-        } else if (respons.is_login) {
+        } else if (!(respons.is_login)) {
           next('/auth')
         } else {
           next('not-allowed')

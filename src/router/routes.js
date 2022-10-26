@@ -55,7 +55,11 @@ const routes = [
       { path: '', component: () => import('pages/Index.vue') },
       { path: 'inventory/warehouse', name: 'warehouse', component: () => import('pages/master/inventory/Warehouse.vue') },
       { path: 'inventory/mou', name: 'mou', component: () => import('pages/master/inventory/MOU.vue') },
-      { path: 'inventory/inventory-group', name: 'item-groups', component: () => import('pages/master/inventory/InventoryGroups.vue') },
+      { path: 'inventory/inventory-group', name: 'items-groups', component: () => import('pages/master/inventory/InventoryGroups.vue') },
+      { path: 'inventory/manufactur', name: 'manufactur', component: () => import('pages/master/inventory/Manufactur.vue') },
+      { path: 'inventory/items-medical', name: 'items-medical', component: () => import('pages/master/inventory/Items.vue') },
+      { path: 'inventory/items-general', name: 'items-general', component: () => import('pages/master/inventory/Items.vue') },
+      { path: 'inventory/items-kitchen', name: 'items-kitchen', component: () => import('pages/master/inventory/Items.vue') },
     ]
   },
 

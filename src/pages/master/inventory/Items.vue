@@ -41,6 +41,12 @@
                     </q-tooltip>
                   </q-icon>
                 </div>
+                <div v-else-if="(col.name === 'het_price') ||(col.name === 'hna')">
+                  {{ $formatnumber(col.value) }}
+                </div>
+               <div v-else-if="(col.name === 'on_hand') ||(col.name === 'on_hand_unit')">
+                  {{ $formatnumber(col.value,2,',','0',true) }}
+                </div>
                 <div v-else-if="col.name === 'is_active'">
                   <q-toggle v-model="props.row.is_active" dense disable />
                 </div>
@@ -113,9 +119,16 @@
                               :options="mou" option-label="mou_name" option-value="mou_name" emit-value map-options options-dense/>
                             </div>
                           </div>
-                          <div class="row items-start q-mb-sm">
-                            <div class="col-12">
+                          <div class="row items-start q-col-gutter-sm q-mb-sm">
+                            <div class="col-6">
                               <q-input v-model="edit.group_name" label="Grup item" dense square outlined stack-label readonly>
+                                <template v-slot:append>
+                                  <q-icon name="search" size="sm" color="green-10" @click="open_itemgroup()"/>
+                                </template>
+                              </q-input>
+                            </div>
+                            <div class="col-6">
+                              <q-input v-model="edit.subgroup_name" label="Subgrup item" dense square outlined stack-label readonly>
                                 <template v-slot:append>
                                   <q-icon name="search" size="sm" color="green-10" />
                                 </template>
@@ -140,7 +153,7 @@
                             <div class="col-12">
                               <q-input v-model="edit.supplier" label="Supplier" dense square outlined stack-label readonly>
                                 <template v-slot:append>
-                                  <q-icon name="search" size="sm" color="green-10" />
+                                  <q-icon name="search" size="sm" color="green-10" @click="open_supplier()"/>
                                 </template>
                               </q-input>
                             </div>
@@ -150,15 +163,14 @@
                               <q-checkbox v-model="edit.is_price_rounded" label="harga jual dibulatkan" dense/>
                             </div>
                             <div class="col-6">
-                                <q-field v-model="edit.price_rounded" dense outlined label="Pembulatan ke-?" square stack-label>
-                                  <template v-slot:control="{ id, value, emitValue }">
-                                    <vue-numeric :id="id" precision="2" :value="value" thousand-separator="."
-                                      class="q-field__input text-right" read-only @input="emitValue" />
-                                  </template>
-                                </q-field>
+                              <q-field square outlined stack-label dense :model-value="edit.price_rounded" label="Pembulatan ke-?">
+                                <template v-slot:control>
+                                  <vue-numeric v-model="edit.price_rounded" class="q-field__input text-right" separator="." :precision="0" disable />
+                                </template>
+                              </q-field>
                             </div>
                           </div>
-                          <div class="row items-center q-mb-sm">
+                          <div class="row items-center q-col-gutter-sm q-mb-sm">
                             <div class="col-4">
                               <q-checkbox v-model="edit.is_sales" label="Jual" dense />
                             </div>
@@ -169,7 +181,7 @@
                               <q-checkbox v-model="edit.is_production" label="Produksi" dense />
                             </div>
                           </div>
-                          <div class="row items-center q-mb-sm">
+                          <div class="row items-center q-col-gutter-sm q-mb-sm">
                             <div class="col-4">
                               <q-checkbox v-model="edit.is_material" label="Bahan Baku" dense />
                             </div>
@@ -180,7 +192,7 @@
                               <q-checkbox v-model="edit.is_formularium" label="Item Formularium" dense />
                             </div>
                           </div>
-                          <div class="row items-center q-mb-sm">
+                          <div class="row items-center q-col-gutter-sm q-mb-sm">
                             <div class="col-4">
                               <q-checkbox v-model="edit.is_employee" label="Obat Karyawan" dense />
                             </div>
@@ -191,7 +203,7 @@
                               <q-checkbox v-model="edit.is_bpjs" label="Obat BPJS" dense />
                             </div>
                           </div>
-                          <div class="row items-center q-mb-sm">
+                          <div class="row items-center q-col-gutter-sm q-mb-sm">
                             <div class="col-4">
                               <q-checkbox v-model="edit.is_national" label="Formularium Nasional" dense />
                             </div>
@@ -206,6 +218,57 @@
                     </q-card>
                   </div>
                 </div>
+                <div class="row items-start q-mb-sm">
+                  <div class="col-12">
+                    <q-card square>
+                      <q-bar class="entry-caption">
+                        Informasi inventory
+                      </q-bar>
+                      <q-card-section class="q-pa-sm">
+                        <div class="row items-start q-col-gutter-sm q-mb-sm">
+                          <div class="col-4">
+                            <q-field square outlined stack-label dense :model-value="edit.het_price" label="Harga Eceran Tertinggi (HET)">
+                              <template v-slot:control>
+                                <vue-numeric v-model="edit.het_price" class="q-field__input text-right" separator="." :precision="0" disable />
+                              </template>
+                            </q-field>
+                          </div>
+                          <div class="col-4">
+                            <q-field square outlined stack-label dense :model-value="edit.hna" label="Harga Netto Apotik (HNA)">
+                              <template v-slot:control>
+                                <vue-numeric v-model="edit.hna" class="q-field__input text-right" separator="." :precision="2" disable />
+                              </template>
+                            </q-field>
+                          </div>
+                          <div class="col-4">
+                            <q-field square outlined stack-label dense :model-value="edit.cogs" label="HPP (Average)">
+                              <template v-slot:control>
+                                <vue-numeric v-model="edit.cogs" class="q-field__input text-right" separator="." :precision="2" disable />
+                              </template>
+                            </q-field>
+                          </div>
+                        </div>
+                        <div class="row items-start q-col-gutter-sm q-mb-sm">
+                          <div class="col-4">
+                            <q-field square outlined stack-label dense :model-value="edit.on_hand" label="Stok(Gudang Utama)">
+                              <template v-slot:control>
+                                <vue-numeric v-model="edit.on_hand" class="q-field__input text-right" separator="." :precision="2" disable />
+                              </template>
+                            </q-field>
+                          </div>
+                          <div class="col-4">
+                            <q-field square outlined stack-label dense :model-value="edit.on_hand_unit" label="Stok (Unit/Bagian)">
+                              <template v-slot:control>
+                                <vue-numeric v-model="edit.on_hand_unit" class="q-field__input text-right" separator="." :precision="2" disable />
+                              </template>
+                            </q-field>
+                          </div>
+                        </div>
+                      </q-card-section>
+                    </q-card>
+                  </div>
+                </div>
+
             </div>
             <div class="col-xs-12 col-sm-6">
               <div class="row items-start q-mb-sm">
@@ -305,11 +368,15 @@
       </q-card>
     </q-dialog>
     <manufactur v-if="dlgManufactur" :show="dlgManufactur" @CloseData="getManufactur"/>
+    <supplier v-if="dlgSupplier" :show="dlgSupplier" @CloseData="getSupplier" />
+    <itemgroup v-if="dlgItemGroup" :show="dlgItemGroup" groupname='MEDICAL' @CloseData="getItemGroup" />
   </q-page>
 </template>
 
 <script>
 import manufactur from 'components/master/Manufactur.vue'
+import supplier from 'components/master/Supplier.vue'
+import itemgroup from 'components/master/ItemGroups.vue'
 import { defineComponent, ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useStore } from "vuex";
@@ -317,7 +384,7 @@ import { useQuasar } from "quasar";
 
 export default defineComponent({
   name: "Inventory",
-  components:{manufactur},
+  components: { manufactur, supplier, itemgroup },
   setup() {
     const $q = useQuasar();
     const $store = useStore();
@@ -345,6 +412,8 @@ export default defineComponent({
     const access = ref({});
     const mou=ref([]);
     const dlgManufactur=ref(false);
+    const dlgSupplier=ref(false);
+    const dlgItemGroup=ref(false);
 
     async function onRequest(props) {
       let { page, rowsPerPage, rowsNumber, sortBy, descending } =
@@ -388,6 +457,8 @@ export default defineComponent({
         mou_inventory:"",
         item_group_sysid:-1,
         group_name:"",
+        item_subgroup_sysid:-1,
+        subgroup_name:'',
         manufactur_sysid:-1,
         manufactur:"",
         prefered_vendor_sysid:-1,
@@ -525,6 +596,10 @@ export default defineComponent({
       this[method](primary);
     }
 
+    function open_manufactur () {
+      dlgManufactur.value = true
+    }
+
     function getManufactur(dlg,data) {
       dlgManufactur.value=dlg;
       if (!(typeof(data)==='undefined')){
@@ -533,9 +608,28 @@ export default defineComponent({
       }
     }
 
-    function open_manufactur(){
-      dlgManufactur.value = true
-      console.info("entered")
+    function open_supplier () {
+      dlgSupplier.value = true
+    }
+
+    function getSupplier(dlg,data) {
+      dlgSupplier.value=dlg;
+      if (!(typeof(data)==='undefined')){
+        edit.value.prefered_vendor_sysid=data.sysid
+        edit.value.supplier=data.supplier_name
+      }
+    }
+
+    function open_itemgroup () {
+      dlgItemGroup.value = true
+    }
+
+    function getItemGroup (dlg, data) {
+      dlgItemGroup.value = dlg;
+      if (!(typeof (data) === 'undefined')) {
+        edit.value.item_group_sysid = data.sysid
+        edit.value.group_name = data.group_name
+      }
     }
 
     onMounted(async () => {
@@ -580,7 +674,13 @@ export default defineComponent({
       save_data,
       dlgManufactur,
       open_manufactur,
-      getManufactur
+      getManufactur,
+      dlgSupplier,
+      open_supplier,
+      getSupplier,
+      dlgItemGroup,
+      open_itemgroup,
+      getItemGroup
     };
   },
 });

@@ -125,6 +125,7 @@ export default defineComponent({
         let props = {};
         props.url = "profile";
         let respon = await $store.dispatch("home/GET_DATA", props);
+        console.info('Login :'+JSON.stringify(respon));
         respon.company_logo = "http://localhost:8000/"+respon.company_logo;
         $store.commit("home/UpdateProfiles", respon);
       } finally {

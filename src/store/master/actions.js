@@ -8,10 +8,6 @@ export async function GET_DATA (context, props) {
         geterror = props.geterror
         delete props.geterror
     }
-    if (!(typeof (props.progress) === 'undefined')) {
-        progress = props.progress
-        delete props.progress
-    }
     delete props.url
     try {
         let result = await getapi(url, props, geterror, progress)
@@ -24,6 +20,7 @@ export async function GET_DATA (context, props) {
         }
     } catch (error) { }
 }
+
 export async function DELETE_DATA (context, props) {
     let url = props.url
     let progress = true
@@ -39,21 +36,33 @@ export async function DELETE_DATA (context, props) {
         return undefined
     }
 }
+
 export async function POST_DATA (context, props) {
     let url = props.url
     let progress = true
+    let is_upload = false
+    let file = null
     delete props.url
     if (!(typeof (props.progress) === 'undefined')) {
         progress = props.progress
         delete props.progress
     }
+    if (!(typeof (props.is_upload) === 'undefined')) {
+        is_upload = props.is_upload
+        delete props.is_upload
+    }
+    if (!(typeof (props.file) === 'undefined')) {
+        file = props.file
+        delete props.file
+    }
     try {
-        let respon = await postapi(url, props, progress)
+        let respon = await postapi(url, props, progress, is_upload, file)
         return respon
     } catch (error) {
         return undefined
     }
 }
+
 export async function UPLOAD_DATA (context, props) {
     let url = props.url
     let file = props.file
@@ -66,16 +75,19 @@ export async function UPLOAD_DATA (context, props) {
         return undefined
     }
 }
+
 export async function GET_DOWNLOAD (context, props) {
     let url = props.url
     delete props.url
     await downloadapi(url, props)
 }
+
 export async function GET_DOWNLOADEXCEL (context, props) {
     let url = props.url
     delete props.url
     await downloadexcel(url, props)
 }
+
 export async function POST_LOGIN (context, props) {
     try {
         let result = await postapi('login', props)

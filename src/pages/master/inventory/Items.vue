@@ -279,8 +279,7 @@
                       <div class="row items-start q-col-gutter-sm">
                         <div class="col-4">
                           <q-card square>
-                            <q-img :src="edit.photo" spinner-color="white" :ratio="1"
-                              img-style="border-style:0.1px solid red;">
+                            <q-img :src="edit.url_image" spinner-color="white" :ratio="1">
                               <template v-slot:error>
                                 <div class="absolute-full flex flex-center bg-negative text-white">
                                   Tidak ada foto
@@ -290,7 +289,7 @@
                           </q-card>
                         </div>
                         <div class="col-8">
-                            <q-file v-model="foto" color="purple-12" label="Foto Item" dense outlined accept=".jpg, image/*" stack-label
+                            <q-file v-model="file" color="purple-12" label="Foto Item" dense outlined accept=".jpg, image/*" stack-label
                               square>
                               <template v-slot:prepend>
                                 <q-icon name="attach_file" color="green-10"/>
@@ -381,6 +380,7 @@ import { defineComponent, ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useStore } from "vuex";
 import { useQuasar } from "quasar";
+import { Config } from 'boot/engine';
 
 export default defineComponent({
   name: "Inventory",
@@ -414,6 +414,7 @@ export default defineComponent({
     const dlgManufactur=ref(false);
     const dlgSupplier=ref(false);
     const dlgItemGroup=ref(false);
+    const file=ref(null);
 
     async function onRequest(props) {
       let { page, rowsPerPage, rowsNumber, sortBy, descending } =
@@ -486,8 +487,10 @@ export default defineComponent({
         special_instruction:'',
         storahe_instruction:'',
         inventory_group:'MEDICAL',
+        url_image:'',
         is_active: true
       };
+      file.value=null;
     }
 
     async function edit_event(primary =-1) {
@@ -506,6 +509,11 @@ export default defineComponent({
           title.value = "Ubah Data"
           dataevent.value = true;
           edit.value = respon;
+
+          let config = new Config();
+          let image_url=await config.UrlPublic()+'/'+edit.value.image_path
+          edit.value.url_image=image_url
+          file.value=null;
         }
       }
     }
@@ -557,6 +565,8 @@ export default defineComponent({
       let app = {};
       app.data = edit.value;
       app.operation=(edit.value.sysid===-1) ? 'inserted' : 'updated'
+      app.file = file.value
+      app.is_upload = true
       app.url = api_url.value.save;
       app.progress= true
       let respon = await $store.dispatch("master/POST_DATA", app);
@@ -680,7 +690,8 @@ export default defineComponent({
       getSupplier,
       dlgItemGroup,
       open_itemgroup,
-      getItemGroup
+      getItemGroup,
+      file
     };
   },
 });

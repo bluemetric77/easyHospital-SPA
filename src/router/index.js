@@ -31,7 +31,6 @@ export default route(function ({ store }/* { store, ssrContext } */) {
     if (to.matched.some(item => item.meta.auth)) {
       let jwt = store.state.home.jwt
       pageauth(to.path).then((respons) => {
-        console.info(JSON.stringify(respons))
         if ((respons.is_login) && (respons.is_allowed)) {
           next()
         } else if (!(respons.is_login)) {

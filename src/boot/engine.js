@@ -31,44 +31,53 @@ class Config {
     }
     return setting
   }
-
-  UrlLink () {
-    let env = this.Environment()
-    let Url = env.BaseUrl
-    if (env.Port === 0) {
-      Url = Url + '/' + env.API
-    } else {
-      Url = Url + ':' + env.Port + '/' + env.API
+  async UrlLink () {
+    var baseUrl = window.location.origin
+    let response = await api({
+      url: baseUrl + '/api.json',
+      method: 'get',
+      timeout: 5000,
+      withCredentials: false
+    })
+    let Url = baseUrl;
+    if (!(typeof (response) === 'undefined')) {
+      Url = response.data.api_url + '/api'
     }
     return Url
   }
 
-  UrlPublic () {
-    let env = this.Environment()
-    let Url = env.BaseUrl
-    if (env.Port === 0) {
-      Url = Url + '/'
-    } else {
-      Url = Url + ':' + env.Port + '/'
+  async UrlPublic () {
+    var baseUrl = window.location.origin
+    let response = await api({
+      url: baseUrl + '/api.json',
+      method: 'get',
+      timeout: 5000,
+      withCredentials: false
+    })
+    let Url = baseUrl;
+    if (!(typeof (response) === 'undefined')) {
+      Url = response.data.api_url
     }
-    let subfolder = env.API
-    subfolder = subfolder.replace('api', '')
-    Url = Url + subfolder
     return Url
   }
 
-  BaseAPI () {
-    let env = this.Environment()
-    let Url = env.BaseUrl
-    if (env.Port === 0) {
-      Url = Url + '/' + env.API
-    } else {
-      Url = Url + ':' + env.Port + '/' + env.API
+  async BaseAPI () {
+    var baseUrl = window.location.origin
+    let response = await api({
+      url: baseUrl + '/api.json',
+      method: 'get',
+      timeout: 5000,
+      withCredentials: false
+    })
+    let Url = baseUrl;
+    if (!(typeof (response) === 'undefined')) {
+      Url = response.data.api_url + '/api'
     }
     return Url
   }
-  BaseURL () {
-    return this.Environment().BaseURL
+  async BaseURL () {
+    let url = await this.Environment().BaseURL
+    return url
   }
   BasePort () {
     return this.Environment().PortAPI
@@ -225,7 +234,7 @@ function fNull (Value, OtherValue = '') {
 
 async function downloadapi (apiname, apidata = null) {
   let config = new Config()
-  let urlapi = config.UrlLink() + '/' + apiname
+  let urlapi = await config.UrlLink() + '/' + apiname
   let timeoutlink = config.Environment().timeout
   let jwt = config.JWTToken()
   Loading.show({ spinner: QSpinnerGears })
@@ -260,7 +269,7 @@ async function downloadapi (apiname, apidata = null) {
 }
 async function downloadexcel (apiname, apidata = null) {
   let config = new Config()
-  let urlapi = config.UrlLink() + '/' + apiname
+  let urlapi = await config.UrlLink() + '/' + apiname
   let timeoutlink = config.Environment().timeout
   let jwt = config.JWTToken()
   Loading.show({ spinner: QSpinnerGears })
@@ -301,10 +310,12 @@ async function downloadexcel (apiname, apidata = null) {
 
 async function uploadapi (apiname, file = null, apidata = null) {
   let config = new Config()
-  let urlapi = config.UrlLink() + '/' + apiname
+  let urlapi = await config.UrlLink() + '/' + apiname
   let timeoutlink = config.Environment().timeout
   let jwt = config.JWTToken()
+
   Loading.show({ spinner: QSpinnerGears })
+
   var formdata = new FormData()
   formdata.append('file', file)
   var fields = Object.keys(apidata)
@@ -340,7 +351,7 @@ async function uploadapi (apiname, file = null, apidata = null) {
 
 async function getapi (apiname, apidata = null, geterror = false, progress = false) {
   let config = new Config()
-  let urlapi = config.UrlLink() + '/' + apiname
+  let urlapi = await config.UrlLink() + '/' + apiname
   let timeoutlink = config.Environment().timeout
   let jwt = config.JWTToken()
   if (progress) {
@@ -384,9 +395,9 @@ async function getapi (apiname, apidata = null, geterror = false, progress = fal
   }
 }
 
-async function postapi (apiname, apidata = null, progress = false) {
+async function postapi (apiname, apidata = null, progress = false, is_upload = false, file = null) {
   let config = new Config()
-  let urlapi = config.UrlLink() + '/' + apiname
+  let urlapi = await config.UrlLink() + '/' + apiname
   let timeoutlink = config.Environment().timeout
   let jwt = config.JWTToken()
   if (progress) {
@@ -397,12 +408,17 @@ async function postapi (apiname, apidata = null, progress = false) {
       messageColor: 'blue-10'
     })
   }
+  if (is_upload) {
+    var formdata = new FormData()
+    formdata.append('file', file)
+    formdata.append('json', JSON.stringify(apidata))
+  }
   try {
     let respon = await api({
       url: urlapi,
       method: 'post',
       timeout: timeoutlink,
-      data: apidata,
+      data: (is_upload) ? formdata : apidata,
       withCredentials: false,
       headers: {
         'x-jwt': jwt
@@ -426,7 +442,7 @@ async function postapi (apiname, apidata = null, progress = false) {
 
 async function deleteapi (apiname, apidata = null, progress = false) {
   let config = new Config()
-  let urlapi = config.UrlLink() + '/' + apiname
+  let urlapi = await config.UrlLink() + '/' + apiname
   let timeoutlink = config.Environment().timeout
   let jwt = config.JWTToken()
   if (progress) {
@@ -437,7 +453,6 @@ async function deleteapi (apiname, apidata = null, progress = false) {
       messageColor: 'blue-10'
     })
   }
-  console.info('PROPS :' + JSON.stringify(apidata))
   try {
     let respon = await api({
       url: urlapi,
@@ -467,7 +482,7 @@ async function pageauth (url) {
   let config = new Config()
   let timeoutlink = config.Environment().timeout
   let jwt = config.JWTToken()
-  let urlapi = config.UrlLink() + '/access/securitypage'
+  let urlapi = await config.UrlLink() + '/access/securitypage'
   Loading.show({ spinner: QSpinnerGears, message: 'Sedang cek akses data' })
   try {
     let respon = await api({
@@ -648,6 +663,6 @@ export default boot(({ app }) => {
 });
 
 export {
-  getapi, postapi, pageauth, downloadapi, downloadexcel, uploadapi, deleteapi, RefineDate, RefineTime,
+  Config, getapi, postapi, pageauth, downloadapi, downloadexcel, uploadapi, deleteapi, RefineDate, RefineTime,
   RefineNumber, fNull, formatNumber, IndonesiaDate, IndonesiaDateTime, getMonthName
 }

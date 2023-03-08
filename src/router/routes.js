@@ -59,8 +59,8 @@ const routes = [
       { path: 'inventory/manufactur', name: 'manufactur', component: () => import('pages/master/inventory/Manufactur.vue') },
       { path: 'inventory/supplier', name: 'supplier', component: () => import('pages/master/inventory/Supplier.vue') },
       { path: 'inventory/items-medical', name: 'items-medical', component: () => import('pages/master/inventory/Items.vue') },
-      { path: 'inventory/items-general', name: 'items-general', component: () => import('pages/master/inventory/Items.vue') },
-      { path: 'inventory/items-kitchen', name: 'items-kitchen', component: () => import('pages/master/inventory/Items.vue') },
+      { path: 'inventory/items-general', name: 'items-general', component: () => import('pages/master/inventory/ItemsNonMedical.vue') },
+      { path: 'inventory/items-kitchen', name: 'items-kitchen', component: () => import('pages/master/inventory/ItemsKitchen.vue') },
     ]
   },
 

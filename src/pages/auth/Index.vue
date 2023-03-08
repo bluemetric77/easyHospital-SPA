@@ -1,8 +1,8 @@
 <template>
   <q-page class="flex flex-center bg">
-    <q-card style="width:350px">
+    <q-card style="width:350px;max-width:90vw">
       <q-bar class="entry-caption">
-        <q-icon name="vpn_key" size="sm"/>
+        <q-icon name="vpn_key" size="xs"/>
       </q-bar>
       <div class="flex flex-center q-my-sm">
         <img

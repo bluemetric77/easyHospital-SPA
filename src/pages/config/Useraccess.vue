@@ -7,17 +7,17 @@
       <q-card-section class="q-pa-sm">
         <div class="row items-start q-mb-sm">
           <div class="col-xs-12 col-sm-3">
-            <q-input v-model="user_id" dense outlined square type="text" label="User ID" />
+            <q-input v-model="user_name" dense outlined square type="text" label="User ID" />
           </div>
         </div>
         <div class="row items-start q-mb-sm">
           <div class="col-xs-12 col-sm-3">
-            <q-input v-model="user_name" outlined dense square type="text" label="Nama User" />
+            <q-input v-model="full_name" outlined dense square type="text" label="Nama User" />
           </div>
         </div>
         <div class="row items-start q-mb-sm">
           <div class="col-xs-12 col-sm-3">
-            <q-select v-model="security_level" label="Level akses" outlined dense square options-dense
+            <q-select v-model="user_level" label="Level akses" outlined dense square options-dense
               :options="levellist" emit-value map-options disable />
           </div>
         </div>
@@ -161,11 +161,11 @@ export default defineComponent({
     const menu = ref(1);
     const selection = ref([]);
     const main = ref([]);
-    const user_id = ref("N/A");
-    const user_name = ref("");
+    const user_name = ref("N/A");
+    const full_name = ref("");
+    const user_level=ref("");
     const email = ref("");
     const phone = ref("");
-    const security_level = ref("");
     const security_group = ref("");
     const edit = ref({});
     const reports = ref([]);
@@ -181,9 +181,10 @@ export default defineComponent({
       { sort_number: 7000, title: "accounting" },
       { sort_number: 8000, title: "payroll" },
     ]);
+    const levellist=ref(['ADMIN','SUPERVISOR','USER']);
 
-    const sysid = computed(() => {
-      return $route.query.sysid;
+    const uuid = computed(() => {
+      return $route.query.uuid;
     });
 
     function update_useraccess(objaccess, objectid) {
@@ -261,7 +262,7 @@ export default defineComponent({
       let objaccess = [];
       if (user_name.value !=="") {
         let json = {};
-        json.sysid = sysid.value;
+        json.uuid = uuid.value;
         objaccess = await $store.dispatch("master/GET_OBJECTACCESS", json);
         selection.value = [];
         let index = -1;
@@ -303,7 +304,7 @@ export default defineComponent({
         });
         let props = {};
         props.url = "user/reports";
-        props.sysid = sysid.value;
+        props.uuid = uuid.value;
         reports.value = await $store.dispatch("home/GET_DATA", props);
       }
     }
@@ -325,15 +326,13 @@ export default defineComponent({
         object_item.value = await $store.dispatch("master/GET_OBJECTSITEM");
         itemmenu.value = await $store.dispatch("master/GET_OBJECTSITEMACCESS");
         let props = {};
-        props.url = "user/usersinfo";
-        props.sysid = sysid.value;
+        props.url = "user/users/get";
+        props.uuid = uuid.value;
         let user = await $store.dispatch("master/GET_DATA", props);
         if (!(typeof user === "undefined")) {
-          user_id.value = user.user_id;
           user_name.value = user.user_name;
-          email.value = user.email;
-          phone.value = user.phone;
-          security_level.value = user.security_level;
+          full_name.value = user.full_name;
+          user_level.value = user.user_level;
         }
         access_objects();
       } finally {
@@ -380,7 +379,7 @@ export default defineComponent({
     });
 
     return {
-      sysid,
+      uuid,
       loading,
       save_loading,
       username,
@@ -389,11 +388,11 @@ export default defineComponent({
       menu,
       selection,
       main,
-      user_id,
       user_name,
+      full_name,
+      user_level,
       email,
       phone,
-      security_level,
       security_group,
       link,
       edit,
@@ -406,7 +405,8 @@ export default defineComponent({
       detail,
       security,
       access_objects,
-      save_data
+      save_data,
+      levellist
     };
   },
 });

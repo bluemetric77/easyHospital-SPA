@@ -41,9 +41,6 @@
                     </q-tooltip>
                   </q-icon>
                 </div>
-                <div v-else-if="(col.name === 'het_price') ||(col.name === 'hna')">
-                  {{ $formatnumber(col.value) }}
-                </div>
                <div v-else-if="(col.name === 'on_hand') ||(col.name === 'on_hand_unit')">
                   {{ $formatnumber(col.value,2,',','0',true) }}
                 </div>
@@ -158,18 +155,6 @@
                               </q-input>
                             </div>
                           </div>
-                          <div class="row items-center q-mb-sm">
-                            <div class="col-6">
-                              <q-checkbox v-model="edit.is_price_rounded" label="harga jual dibulatkan" dense/>
-                            </div>
-                            <div class="col-6">
-                              <q-field square outlined stack-label dense :model-value="edit.price_rounded" label="Pembulatan ke-?">
-                                <template v-slot:control>
-                                  <vue-numeric v-model="edit.price_rounded" class="q-field__input text-right" separator="." :precision="0" disable />
-                                </template>
-                              </q-field>
-                            </div>
-                          </div>
                           <div class="row items-center q-col-gutter-sm q-mb-sm">
                             <div class="col-4">
                               <q-checkbox v-model="edit.is_sales" label="Jual" dense />
@@ -184,31 +169,6 @@
                           <div class="row items-center q-col-gutter-sm q-mb-sm">
                             <div class="col-4">
                               <q-checkbox v-model="edit.is_material" label="Bahan Baku" dense />
-                            </div>
-                            <div class="col-4">
-                              <q-checkbox v-model="edit.is_consignment" label="Item Konsinyasi" dense />
-                            </div>
-                            <div class="col-4">
-                              <q-checkbox v-model="edit.is_formularium" label="Item Formularium" dense />
-                            </div>
-                          </div>
-                          <div class="row items-center q-col-gutter-sm q-mb-sm">
-                            <div class="col-4">
-                              <q-checkbox v-model="edit.is_employee" label="Obat Karyawan" dense />
-                            </div>
-                            <div class="col-4">
-                              <q-checkbox v-model="edit.is_inhealth" label="Obat Inhealth" dense />
-                            </div>
-                            <div class="col-4">
-                              <q-checkbox v-model="edit.is_bpjs" label="Obat BPJS" dense />
-                            </div>
-                          </div>
-                          <div class="row items-center q-col-gutter-sm q-mb-sm">
-                            <div class="col-4">
-                              <q-checkbox v-model="edit.is_national" label="Formularium Nasional" dense />
-                            </div>
-                            <div class="col-4">
-                              <q-checkbox v-model="edit.is_expired_control" label="Kontrol Kadaluarsa" dense />
                             </div>
                             <div class="col-4">
                               <q-checkbox v-model="edit.is_active" label="Item Aktif (terpakai)" dense />
@@ -268,7 +228,6 @@
                     </q-card>
                   </div>
                 </div>
-
             </div>
             <div class="col-xs-12 col-sm-6">
               <div class="row items-start q-mb-sm">
@@ -301,56 +260,6 @@
                   </q-card>
                 </div>
               </div>
-              <div class="row items-start">
-                <div class="col-12">
-                  <q-card square>
-                    <q-bar class="entry-caption">Informasi Obat</q-bar>
-                    <q-card-section class="q-pa-sm">
-                      <div class="row items-center q-col-gutter-sm q-mb-sm">
-                        <div class="col-8">
-                          <q-input v-model="edit.generic_name" square outlined stack-label label="Nama Generik" dense/>
-                        </div>
-                        <div class="col-4">
-                          <q-checkbox v-model="edit.is_generic" label="Obat Generik" dense />
-                        </div>
-                      </div>
-                      <div class="row items-start q-col-gutter-sm q-mb-sm">
-                        <div class="col-3">
-                          <q-input v-model="edit.rate" square outlined stack-label label="Kadar" dense />
-                        </div>
-                        <div class="col-5">
-                              <q-select v-model="edit.units" label="Satuan simpan" dense square outlined stack-label :options="mou"
-                                option-label="mou_name" option-value="mou_name" emit-value map-options options-dense/>
-                        </div>
-                      </div>
-                      <div class="row items-start q-col-gutter-sm q-mb-sm">
-                        <div class="col-8">
-                          <q-input v-model="edit.forms" label="Bentuk/Sediaan" dense square outlined stack-label readonly>
-                            <template v-slot:append>
-                              <q-icon name="search" size="sm" color="green-10" />
-                            </template>
-                          </q-input>
-                        </div>
-                      </div>
-                      <div class="row items-start q-mb-sm">
-                        <div class="col-12">
-                          <q-input v-model="edit.medical_uses" square outlined stack-label label="Fungsi obat" dense />
-                        </div>
-                      </div>
-                      <div class="row items-start q-mb-sm">
-                        <div class="col-12">
-                          <q-input v-model="edit.special_instruction" square outlined stack-label label="Instruksi khusus" dense />
-                        </div>
-                      </div>
-                      <div class="row items-start q-mb-sm">
-                        <div class="col-12">
-                          <q-input v-model="edit.storage_instruction" square outlined stack-label label="Petunjuk Penyimpanan" dense autogrow/>
-                        </div>
-                      </div>
-                    </q-card-section>
-                  </q-card>
-                </div>
-              </div>
             </div>  
           </div>
         </q-card-section>
@@ -368,7 +277,7 @@
     </q-dialog>
     <manufactur v-if="dlgManufactur" :show="dlgManufactur" @CloseData="getManufactur"/>
     <supplier v-if="dlgSupplier" :show="dlgSupplier" @CloseData="getSupplier" />
-    <itemgroup v-if="dlgItemGroup" :show="dlgItemGroup" groupname='MEDICAL' @CloseData="getItemGroup" />
+    <itemgroup v-if="dlgItemGroup" :show="dlgItemGroup" groupname='NUTRITION' @CloseData="getItemGroup" />
   </q-page>
 </template>
 
@@ -383,7 +292,7 @@ import { useQuasar } from "quasar";
 import { Config } from 'boot/engine';
 
 export default defineComponent({
-  name: "Inventory",
+  name: "InventoryKitchen",
   components: { manufactur, supplier, itemgroup },
   setup() {
     const $q = useQuasar();
@@ -430,7 +339,7 @@ export default defineComponent({
           filter: filter,
           sortBy: sortBy,
           descending: descending,
-          group_name: 'MEDICAL',
+          group_name: 'NUTRITION',
           url: api_url.value.retrieve,
         };
         let respon = await $store.dispatch("master/GET_DATA", props);
@@ -465,29 +374,11 @@ export default defineComponent({
         manufactur:"",
         prefered_vendor_sysid:-1,
         supplier:"",
-        is_price_rounded:false,
-        price_rounded:0,
         is_sales:false,
         is_purchase:false,
         is_production:false,
         is_material:false,
-        is_consignment:false,
-        is_formularium:false,
-        is_employee:false,
-        is_inhealth:false,
-        is_national:false,
-        is_bpjs:false,
-        is_expired_control:false,
-        is_generic:false,
-        trademark:'',
-        generic_name:'',
-        rate:null,
-        units:'',
-        forms:'',
-        medical_uses:'',
-        special_instruction:'',
-        storage_instruction:'',
-        inventory_group:'MEDICAL',
+        inventory_group:'NUTRITION',
         url_image:'',
         is_active: true
       };
@@ -503,7 +394,7 @@ export default defineComponent({
         let props = {};
         props.url = api_url.value.edit;
         props.sysid = primary;
-        props.group_name='MEDICAL';
+        props.group_name='NUTRITION';
         props.progress=true;
         let respon = await $store.dispatch("master/GET_DATA", props);
         if (!(typeof respon === "undefined")) {

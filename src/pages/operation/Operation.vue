@@ -55,7 +55,7 @@
       <q-table square :rows="data" :columns="columns" no-data-label="data kosong" :dense="$q.screen.md"
         no-results-label="data yang kamu cari tidak ditemukan" row-key="transid" :filter="filter" separator="cell"
         selection="single" v-model:selected="selected" v-model:pagination="pagination" binary-state-sort
-        @request="onRequest" :loading="loading" virtual-scroll>
+        @request="onRequest" :loading="loading" virtual-scroll class="fix-table-with-parameter">
         <template v-slot:loading>
           <q-inner-loading showing>
             <q-spinner-ball size="75px" color="red-10" />
@@ -473,7 +473,7 @@
               <q-table square :rows="costs" :columns="columns_cost" no-data-label="data kosong" dense
                 no-results-label="data yang kamu cari tidak ditemukan" row-key="line_no" separator="cell"
                 selection="single" v-model:selected="selected_cost" v-model:pagination="pagination_cost"
-                binary-state-sort virtual-scroll hide-pagination>
+                binary-state-sort virtual-scroll hide-pagination class="fix-cost-table">
                 <template v-slot:loading>
                   <q-inner-loading showing>
                     <q-spinner-ball size="75px" color="red-10" />
@@ -1384,3 +1384,9 @@ export default defineComponent({
   },
 });
 </script>
+<style lang="sass">
+.fix-cost-table
+  height: -webkit-calc(100vh - 295px) !important
+  height: -moz-calc(100vh - 295px) !important
+  height: calc(100vh - 295px) !important
+</style>

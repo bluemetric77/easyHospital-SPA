@@ -43,7 +43,7 @@
                 <div v-if="col.name === 'action'">
                   <q-btn v-for="(btn, index) in btns" v-show="btn.is_allowed && btn.is_show" :key="index" dense no-caps
                     rounded glossy class="q-mr-xs q-mb-sm" :icon="btn.icon" color="green-10"
-                    @click="runMethod(btn.onclick, props.row.sysid)">
+                    @click="runMethod(btn.onclick, props.row.uuid_rec)">
                     <q-tooltip content-class="tooltips-app">
                       {{ btn.tooltips }}
                     </q-tooltip>
@@ -291,39 +291,35 @@ export default defineComponent({
       sign.value = null;
     }
 
-    async function edit_event(sysid = -1) {
-      if (selected.value.length > 0 || !(sysid === -1)) {
-        if (sysid === -1) {
+    async function edit_event(uuid = '') {
+      if ((selected.value.length > 0) || (uuid !== '')) {
+        if (uuid === '') {
           let item = selected.value[0];
-          sysid = item.sysid;
+          uuid = item.uuid_rec;
         }
         operation.value = "updated";
-        $q.loading.show({ delay: 100 });
-        try {
           let props = {};
           props.url = api_url.value.edit;
-          props.sysid = sysid;
+          props.uuid = uuid;
+          props.progress= true
           let respon = await $store.dispatch("master/GET_DATA", props);
           if (!(typeof respon === "undefined")) {
-            let config = new this.$Config();
+            //let config = new this.$Config();
             dataevent.value = true;
             edit.value = respon;
-            edit.value.photo = config.UrlPublic() + edit.value.photo;
-            edit.value.sign = config.UrlPublic() + edit.value.sign;
+            //edit.value.photo = config.UrlPublic() + edit.value.photo;
+            //edit.value.sign = config.UrlPublic() + edit.value.sign;
           }
           foto.value = null;
           sign.value = null;
-        } finally {
-          $q.loading.hide();
-        }
       }
     }
 
-    async function delete_event(sysid = -1) {
-      if (selected.value.length > 0 || !(sysid === -1)) {
-        if (sysid === -1) {
+    async function delete_event(uuid = '') {
+      if ((selected.value.length > 0) || (uuid !== '')) {
+        if (uuid === '') {
           let item = selected.value[0];
-          sysid = item.sysid;
+          uuid = item.uuid_rec;
         }
         operation.value = "deleted";
         $q.dialog({
@@ -333,7 +329,7 @@ export default defineComponent({
           persistent: true,
         }).onOk(() => {
           let json = {};
-          json.sysid = sysid;
+          json.uuid = uuid;
           json.url = api_url.value.delete;
           $store.dispatch("master/DELETE_DATA", json).then((respon) => {
             if (!(typeof respon === "undefined")) {
@@ -364,43 +360,25 @@ export default defineComponent({
     }
 
     async function save_data() {
-      let sysid = -1;
-      try {
         let where = {};
         let app = {};
-        where.sysid = edit.value.sysid;
+        where.uuid = edit.value.uuid_rec;
         app.data = edit.value;
         app.operation = operation.value;
         app.where = where;
         app.url = api_url.value.save;
-        $q.loading.show();
+        app.progress= true
         let respon = await $store.dispatch("master/POST_DATA", app);
         if (!(typeof respon === "undefined")) {
           let msg = respon.data.message;
-          sysid = respon.data.sysid;
           if (respon.success) {
-            let app = {};
-            if (foto.value !== null) {
-              app.sysid = sysid;
-              app.file = foto.value;
-              app.url = "user/users/photo";
-              await $store.dispatch("master/UPLOAD_DATA", app);
-            }
-            app = {};
-            if (sign.value !== null) {
-              app.sysid = sysid;
-              app.file = sign.value;
-              app.url = "user/users/sign";
-              await $store.dispatch("master/UPLOAD_DATA", app);
-            }
-
             dataevent.value = false;
             $q.notify({
               color: "positive",
               textcolor: "white",
               message: msg,
               position: "top",
-              timeout: 200,
+              timeout: 2000,
             });
             loaddata();
           } else {
@@ -410,34 +388,27 @@ export default defineComponent({
               textcolor: "white",
               message: msg,
               position: "top",
-              timeout: 200,
+              timeout: 2000,
             });
           }
         }
-      } finally {
-        $q.loading.hide();
-      }
     }
 
-    async function password(sysid = -1) {
-      if (selected.value.length > 0 || !(sysid === -1)) {
-        if (sysid === -1) {
+    async function password(uuid = '') {
+      if ((selected.value.length > 0) || (uuid !== '')) {
+        if (uuid === '') {
           let item = selected.value[0];
-          sysid = item.sysid;
+          uuid = item.uuid_rec;
         }
         operation.value = "updated";
-        $q.loading.show();
-        try {
-          let props = {};
-          props.url = api_url.value.edit;
-          props.sysid = sysid;
-          let respon = await $store.dispatch("master/GET_DATA", props);
-          if (!(typeof respon === "undefined")) {
-            pwdevent.value = true;
-            edit.value = respon;
-          }
-        } finally {
-          $q.loading.hide();
+        let props = {};
+        props.url = api_url.value.edit;
+        props.uuid = uuid;
+        props.progress= true
+        let respon = await $store.dispatch("master/GET_DATA", props);
+        if (!(typeof respon === "undefined")) {
+          pwdevent.value = true;
+          edit.value = respon;
         }
       }
     }
@@ -451,11 +422,11 @@ export default defineComponent({
         persistent: true,
       }).onOk(() => {
         let props = {};
-        props.sysid = edit.value.sysid;
+        props.uuid = edit.value.uuid_rec;
         props.pwd1 = pwd1.value;
         props.pwd2 = pwd2.value;
         props.url = api_url.value.password;
-        $q.loading.show({ delay: 100 });
+        props.progress= true
         $store
           .dispatch("master/POST_DATA", props)
           .then((respon) => {
@@ -467,34 +438,32 @@ export default defineComponent({
                   color: "positive",
                   textcolor: "white",
                   message: msg,
-                  position: "center",
-                  timeout: 200,
+                  position: "top",
+                  timeout: 2000,
                 });
                 loaddata();
               } else {
-                $q.loading.hide();
-                $q.dialog({
-                  title: "Peringatan",
+                $q.notify({
+                  color: "red-10",
+                  textcolor: "white",
                   message: msg,
-                  persistent: true,
+                  position: "top",
+                  timeout: 2000,
                 });
               }
             }
           })
-          .finally(function () {
-            $q.loading.hide();
-          });
       });
     }
 
-    function access_setup(sysid = -1) {
-      if (selected.value.length > 0 || !(sysid === -1)) {
-        if (sysid === -1) {
+    function access_setup(uuid = '') {
+      if ((selected.value.length > 0) || (uuid !== '')) {
+        if (uuid === '') {
           let item = selected.value[0];
-          sysid = item.sysid;
+          uuid = item.uuid_rec;
         }
         let url = "/access/useraccess";
-        $router.push({ path: url, query: { sysid: sysid } });
+        $router.push({ path: url, query: { uuid: uuid } });
       }
     }
 
@@ -568,8 +537,8 @@ export default defineComponent({
       });
     }
 
-    function runMethod(method, sysid = -1) {
-      this[method](sysid);
+    function runMethod(method, uuid = '') {
+      this[method](uuid);
     }
 
     onMounted(async () => {

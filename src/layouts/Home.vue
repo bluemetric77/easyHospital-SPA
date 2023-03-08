@@ -73,22 +73,24 @@
     </q-header>
 
     <q-drawer v-model="drawer" :mini="miniState" mini-to-overlay @click.capture="drawerClick"
-      @mouseover="miniState = false" :width="300" :breakpoint="300" class="background-drawer text-white">
-      <q-scroll-area 
-       :thumb-style="thumbStyle" 
-       :bar-style="barStyle" 
-       style="height: calc(100% - 10px);margin-top: 10px;border-right: 1px solid #ddd"
-       class="q-pa-sm">
+      :width="300" :breakpoint="350"  :mini-width="70" class="background-drawer text-white">
+      <q-scroll-area
+       :thumb-style="thumbStyle"
+       :bar-style="barStyle"
+       style="height: calc(100% - 10px);margin-top: 0px;border-right: 1px solid #ddd"
+       class="q-pa-md">
         <q-list dense  class="text-white" transition="scale">
-          <q-expansion-item 
+          <q-expansion-item
             v-for="(items, index) in detail(-1, 0)" :key="index"
-            dense-toggle 
-            :icon="items.icons" 
-            :label="items.title" 
+            group="main_group"
+            dense
+            dense-toggle
+            :icon="items.icons"
+            :label="items.title"
             header-class="bg-teal-9 text-white"
-            :content-inset-level="0.2" 
+            :content-inset-level="0.1"
             class="shadow-5 overflow-hidden q-mb-sm"
-            style="border-radius: 25px;border-style: solid;border-width: 0.1px;border-color:teal"
+            style="border-radius: 20px;border-style: solid;border-width: 0.1px;border-color:teal"
           >
             <q-list padding>
               <div v-for="(itmdtl, idxdtl) in detail(items.sort_number, 1)" :key="idxdtl">
@@ -97,7 +99,7 @@
                 </div>
                 <div v-else-if="(itmdtl.is_parent === false)">
                   <q-item clickable v-ripple :active="link === itmdtl.sysid" @click="openlink(itmdtl.url_link, itmdtl.sysid)"
-                    active-class="my-menu-link" header-class="text-white">
+                    active-class="my-menu-link" header-class="text-white" dense>
                     <q-item-section avatar>
                       <q-icon :name="itmdtl.icons" size="xs" />
                     </q-item-section>
@@ -108,12 +110,13 @@
                 </div>
                 <div v-else>
                   <q-list padding class="rounded-borders">
-                    <q-expansion-item dense-toggle 
-                      expand-separator 
-                      :icon="itmdtl.icons" 
+                    <q-expansion-item
+                      dense
+                      dense-toggle
+                      :icon="itmdtl.icons"
                       :label="itmdtl.title"
-                      :header-inset-level="0.4" 
-                      :content-inset-level="0.6"            
+                      :header-inset-level="0.2"
+                      :content-inset-level="0.3"
                       header-class="text-green">
                       <q-list>
                         <div v-for="(itmsub, idxsub) in detail(itmdtl.sort_number, 2)" :key="idxsub">
@@ -126,7 +129,7 @@
                               class="shadow-5 overflow-hidden q-mb-sm"
                               style="border-radius: 5px">
                               <q-list padding>
-                                <q-item v-for="(itmsub2, idxsub2) in detail(itmsub.sort_number, 3)" :key="idxsub2" 
+                                <q-item v-for="(itmsub2, idxsub2) in detail(itmsub.sort_number, 3)" :key="idxsub2"
                                   clickable v-ripple :active="link === itmsub2.sysid" @click="openlink(itmsub2.url_link, itmsub2.sysid)"
                                   active-class="my-menu-link" header-class="text-white">
                                   <q-item-section avatar>
@@ -137,11 +140,11 @@
                                   </q-item-section>
                                 </q-item>
                               </q-list>
-                            </q-expansion-item>  
-                          </div>  
+                            </q-expansion-item>
+                          </div>
                           <div v-else>
                             <q-item clickable v-ripple :active="link === itmsub.sysid"
-                              @click="openlink(itmsub.url_link, itmsub.sysid)" active-class="my-menu-link">
+                              @click="openlink(itmsub.url_link, itmsub.sysid)" dense active-class="my-menu-link">
                               <q-item-section avatar>
                                 <q-icon rounded :name="itmsub.icons" size="xs" />
                               </q-item-section>
@@ -150,7 +153,7 @@
                               </q-item-section>
                             </q-item>
                           </div>
-                        </div>  
+                        </div>
                       </q-list>
                     </q-expansion-item>
                   </q-list>
@@ -695,7 +698,7 @@ export default defineComponent({
         right: "2px",
         borderRadius: "9px",
         backgroundColor: "#027be3",
-        width: "9px",
+        width: "10px",
         opacity: 0.7,
       },
     };

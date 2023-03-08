@@ -27,7 +27,8 @@ class Config {
       vendor: 'vendor',
       APIKey: '4c7a804cb484aa4a81734023634644a7643cf8ff',
       APIPassword: 'e059de7fcce4ceb254f9048478abd6ec613e17e4',
-      UserToken: 'gep'
+      UserToken: 'gep',
+      timeout: 30000
     }
     return setting
   }

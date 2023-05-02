@@ -1,7 +1,7 @@
 import { getapi, postapi, deleteapi, uploadapi, downloadexcel, downloadapi } from 'boot/engine'
 
 export async function GET_DATA (context, props) {
-    let url = props.url
+let url = props.url
     let geterror = false
     let progress = false
     if (!(typeof (props.geterror) === 'undefined')) {

@@ -1,11 +1,11 @@
-# SIMRS Bersama
+# Quasar App (test)
 
-Aplikasi Rumah Sakit berbasis opensource dengan menggunakan framework javascript vue dan template Quasar.dev (https://www.quasar.dev).
-Aplikasi ini menggunakan backend dengan bahasa PHP dengan framework laravel.
-Database yang di gunakan SQL Server
+A Quasar Project
 
 ## Install the dependencies
 ```bash
+yarn
+# or
 npm install
 ```
 
@@ -14,10 +14,23 @@ npm install
 quasar dev
 ```
 
+
 ### Lint the files
 ```bash
+yarn lint
+# or
 npm run lint
 ```
+
+
+### Format the files
+```bash
+yarn format
+# or
+npm run format
+```
+
+
 
 ### Build the app for production
 ```bash
@@ -25,4 +38,4 @@ quasar build
 ```
 
 ### Customize the configuration
-See [Configuring quasar.conf.js](https://quasar.dev/quasar-cli/quasar-conf-js).
+See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-webpack/quasar-config-js).

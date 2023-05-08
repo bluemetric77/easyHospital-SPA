@@ -1,9 +1,9 @@
 {
-  "name": "app",
+  "name": "test",
   "version": "0.0.1",
-  "description": "Duta Media Mandiri Web Application",
-  "productName": "Web Application",
-  "author": "bluemetric <bluemetric@gmail.com>",
+  "description": "A Quasar Project",
+  "productName": "Quasar App",
+  "author": "ade <bluemetric@gmail.com>",
   "private": true,
   "scripts": {
     "lint": "eslint --ext .js,.vue ./",

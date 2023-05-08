@@ -55,8 +55,33 @@ module.exports = {
   },
 
   // add your custom rules here
-  // add your custom rules here
   rules: {
+    'no-unused-vars': 'off', // allow async-await
+    'generator-star-spacing': 'off',
+    // allow paren-less arrow functions
+    'arrow-parens': 'off',
+    'one-var': 'off',
+    'vue/html-indent': 'off',
+    indent: [
+      'error',
+      2,
+      {
+        SwitchCase: 1,
+        ignoredNodes: ['ConditionalExpression']
+      }
+    ],
+    'vue/singleline-html-element-content-newline': 'off',
+    'vue/multiline-html-element-content-newline': 'off',
+    'vue/max-attributes-per-line': 'off',
+    'vue/html-self-closing': 'off',
+    'import/first': 'off',
+    'import/named': 'off',
+    'import/namespace': 'off',
+    'import/default': 'off',
+    'import/export': 'off',
+    'import/extensions': 'off',
+    'import/no-unresolved': 'off',
+    'import/no-extraneous-dependencies': 'off',
     'prefer-promise-reject-errors': 'off',
     'space-before-function-paren': 'off',
     'vue/multi-word-component-names': 'off',

@@ -1,8 +1,11 @@
 <template>
   <q-page class="flex flex-center bg">
-    <q-card style="width:350px;max-width:90vw">
+    <q-card style="width: 350px; max-width: 90vw">
       <q-bar class="entry-caption">
-        <q-icon name="vpn_key" size="xs"/>
+        <q-icon
+          name="vpn_key"
+          size="xs"
+        />
       </q-bar>
       <div class="flex flex-center q-my-sm">
         <img
@@ -45,10 +48,11 @@
       <q-separator />
       <q-card-section class="dialog-action-login q-pa-sm">
         <q-btn
-          class="glossy full-width"
+          class="btn-login full-width"
           rounded
           label="Login"
           no-caps
+          flat
           @click="check_login()"
         />
       </q-card-section>
@@ -57,89 +61,89 @@
 </template>
 
 <script>
-import { defineComponent, ref, computed, onMounted } from "vue";
-import { useRouter } from "vue-router";
-import { useStore } from "vuex";
-import { useQuasar, QSpinnerBars } from "quasar";
+import { defineComponent, ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useStore } from 'vuex'
+import { useQuasar, QSpinnerBars } from 'quasar'
 
 export default defineComponent({
-  name: "Userlogin",
+  name: 'Userlogin',
   setup() {
-    const $q = useQuasar();
-    const $store = useStore();
-    const $router = useRouter();
+    const $q = useQuasar()
+    const $store = useStore()
+    const $router = useRouter()
 
-    const txtuser = ref("");
-    const txtpwd = ref("");
-    const isPwd = ref(true);
+    const txtuser = ref('')
+    const txtpwd = ref('')
+    const isPwd = ref(true)
     const cwidth = computed(() => {
-      var size = "350";
+      var size = '350'
       if ($q.screen.xs) {
-        size = "250";
+        size = '250'
       } else if ($q.screen.sm) {
-        size = "300";
+        size = '300'
       } else {
-        size = "300";
+        size = '300'
       }
-      return size;
-    });
+      return size
+    })
 
     const profile = computed(() => {
-      return $store.state.home.profile;
-    });
+      return $store.state.home.profile
+    })
 
     async function check_login() {
-      let json = {};
-      json.url = "login";
-      json.user_id = txtuser.value;
-      json.password = txtpwd.value;
-      $q.loading.show({ spinner: QSpinnerBars, delay: 1000 });
+      let json = {}
+      json.url = 'login'
+      json.user_id = txtuser.value
+      json.password = txtpwd.value
+      $q.loading.show({ spinner: QSpinnerBars, delay: 1000 })
       $store
-        .dispatch("home/POST_DATA", json)
+        .dispatch('home/POST_DATA', json)
         .then((respon) => {
-          if (!(typeof respon === "undefined")) {
-            let msg = "";
+          if (!(typeof respon === 'undefined')) {
+            let msg = ''
             if (respon.success) {
-              $q.sessionStorage.set("auth-jwt", respon.data.token);
-              $router.push("/");
+              $q.sessionStorage.set('auth-jwt', respon.data.token)
+              $router.push('/')
             } else {
-              msg = respon.data;
+              msg = respon.data
               $q.notify({
-                color: "red-10",
-                textcolor: "white",
+                color: 'red-10',
+                textcolor: 'white',
                 message: msg,
-                position: "top",
+                position: 'top',
                 timeout: 2000,
-                icon: "tag_faces",
-              });
+                icon: 'tag_faces'
+              })
             }
           }
         })
         .finally((final) => {
-          $q.loading.hide();
-        });
+          $q.loading.hide()
+        })
     }
 
     async function refreshpage() {
       try {
-        let props = {};
-        props.url = "profile";
-        let respon = await $store.dispatch("home/GET_DATA", props);
-        console.info('Login :'+JSON.stringify(respon));
-        respon.company_logo = "http://localhost:8000/"+respon.company_logo;
-        $store.commit("home/UpdateProfiles", respon);
+        let props = {}
+        props.url = 'profile'
+        let respon = await $store.dispatch('home/GET_DATA', props)
+        console.info('Login :' + JSON.stringify(respon))
+        respon.company_logo = 'http://localhost:8000/' + respon.company_logo
+        $store.commit('home/UpdateProfiles', respon)
       } finally {
       }
     }
 
     onMounted(async () => {
-      await refreshpage();
-      if ($q.localStorage.getItem("fullscreen")) {
-        $q.fullscreen.request();
+      await refreshpage()
+      if ($q.localStorage.getItem('fullscreen')) {
+        $q.fullscreen.request()
       } else {
-        $q.fullscreen.exit();
+        $q.fullscreen.exit()
       }
-    });
+    })
 
     return {
       txtuser,
@@ -148,8 +152,8 @@ export default defineComponent({
       cwidth,
       profile,
       check_login,
-      refreshpage,
-    };
-  },
-});
+      refreshpage
+    }
+  }
+})
 </script>

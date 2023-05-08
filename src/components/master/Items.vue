@@ -24,7 +24,11 @@
             debounce="200"
           >
             <template v-slot:append>
-              <q-icon name="search" color="white" size="xs" />
+              <q-icon
+                name="search"
+                color="white"
+                size="xs"
+              />
             </template>
           </q-input>
         </q-bar>
@@ -50,14 +54,23 @@
         >
           <template v-slot:loading>
             <q-inner-loading showing>
-              <q-spinner-ios size="70px" color="primary" />
+              <q-spinner-ios
+                size="70px"
+                color="primary"
+              />
             </q-inner-loading>
           </template>
           <template v-slot:no-data="{ icon, message, filter }">
             <div class="full-width row flex-center text-accent q-gutter-sm">
-              <q-icon size="2em" name="sentiment_dissatisfied" />
+              <q-icon
+                size="2em"
+                name="sentiment_dissatisfied"
+              />
               <span>{{ message }}</span>
-              <q-icon size="2em" :name="filter ? 'filter_b_and_w' : icon" />
+              <q-icon
+                size="2em"
+                :name="filter ? 'filter_b_and_w' : icon"
+              />
             </div>
           </template>
           <template v-slot:header="props">
@@ -73,8 +86,15 @@
             </q-tr>
           </template>
           <template v-slot:body="props">
-            <q-tr :props="props" @click="props.selected = !props.selected">
-              <q-td v-for="col in props.cols" :key="col.name" :props="props">
+            <q-tr
+              :props="props"
+              @click="props.selected = !props.selected"
+            >
+              <q-td
+                v-for="col in props.cols"
+                :key="col.name"
+                :props="props"
+              >
                 <div class="grid-data">
                   <div v-if="col.name === 'item_code'">
                     <q-btn
@@ -93,8 +113,11 @@
             </q-tr>
           </template>
         </q-table>
-        <q-separator/>
-        <q-card-section class="entry-caption q-pa-sm" align="right">
+        <q-separator />
+        <q-card-section
+          class="entry-caption q-pa-sm"
+          align="right"
+        >
           <q-btn
             no-caps
             label="Pilih"
@@ -119,83 +142,83 @@
 </template>
 
 <script>
-import { defineComponent, ref, onMounted } from "vue";
-import { useStore } from "vuex";
+import { defineComponent, ref, onMounted } from 'vue'
+import { useStore } from 'vuex'
 
 export default defineComponent({
-  name: "items",
+  name: 'items',
   props: { show: Boolean, state: String },
   setup(props, context) {
-    const $store = useStore();
-    const dlgItems = ref(false);
+    const $store = useStore()
+    const dlgItems = ref(false)
     const pagination = ref({
-      sortBy: "item_code",
+      sortBy: 'item_code',
       descending: false,
       page: 1,
       rowsPerPage: 25,
-      rowsNumber: 25,
-    });
+      rowsNumber: 25
+    })
 
-    const filter = ref("");
-    const selected = ref([]);
+    const filter = ref('')
+    const selected = ref([])
     const columns = ref([
       {
-        name: "item_code",
-        align: "left",
-        label: "Kode",
-        field: "item_code",
-        sortable: true,
+        name: 'item_code',
+        align: 'left',
+        label: 'Kode',
+        field: 'item_code',
+        sortable: true
       },
       {
-        name: "descriptions",
-        align: "left",
-        label: "Item Inventory",
-        field: "descriptions",
-        sortable: true,
+        name: 'descriptions',
+        align: 'left',
+        label: 'Item Inventory',
+        field: 'descriptions',
+        sortable: true
       },
       {
-        name: "item_group_name",
-        align: "left",
-        label: "Jenis",
-        field: "item_group_name",
-        sortable: true,
-      },
-    ]);
+        name: 'item_group_name',
+        align: 'left',
+        label: 'Jenis',
+        field: 'item_group_name',
+        sortable: true
+      }
+    ])
 
-    const vlastcolumn = ref("");
-    const data = ref([]);
-    const loading = ref(false);
+    const vlastcolumn = ref('')
+    const data = ref([])
+    const loading = ref(false)
 
     async function loaddata() {
       await onRequest({
         pagination: pagination.value,
-        filter: filter.value,
-      });
+        filter: filter.value
+      })
     }
-    function selectdata(account='') {
-      if ((selected.value.length > 0) || (account!=='')){
-        let row=null
-        if (account!==''){
-           data.value.forEach(el=>{
-            if (account===el.item_code) {
-              row =el
+    function selectdata(account = '') {
+      if (selected.value.length > 0 || account !== '') {
+        let row = null
+        if (account !== '') {
+          data.value.forEach((el) => {
+            if (account === el.item_code) {
+              row = el
             }
-           }) 
+          })
         } else {
-          let item = selected.value[0];
-          row = item;
+          let item = selected.value[0]
+          row = item
         }
-        closedata(row);
+        closedata(row)
       }
     }
 
     async function onRequest(props) {
       let { page, rowsPerPage, rowsNumber, sortBy, descending } =
-        props.pagination;
-      let filter = props.filter;
+        props.pagination
+      let filter = props.filter
 
-      let fetchCount = rowsPerPage === 0 ? rowsNumber : rowsPerPage;
-      loading.value = true;
+      let fetchCount = rowsPerPage === 0 ? rowsNumber : rowsPerPage
+      loading.value = true
       try {
         let prop = {
           page: page,
@@ -203,34 +226,34 @@ export default defineComponent({
           filter: filter,
           descending: descending,
           sortBy: sortBy,
-          url: "master/inventory/items/open",
-        };
-        let respon = await $store.dispatch("master/GET_DATA", prop);
-        data.value = respon.data;
+          url: 'master/inventory/items/open'
+        }
+        let respon = await $store.dispatch('master/GET_DATA', prop)
+        data.value = respon.data
         pagination.value = {
           rowsNumber: respon.total,
           page: respon.current_page,
           sortBy: sortBy,
           descending: descending,
-          rowsPerPage: respon.per_page,
-        };
+          rowsPerPage: respon.per_page
+        }
       } catch (error) {
       } finally {
-        loading.value = false;
+        loading.value = false
       }
     }
 
     function closedata(record) {
-      dlgItems.value = false;
-      filter.value = "";
-      data.value = [];
-      context.emit("CloseItems", false, record);
+      dlgItems.value = false
+      filter.value = ''
+      data.value = []
+      context.emit('CloseItems', false, record)
     }
 
     onMounted(async () => {
-      dlgItems.value = props.show;
-      loaddata();
-    });
+      dlgItems.value = props.show
+      loaddata()
+    })
 
     return {
       loading,
@@ -243,8 +266,8 @@ export default defineComponent({
       selectdata,
       onRequest,
       closedata,
-      dlgItems,
-    };
-  },
-});
+      dlgItems
+    }
+  }
+})
 </script>

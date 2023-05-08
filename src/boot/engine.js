@@ -1,5 +1,5 @@
 import { boot } from 'quasar/wrappers'
-import VueNumeric from '@handcrafted-market/vue3-numeric';
+import VueNumeric from '@handcrafted-market/vue3-numeric'
 import { api } from 'boot/axios'
 import { Loading, QSpinnerGears, QSpinnerPie, QSpinnerBall } from 'quasar'
 import home from '../store/utility/home'
@@ -7,7 +7,7 @@ import home from '../store/utility/home'
 // "async" is optional;
 // more info on params: https://v2.quasar.dev/quasar-cli/boot-files
 class Config {
-  Environment () {
+  Environment() {
     let setting = {}
     /*setting = {
       BaseUrl: 'https://putrajayagroup.com',
@@ -32,7 +32,7 @@ class Config {
     }
     return setting
   }
-  async UrlLink () {
+  async UrlLink() {
     var baseUrl = window.location.origin
     let response = await api({
       url: baseUrl + '/api.json',
@@ -40,14 +40,14 @@ class Config {
       timeout: 5000,
       withCredentials: false
     })
-    let Url = baseUrl;
-    if (!(typeof (response) === 'undefined')) {
+    let Url = baseUrl
+    if (!(typeof response === 'undefined')) {
       Url = response.data.api_url + '/api'
     }
     return Url
   }
 
-  async UrlPublic () {
+  async UrlPublic() {
     var baseUrl = window.location.origin
     let response = await api({
       url: baseUrl + '/api.json',
@@ -55,14 +55,14 @@ class Config {
       timeout: 5000,
       withCredentials: false
     })
-    let Url = baseUrl;
-    if (!(typeof (response) === 'undefined')) {
+    let Url = baseUrl
+    if (!(typeof response === 'undefined')) {
       Url = response.data.api_url
     }
     return Url
   }
 
-  async BaseAPI () {
+  async BaseAPI() {
     var baseUrl = window.location.origin
     let response = await api({
       url: baseUrl + '/api.json',
@@ -70,20 +70,20 @@ class Config {
       timeout: 5000,
       withCredentials: false
     })
-    let Url = baseUrl;
-    if (!(typeof (response) === 'undefined')) {
+    let Url = baseUrl
+    if (!(typeof response === 'undefined')) {
       Url = response.data.api_url + '/api'
     }
     return Url
   }
-  async BaseURL () {
+  async BaseURL() {
     let url = await this.Environment().BaseURL
     return url
   }
-  BasePort () {
+  BasePort() {
     return this.Environment().PortAPI
   }
-  AccessToken () {
+  AccessToken() {
     let accesstoken = ''
     try {
       accesstoken = sessionStorage.getItem('auth-jwt')
@@ -98,7 +98,7 @@ class Config {
     }
     return accesstoken
   }
-  JWTToken () {
+  JWTToken() {
     // home.jwt
     let jwt = ''
     try {
@@ -111,15 +111,12 @@ class Config {
     }
     return jwt
   }
-  PoolCode () {
+  PoolCode() {
     let pool = ''
     try {
       pool = sessionStorage.getItem('pool')
       if (pool.indexOf('|') > 0) {
-        pool = pool.substr(
-          pool.indexOf('|') + 1,
-          pool.length
-        )
+        pool = pool.substr(pool.indexOf('|') + 1, pool.length)
       }
     } catch (error) {
       pool = '-'
@@ -128,18 +125,29 @@ class Config {
   }
 }
 
-function pushdata (apiname, apimethod, apidata) {
+function pushdata(apiname, apimethod, apidata) {
   if (apidata === '') {
     return (
-      '{"metadata":{"api":"' + apiname + '","method":"' + apimethod + '"},"data":{}}'
+      '{"metadata":{"api":"' +
+      apiname +
+      '","method":"' +
+      apimethod +
+      '"},"data":{}}'
     )
   } else {
-    return ('{"metadata":{"api":"' + apiname + '","method":"' + apimethod + '"},"data":{' + apidata + '}}'
+    return (
+      '{"metadata":{"api":"' +
+      apiname +
+      '","method":"' +
+      apimethod +
+      '"},"data":{' +
+      apidata +
+      '}}'
     )
   }
 }
 
-function RefineDate (IndDate) {
+function RefineDate(IndDate) {
   if (!(IndDate === null)) {
     let flag = IndDate.substr(5, 1)
     if (flag === '-' || flag === '/') {
@@ -154,8 +162,8 @@ function RefineDate (IndDate) {
     return IndDate
   }
 }
-function IndonesiaDateTime (IndDate) {
-  if (!(IndDate === null) && (typeof (IndDate) !== 'undefined')) {
+function IndonesiaDateTime(IndDate) {
+  if (!(IndDate === null) && typeof IndDate !== 'undefined') {
     let flag = IndDate.substr(4, 1)
     if (flag === '-' || flag === '/') {
       let tahun = IndDate.substr(0, 4)
@@ -170,8 +178,8 @@ function IndonesiaDateTime (IndDate) {
   }
 }
 
-function IndonesiaDate (IndDate) {
-  if (!(IndDate === null) && (typeof (IndDate) !== 'undefined')) {
+function IndonesiaDate(IndDate) {
+  if (!(IndDate === null) && typeof IndDate !== 'undefined') {
     let flag = IndDate.substr(4, 1)
     if (flag === '-' || flag === '/') {
       let tahun = IndDate.substr(0, 4)
@@ -185,7 +193,7 @@ function IndonesiaDate (IndDate) {
   }
 }
 
-function RefineTime (IndDate) {
+function RefineTime(IndDate) {
   if (!(IndDate === null)) {
     let flag = IndDate.substr(2, 1)
     if (flag === ':') {
@@ -208,9 +216,9 @@ function RefineTime (IndDate) {
   }
 }
 
-function RefineNumber (AValue) {
+function RefineNumber(AValue) {
   let number = AValue
-  if (!(AValue === null) && (typeof (AValue) !== 'undefined')) {
+  if (!(AValue === null) && typeof AValue !== 'undefined') {
     let n = number.indexOf('.')
     while (n >= 0) {
       number = number.replace('.', '')
@@ -225,7 +233,7 @@ function RefineNumber (AValue) {
   return number
 }
 
-function fNull (Value, OtherValue = '') {
+function fNull(Value, OtherValue = '') {
   if (Value === null) {
     return OtherValue
   } else {
@@ -233,9 +241,9 @@ function fNull (Value, OtherValue = '') {
   }
 }
 
-async function downloadapi (apiname, apidata = null) {
+async function downloadapi(apiname, apidata = null) {
   let config = new Config()
-  let urlapi = await config.UrlLink() + '/' + apiname
+  let urlapi = (await config.UrlLink()) + '/' + apiname
   let timeoutlink = config.Environment().timeout
   let jwt = config.JWTToken()
   Loading.show({ spinner: QSpinnerGears })
@@ -258,19 +266,24 @@ async function downloadapi (apiname, apidata = null) {
       var blob = new Blob([response.data], { type: response.data.type })
       if (window.navigator && window.navigator.msSaveOrOpenBlob) {
         window.navigator.msSaveOrOpenBlob(blob)
-        return 0// for IE
+        return 0 // for IE
       } else {
         let fileURL = URL.createObjectURL(blob)
-        window.open(fileURL, '_blank', 'fullscreen=yes', 'width=' + screen.availWidth + ',height=' + screen.availHeight).focus()
+        window
+          .open(
+            fileURL,
+            '_blank',
+            'fullscreen=yes',
+            'width=' + screen.availWidth + ',height=' + screen.availHeight
+          )
+          .focus()
       }
     })
-    .finally(
-      Loading.hide()
-    )
+    .finally(Loading.hide())
 }
-async function downloadexcel (apiname, apidata = null) {
+async function downloadexcel(apiname, apidata = null) {
   let config = new Config()
-  let urlapi = await config.UrlLink() + '/' + apiname
+  let urlapi = (await config.UrlLink()) + '/' + apiname
   let timeoutlink = config.Environment().timeout
   let jwt = config.JWTToken()
   Loading.show({ spinner: QSpinnerGears })
@@ -304,14 +317,12 @@ async function downloadexcel (apiname, apidata = null) {
       document.body.appendChild(link)
       link.click()
     })
-    .finally(
-      Loading.hide()
-    )
+    .finally(Loading.hide())
 }
 
-async function uploadapi (apiname, file = null, apidata = null) {
+async function uploadapi(apiname, file = null, apidata = null) {
   let config = new Config()
-  let urlapi = await config.UrlLink() + '/' + apiname
+  let urlapi = (await config.UrlLink()) + '/' + apiname
   let timeoutlink = config.Environment().timeout
   let jwt = config.JWTToken()
 
@@ -350,9 +361,14 @@ async function uploadapi (apiname, file = null, apidata = null) {
   }
 }
 
-async function getapi (apiname, apidata = null, geterror = false, progress = false) {
+async function getapi(
+  apiname,
+  apidata = null,
+  geterror = false,
+  progress = false
+) {
   let config = new Config()
-  let urlapi = await config.UrlLink() + '/' + apiname
+  let urlapi = (await config.UrlLink()) + '/' + apiname
   let timeoutlink = config.Environment().timeout
   let jwt = config.JWTToken()
   if (progress) {
@@ -380,7 +396,7 @@ async function getapi (apiname, apidata = null, geterror = false, progress = fal
       this.$q.sessionStorage.set('auth-jwt', newjwt)
     }
     if (!(typeof respon.data === 'undefined')) {
-      if (!(geterror)) {
+      if (!geterror) {
         if (respon.data.header.status === 'OK') {
           return respon.data.contents
         } else {
@@ -396,9 +412,15 @@ async function getapi (apiname, apidata = null, geterror = false, progress = fal
   }
 }
 
-async function postapi (apiname, apidata = null, progress = false, is_upload = false, file = null) {
+async function postapi(
+  apiname,
+  apidata = null,
+  progress = false,
+  is_upload = false,
+  file = null
+) {
   let config = new Config()
-  let urlapi = await config.UrlLink() + '/' + apiname
+  let urlapi = (await config.UrlLink()) + '/' + apiname
   let timeoutlink = config.Environment().timeout
   let jwt = config.JWTToken()
   if (progress) {
@@ -419,13 +441,13 @@ async function postapi (apiname, apidata = null, progress = false, is_upload = f
       url: urlapi,
       method: 'post',
       timeout: timeoutlink,
-      data: (is_upload) ? formdata : apidata,
+      data: is_upload ? formdata : apidata,
       withCredentials: false,
       headers: {
         'x-jwt': jwt
       }
     })
-    Loading.hide();
+    Loading.hide()
     if (!(typeof respon.data.new_jwt === 'undefined')) {
       let newjwt = respon.data.new_jwt
       this.$q.sessionStorage.set('auth-jwt', newjwt)
@@ -436,14 +458,14 @@ async function postapi (apiname, apidata = null, progress = false, is_upload = f
       return undefined
     }
   } catch (error) {
-    Loading.hide();
+    Loading.hide()
     return undefined
   }
 }
 
-async function deleteapi (apiname, apidata = null, progress = false) {
+async function deleteapi(apiname, apidata = null, progress = false) {
   let config = new Config()
-  let urlapi = await config.UrlLink() + '/' + apiname
+  let urlapi = (await config.UrlLink()) + '/' + apiname
   let timeoutlink = config.Environment().timeout
   let jwt = config.JWTToken()
   if (progress) {
@@ -479,11 +501,11 @@ async function deleteapi (apiname, apidata = null, progress = false) {
   }
 }
 
-async function pageauth (url) {
+async function pageauth(url) {
   let config = new Config()
   let timeoutlink = config.Environment().timeout
   let jwt = config.JWTToken()
-  let urlapi = await config.UrlLink() + '/access/securitypage'
+  let urlapi = (await config.UrlLink()) + '/access/securitypage'
   Loading.show({ spinner: QSpinnerGears, message: 'Sedang cek akses data' })
   try {
     let respon = await api({
@@ -498,11 +520,14 @@ async function pageauth (url) {
     })
     var result = {
       is_login: false,
-      is_allowed: false,
+      is_allowed: false
     }
     if (!(typeof respon === 'undefined')) {
       if (respon.data.header.status === 'OK') {
-        home.mutations.UPDATE_LOCK_PAGE(home.state, respon.data.contents.data.is_locked)
+        home.mutations.UPDATE_LOCK_PAGE(
+          home.state,
+          respon.data.contents.data.is_locked
+        )
         if (!(typeof respon.data.contents.data.new_jwt === 'undefined')) {
           let newjwt = respon.data.contents.data.new_jwt
           sessionStorage.set('auth-jwt', newjwt)
@@ -510,7 +535,7 @@ async function pageauth (url) {
         Loading.hide()
         var result = {
           is_login: respon.data.contents.data.is_login,
-          is_allowed: respon.data.contents.data.is_allowed,
+          is_allowed: respon.data.contents.data.is_allowed
         }
         return result
       } else {
@@ -527,17 +552,23 @@ async function pageauth (url) {
   }
 }
 
-function formatNumber (value, decimal = 0, comma = ',', leadingzero = '', fixdecimal = false) {
+function formatNumber(
+  value,
+  decimal = 0,
+  comma = ',',
+  leadingzero = '',
+  fixdecimal = false
+) {
   if (value === null) {
     value = '0'
   }
-  if (typeof (value) === 'undefined') {
+  if (typeof value === 'undefined') {
     value = '0'
   }
-  if (typeof (value) === 'string') {
+  if (typeof value === 'string') {
     value = parseFloat(value)
   }
-  if ((value === 0) && (!(leadingzero === ''))) {
+  if (value === 0 && !(leadingzero === '')) {
     return leadingzero
   } else {
     let hasil = '0'
@@ -582,7 +613,10 @@ function formatNumber (value, decimal = 0, comma = ',', leadingzero = '', fixdec
       if (length > 3) {
         for (x = length; x > 0; x = x - 3) {
           if (x > 3) {
-            nominal = nominal.substr(0, x - 3) + thousand + nominal.substr(x - 3, length + 1)
+            nominal =
+              nominal.substr(0, x - 3) +
+              thousand +
+              nominal.substr(x - 3, length + 1)
           }
         }
       }
@@ -590,7 +624,7 @@ function formatNumber (value, decimal = 0, comma = ',', leadingzero = '', fixdec
         nominal = '0'
       }
       hasil = nominal
-      if ((decimal > 0) && (desimal !== '')) {
+      if (decimal > 0 && desimal !== '') {
         hasil = nominal + comma + desimal
       } else {
         hasil = nominal
@@ -608,7 +642,7 @@ function formatNumber (value, decimal = 0, comma = ',', leadingzero = '', fixdec
     return hasil
   }
 }
-function getMonthName (pdate) {
+function getMonthName(pdate) {
   let monthname = ''
   let month = pdate.getMonth()
   if (month === 0) {
@@ -643,7 +677,7 @@ function getMonthName (pdate) {
 export default boot(({ app }) => {
   // something to do
   app.use(VueNumeric)
-  app.component("vue-numeric", VueNumeric)
+  app.component('vue-numeric', VueNumeric)
   app.config.globalProperties.$Config = Config
   app.config.globalProperties.$pushdata = pushdata
   app.config.globalProperties.$getapi = getapi
@@ -661,9 +695,23 @@ export default boot(({ app }) => {
   app.config.globalProperties.$INDDate = IndonesiaDate
   app.config.globalProperties.$INDDateTime = IndonesiaDateTime
   app.config.globalProperties.$Month = getMonthName
-});
+})
 
 export {
-  Config, getapi, postapi, pageauth, downloadapi, downloadexcel, uploadapi, deleteapi, RefineDate, RefineTime,
-  RefineNumber, fNull, formatNumber, IndonesiaDate, IndonesiaDateTime, getMonthName
+  Config,
+  getapi,
+  postapi,
+  pageauth,
+  downloadapi,
+  downloadexcel,
+  uploadapi,
+  deleteapi,
+  RefineDate,
+  RefineTime,
+  RefineNumber,
+  fNull,
+  formatNumber,
+  IndonesiaDate,
+  IndonesiaDateTime,
+  getMonthName
 }

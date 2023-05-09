@@ -35,6 +35,7 @@
         </q-input>
       </q-toolbar>
       <q-table
+        dense
         square
         :rows="data"
         :columns="columns"
@@ -50,7 +51,7 @@
         @request="onRequest"
         :loading="loading"
         virtual-scroll
-        table-class="fix-table"
+        table-class="fit-table-ui"
       >
         <template v-slot:loading>
           <q-inner-loading showing>
@@ -218,8 +219,8 @@
                 label="Jenis Klinik"
                 stack-label
                 :options="[
-                  { value: false, label: 'Non Executive' },
-                  { value: true, label: 'Executive' }
+                  { value: '0', label: 'Non Executive' },
+                  { value: '1', label: 'Executive' }
                 ]"
                 option-value="value"
                 option-label="label"
@@ -272,27 +273,12 @@
               </q-input>
             </div>
           </div>
-          <!--<div class="row items-start q-col-gutter-sm q-mb-sm">
-            <div class="col-12">
-              <q-input v-model="edit.wh_pharmacy_name" dense outlined square label="Unit Farmasi" stack-label readonly>
-                <template v-slot:append>
-                  <q-icon name="search" color="green-10" size="sx" @click="dlgPharmacy=true"/>
-                </template>
-              </q-input>
-            </div>
-          </div>
-          <div class="row items-start q-col-gutter-sm q-mb-sm">
-            <div class="col-12">
-              <q-input v-model="edit.price_class_name" dense outlined square label="Acuan Kelas Tarif Jasa" stack-label readonly>
-                <template v-slot:append>
-                  <q-icon name="search" color="green-10" size="sx" @click="dlgPriceClass=true" />
-                </template>
-              </q-input>
-            </div>
-          </div> -->
         </q-card-section>
         <q-separator />
-        <q-card-section class="dialog-action q-pa-sm">
+        <q-card-section
+          class="dialog-action q-pa-sm"
+          align="right"
+        >
           <q-btn
             class="q-mr-sm"
             icon="save"

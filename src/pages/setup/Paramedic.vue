@@ -35,6 +35,7 @@
         </q-input>
       </q-toolbar>
       <q-table
+        dense
         square
         :rows="data"
         :columns="columns"
@@ -50,7 +51,7 @@
         @request="onRequest"
         :loading="loading"
         virtual-scroll
-        table-class="fix-table"
+        table-class="fit-table-ui"
       >
         <template v-slot:loading>
           <q-inner-loading showing>
@@ -103,6 +104,8 @@
                 <div v-else-if="col.name === 'is_internal'">
                   <q-toggle
                     v-model="props.row.is_internal"
+                    true-value="1"
+                    false-value="0"
                     dense
                     disable
                   />
@@ -110,6 +113,8 @@
                 <div v-else-if="col.name === 'is_permanent'">
                   <q-toggle
                     v-model="props.row.is_permanent"
+                    true-value="1"
+                    false-value="0"
                     dense
                     disable
                   />
@@ -117,6 +122,8 @@
                 <div v-else-if="col.name === 'is_transfer'">
                   <q-toggle
                     v-model="props.row.is_transfer"
+                    true-value="1"
+                    false-value="0"
                     dense
                     disable
                   />
@@ -124,6 +131,8 @@
                 <div v-else-if="col.name === 'is_email_reports'">
                   <q-toggle
                     v-model="props.row.is_email_reports"
+                    true-value="1"
+                    false-value="0"
                     dense
                     disable
                   />
@@ -131,6 +140,8 @@
                 <div v-else-if="col.name === 'is_active'">
                   <q-toggle
                     v-model="props.row.is_active"
+                    true-value="1"
+                    false-value="0"
                     dense
                     disable
                   />
@@ -245,6 +256,8 @@
             <div class="col-2">
               <q-checkbox
                 v-model="edit.is_active"
+                true-value="1"
+                false-value="0"
                 dense
                 label="Aktif"
                 stack-label
@@ -453,6 +466,8 @@
                 <div class="col-6">
                   <q-toggle
                     v-model="edit.is_transfer"
+                    true-value="1"
+                    false-value="0"
                     dense
                     outlined
                     square
@@ -508,6 +523,8 @@
                 <div class="col-6">
                   <q-toggle
                     v-model="edit.is_internal"
+                    true-value="1"
+                    false-value="0"
                     dense
                     outlined
                     square
@@ -518,6 +535,8 @@
                 <div class="col-6">
                   <q-toggle
                     v-model="edit.is_permanent"
+                    true-value="1"
+                    false-value="0"
                     dense
                     outlined
                     square
@@ -540,6 +559,8 @@
                 <div class="col-6">
                   <q-toggle
                     v-model="edit.is_email_reports"
+                    true-value="1"
+                    false-value="0"
                     dense
                     outlined
                     square
@@ -555,6 +576,7 @@
         <q-card-section
           class="dialog-action q-pa-sm"
           position="bottom"
+          align="right"
         >
           <q-btn
             class="q-mr-sm"

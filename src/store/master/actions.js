@@ -7,7 +7,6 @@ import {
   downloadapi
 } from 'boot/engine'
 
-<<<<<<< HEAD
 export async function GET_DATA(context, props) {
   let url = props.url
   let geterror = false
@@ -25,17 +24,10 @@ export async function GET_DATA(context, props) {
       } else {
         return result
       }
-=======
-export async function GET_DATA (context, props) {
-let url = props.url
-    let geterror = false
-    let progress = false
-    if (!(typeof (props.geterror) === 'undefined')) {
-        geterror = props.geterror
-        delete props.geterror
->>>>>>> f91b59b4db88ff4aec688b8f9f87622162870628
     }
-  } catch (error) {}
+  } catch (error) {
+    return undefined
+  }
 }
 
 export async function DELETE_DATA(context, props) {

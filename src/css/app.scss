@@ -267,13 +267,10 @@ $bg-toolbar: $blue-grey-8;
   color: $red-10;
   background-color: #fff;
 }
-.fix-table {
-  height: -webkit-calc(100vh - 195px) !important;
-  height: -moz-calc(100vh - 195px) !important;
-  height: calc(100vh - 195px) !important;
-}
-.fit-table-dialog {
-  height: 75vh;
+.fit-table-ui {
+  height: -webkit-calc(100vh - 175px) !important;
+  height: -moz-calc(100vh - 175px) !important;
+  height: calc(100vh - 175px) !important;
 
   .q-table__top,
   .q-table__bottom,
@@ -281,6 +278,25 @@ $bg-toolbar: $blue-grey-8;
     /* bg color is important for th; just specify one */
     background-color: rgb(193, 244, 205);
   }
+  thead tr th {
+    position: sticky;
+    z-index: 1;
+  }
+  thead tr:first-child th {
+    top: 0;
+  }
+  /* this is when the loading indicator appears */
+  &.q-table--loading thead tr:last-child th {
+    /* height of all previous header rows */
+    top: 48px;
+  }
+}
+
+.fit-table-ui-dialog {
+  height: -webkit-calc(100vh - 175px) !important;
+  height: -moz-calc(100vh - 175px) !important;
+  height: calc(100vh - 175px) !important;
+
   thead tr th {
     position: sticky;
     z-index: 1;

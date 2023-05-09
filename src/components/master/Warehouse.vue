@@ -7,6 +7,7 @@
   >
     <q-card
       square
+      dark
       class="icard"
       style="width: 500px; max-width: 80vw"
     >
@@ -56,7 +57,7 @@
         v-model:pagination="pagination"
         binary-state-sort
         @request="onRequest"
-        class="fit-table-dialog"
+        class="fit-table-ui-dialog"
         :loading="loading"
       >
         <template v-slot:loading>

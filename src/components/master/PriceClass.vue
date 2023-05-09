@@ -56,7 +56,7 @@
         v-model:pagination="pagination"
         binary-state-sort
         @request="onRequest"
-        class="fit-table-dialog"
+        class="fit-table-ui-dialog"
         :loading="loading"
       >
         <template v-slot:loading>

@@ -35,6 +35,7 @@
         </q-input>
       </q-toolbar>
       <q-table
+        class="fit-table-ui-user"
         square
         :rows="data"
         :columns="columns"
@@ -59,19 +60,6 @@
             />
           </q-inner-loading>
         </template>
-        <template v-slot:no-data="{ icon, message, filter }">
-          <div class="full-width row flex-center text-accent q-gutter-sm">
-            <q-icon
-              size="2em"
-              name="sentiment_dissatisfied"
-            />
-            <span>{{ message }}</span>
-            <q-icon
-              size="2em"
-              :name="filter ? 'filter_b_and_w' : icon"
-            />
-          </div>
-        </template>
         <template v-slot:header="props">
           <q-tr :props="props">
             <q-th
@@ -93,7 +81,7 @@
               :key="col.name"
               :props="props"
               :class="
-                props.row.is_group === false
+                props.row.is_group === '0'
                   ? 'q-pa-xs text-black'
                   : 'q-pa-xs text-green-10 text-bold'
               "
@@ -121,6 +109,8 @@
                 <div v-else-if="col.name === 'is_active'">
                   <q-toggle
                     v-model="props.row.is_active"
+                    true-value="1"
+                    false-value="0"
                     dense
                     disable
                   />
@@ -128,6 +118,8 @@
                 <div v-else-if="col.name === 'is_group'">
                   <q-toggle
                     v-model="props.row.is_group"
+                    true-value="1"
+                    false-value="0"
                     dense
                     disable
                   />
@@ -226,6 +218,8 @@
             <div class="col-6">
               <q-toggle
                 v-model="edit.is_group"
+                true-value="1"
+                false-value="0"
                 label="User group"
                 color="blue"
                 dense
@@ -283,6 +277,8 @@
           <div class="row items-start q-col-gutter-sm q-mt-xs">
             <q-toggle
               v-model="edit.is_active"
+              true-value="1"
+              false-value="0"
               label="Aktif"
               color="blue"
               dense
@@ -525,9 +521,9 @@ export default defineComponent({
         full_name: '',
         email: '@',
         phone: '-',
-        is_group: false,
+        is_group: '0',
         user_level: 'USER',
-        is_active: true
+        is_active: '1'
       }
       foto.value = null
       sign.value = null
@@ -835,3 +831,23 @@ export default defineComponent({
   }
 })
 </script>
+<style lang="scss">
+.fit-table-ui-user {
+  height: -webkit-calc(100vh - 145px) !important;
+  height: -moz-calc(100vh - 145px) !important;
+  height: calc(100vh - 145px) !important;
+
+  thead tr th {
+    position: sticky;
+    z-index: 1;
+  }
+  thead tr:first-child th {
+    top: 0;
+  }
+  /* this is when the loading indicator appears */
+  &.q-table--loading thead tr:last-child th {
+    /* height of all previous header rows */
+    top: 48px;
+  }
+}
+</style>

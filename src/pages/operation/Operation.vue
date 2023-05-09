@@ -175,7 +175,7 @@
         @request="onRequest"
         :loading="loading"
         virtual-scroll
-        class="fix-table-with-parameter"
+        class="fit-table-ui-with-parameter"
       >
         <template v-slot:loading>
           <q-inner-loading showing>

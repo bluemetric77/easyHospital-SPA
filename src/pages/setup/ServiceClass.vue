@@ -35,6 +35,7 @@
         </q-input>
       </q-toolbar>
       <q-table
+        dense
         square
         :rows="data"
         :columns="columns"
@@ -50,7 +51,7 @@
         @request="onRequest"
         :loading="loading"
         virtual-scroll
-        table-class="fix-table"
+        table-class="fit-table-ui"
       >
         <template v-slot:loading>
           <q-inner-loading showing>
@@ -104,12 +105,16 @@
                 <div v-else-if="col.name === 'is_base_price'">
                   <q-toggle
                     v-model="props.row.is_base_price"
+                    true-value="1"
+                    false-value="0"
                     disable
                   />
                 </div>
                 <div v-else-if="col.name === 'is_price_class'">
                   <q-toggle
                     v-model="props.row.is_price_class"
+                    true-value="1"
+                    false-value="0"
                     dense
                     disable
                   />
@@ -117,6 +122,8 @@
                 <div v-else-if="col.name === 'is_service_class'">
                   <q-toggle
                     v-model="props.row.is_service_class"
+                    true-value="1"
+                    false-value="0"
                     dense
                     disable
                   />
@@ -124,6 +131,8 @@
                 <div v-else-if="col.name === 'is_pharmacy_class'">
                   <q-toggle
                     v-model="props.row.is_pharmacy_class"
+                    true-value="1"
+                    false-value="0"
                     dense
                     disable
                   />
@@ -131,6 +140,8 @@
                 <div v-else-if="col.name === 'is_active'">
                   <q-toggle
                     v-model="props.row.is_active"
+                    true-value="1"
+                    false-value="0"
                     dense
                     disable
                   />
@@ -241,6 +252,8 @@
             <div class="col-6">
               <q-checkbox
                 v-model="edit.is_base_price"
+                true-value="1"
+                false-value="0"
                 label="Dasar Tarif"
                 stack-label
               />
@@ -248,6 +261,8 @@
             <div class="col-6">
               <q-checkbox
                 v-model="edit.is_price_class"
+                true-value="1"
+                false-value="0"
                 label="Kelas rawat inap"
                 stack-label
               />
@@ -257,6 +272,8 @@
             <div class="col-6">
               <q-checkbox
                 v-model="edit.is_service_class"
+                true-value="1"
+                false-value="0"
                 label="Kelas tarif pelayanan"
                 stack-label
               />
@@ -264,6 +281,8 @@
             <div class="col-6">
               <q-checkbox
                 v-model="edit.is_pharmacy_class"
+                true-value="1"
+                false-value="0"
                 label="Kelas tarif farmasi"
                 stack-label
               />
@@ -271,7 +290,10 @@
           </div>
         </q-card-section>
         <q-separator />
-        <q-card-section class="dialog-action q-pa-sm">
+        <q-card-section
+          class="dialog-action q-pa-sm"
+          align="right"
+        >
           <q-btn
             class="q-mr-sm"
             icon="save"

@@ -35,6 +35,7 @@
         </q-input>
       </q-toolbar>
       <q-table
+        dense
         square
         :rows="data"
         :columns="columns"
@@ -50,7 +51,7 @@
         @request="onRequest"
         :loading="loading"
         virtual-scroll
-        table-class="fix-table"
+        table-class="fit-table-ui"
       >
         <template v-slot:loading>
           <q-inner-loading showing>
@@ -254,7 +255,10 @@
           </div>
         </q-card-section>
         <q-separator />
-        <q-card-section class="dialog-action q-pa-sm">
+        <q-card-section
+          class="dialog-action q-pa-sm"
+          align="right"
+        >
           <q-btn
             class="q-mr-sm"
             icon="save"

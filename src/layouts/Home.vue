@@ -158,173 +158,101 @@
       @click.capture="drawerClick"
       :width="300"
       :breakpoint="350"
-      :mini-width="70"
+      :mini-width="50"
       class="background-drawer text-white"
+      show-if-above
     >
-      <q-scroll-area
-        :thumb-style="thumbStyle"
-        :bar-style="barStyle"
-        style="
-          height: calc(100% - 10px);
-          margin-top: 0px;
-          border-right: 1px solid #ddd;
-        "
-        class="q-pa-md"
+      <q-list
+        dense
+        v-for="(items, index) in detail(-1, 0)"
+        :key="index"
+        class="text-white"
+        transition="scale"
       >
-        <q-list
+        <q-expansion-item
+          dense-toggle
+          :icon="items.icons"
+          :label="items.title"
+          :header-class="
+            miniState === false
+              ? 'bg-white text-teal-9 text-bold'
+              : 'background-drawer text-white text-bold'
+          "
+          :content-inset-level="0.1"
+          :class="
+            miniState === false
+              ? 'shadow-5 overflow-hidden q-mb-sm q-mx-xs'
+              : 'q-mb-sm q-mx-xs'
+          "
+          style="
+            border-radius: 15px;
+            border-style: none;
+            border-width: 0.2px;
+            border-color: teal;
+          "
+          group="somegroup"
           dense
-          class="text-white"
-          transition="scale"
         >
-          <q-expansion-item
-            v-for="(items, index) in detail(-1, 0)"
-            :key="index"
-            group="main_group"
+          <q-list
+            padding
             dense
-            dense-toggle
-            :icon="items.icons"
-            :label="items.title"
-            header-class="bg-teal-9 text-white"
-            :content-inset-level="0.1"
-            class="shadow-5 overflow-hidden q-mb-sm"
-            style="
-              border-radius: 20px;
-              border-style: solid;
-              border-width: 0.1px;
-              border-color: teal;
-            "
           >
-            <q-list padding>
-              <div
-                v-for="(itmdtl, idxdtl) in detail(items.sort_number, 1)"
-                :key="idxdtl"
-              >
-                <div v-if="itmdtl.title === 'separator'">
-                  <q-separator color="white" />
-                </div>
-                <div v-else-if="itmdtl.is_parent === false">
-                  <q-item
-                    clickable
-                    v-ripple
-                    :active="link === itmdtl.sysid"
-                    @click="openlink(itmdtl.url_link, itmdtl.sysid)"
-                    active-class="my-menu-link"
-                    header-class="text-white"
-                    dense
-                  >
-                    <q-item-section avatar>
-                      <q-icon
-                        :name="itmdtl.icons"
-                        size="xs"
-                      />
-                    </q-item-section>
-                    <q-item-section>
-                      <q-item-label>{{ itmdtl.title }}</q-item-label>
-                    </q-item-section>
-                  </q-item>
-                </div>
-                <div v-else>
-                  <q-list
-                    padding
-                    class="rounded-borders"
-                  >
-                    <q-expansion-item
-                      dense
-                      dense-toggle
-                      :icon="itmdtl.icons"
-                      :label="itmdtl.title"
-                      :header-inset-level="0.2"
-                      :content-inset-level="0.3"
-                      header-class="text-green"
-                    >
-                      <q-list>
-                        <div
-                          v-for="(itmsub, idxsub) in detail(
-                            itmdtl.sort_number,
-                            2
-                          )"
-                          :key="idxsub"
-                        >
-                          <div v-if="itmsub.title === 'separator'">
-                            <q-separator
-                              spaced
-                              inset
-                            />
-                          </div>
-                          <div v-else-if="itmsub.is_parent === true">
-                            <q-expansion-item
-                              dense-toggle
-                              expand-separator
-                              :icon="itmsub.icons"
-                              :label="itmsub.title"
-                              header-class="text-red-10"
-                              :header-inset-level="0.4"
-                              :content-inset-level="0.6"
-                              class="shadow-5 overflow-hidden q-mb-sm"
-                              style="border-radius: 5px"
-                            >
-                              <q-list padding>
-                                <q-item
-                                  v-for="(itmsub2, idxsub2) in detail(
-                                    itmsub.sort_number,
-                                    3
-                                  )"
-                                  :key="idxsub2"
-                                  clickable
-                                  v-ripple
-                                  :active="link === itmsub2.sysid"
-                                  @click="
-                                    openlink(itmsub2.url_link, itmsub2.sysid)
-                                  "
-                                  active-class="my-menu-link"
-                                  header-class="text-white"
-                                >
-                                  <q-item-section avatar>
-                                    <q-icon
-                                      :name="itmsub2.icons"
-                                      size="xs"
-                                    />
-                                  </q-item-section>
-                                  <q-item-section>
-                                    <q-item-label>{{
-                                      itmsub2.title
-                                    }}</q-item-label>
-                                  </q-item-section>
-                                </q-item>
-                              </q-list>
-                            </q-expansion-item>
-                          </div>
-                          <div v-else>
-                            <q-item
-                              clickable
-                              v-ripple
-                              :active="link === itmsub.sysid"
-                              @click="openlink(itmsub.url_link, itmsub.sysid)"
-                              dense
-                              active-class="my-menu-link"
-                            >
-                              <q-item-section avatar>
-                                <q-icon
-                                  rounded
-                                  :name="itmsub.icons"
-                                  size="xs"
-                                />
-                              </q-item-section>
-                              <q-item-section>
-                                <q-item-label>{{ itmsub.title }}</q-item-label>
-                              </q-item-section>
-                            </q-item>
-                          </div>
-                        </div>
-                      </q-list>
-                    </q-expansion-item>
-                  </q-list>
-                </div>
+            <div
+              v-for="(itmdtl, idxdtl) in detail(items.sort_number, 1)"
+              :key="idxdtl"
+            >
+              <div v-if="itmdtl.title === 'separator'">
+                <q-separator color="white" />
               </div>
-            </q-list>
-          </q-expansion-item>
-        </q-list>
-      </q-scroll-area>
+              <div v-else-if="itmdtl.is_parent === '0'">
+                <q-item
+                  clickable
+                  v-ripple
+                  :to="itmdtl.url_link"
+                  @click="drawer = false"
+                  dense
+                >
+                  <q-item-section>{{ itmdtl.title }}</q-item-section>
+                </q-item>
+              </div>
+              <div v-else>
+                <q-expansion-item
+                  dense-toggle
+                  :label="itmdtl.title"
+                  :content-inset-level="0.1"
+                  dense
+                  header-class="text-white text-bold"
+                  :group="itmdtl.parent_sysid"
+                >
+                  <q-list
+                    v-for="(itmsub, idxsub) in detail(itmdtl.sort_number, 2)"
+                    :key="idxsub"
+                  >
+                    <div v-if="itmsub.title === 'separator'">
+                      <q-separator
+                        spaced
+                        inset
+                      />
+                    </div>
+                    <div v-else>
+                      <q-item
+                        clickable
+                        v-ripple
+                        :to="itmsub.url_link"
+                        @click="drawer = false"
+                        dense
+                      >
+                        <q-item-section>{{ itmsub.title }}</q-item-section>
+                      </q-item>
+                    </div>
+                  </q-list>
+                </q-expansion-item>
+              </div>
+            </div>
+          </q-list>
+        </q-expansion-item>
+      </q-list>
+
       <div
         class="q-mini-drawer-hide absolute"
         style="top: 90px; right: -17px"
@@ -1057,8 +985,9 @@ export default defineComponent({
   }
 })
 </script>
-<style lang="sass">
-.my-menu-link
-  color: white
-  background: #F2C037
+<style lang="scss">
+my-menu-link {
+  color: white;
+  background: #f2c037;
+}
 </style>

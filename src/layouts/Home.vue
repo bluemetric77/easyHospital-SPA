@@ -223,6 +223,7 @@
                   dense
                   header-class="text-white text-bold"
                   :group="itmdtl.parent_sysid"
+                  expand-icon-class="text-white"
                 >
                   <q-list
                     v-for="(itmsub, idxsub) in detail(itmdtl.sort_number, 2)"
@@ -286,8 +287,7 @@
           <q-btn
             icon="close"
             size="xs"
-            color="red-5"
-            glossy
+            class="btn-operation"
             dense
             rounded
             v-close-popup
@@ -435,10 +435,11 @@
           align="right"
         >
           <q-btn
-            label="Update"
+            label="Simpan"
             icon="save"
             no-caps
             flat
+            dense
             @click="save_profile()"
           />
         </q-card-section>
@@ -464,10 +465,9 @@
             v-close-popup
             dense
             icon="close"
-            color="red-10"
             size="xs"
             rounded
-            glossy
+            class="btn-operation"
           >
             <q-tooltip>Close</q-tooltip>
           </q-btn>
@@ -507,7 +507,7 @@
                 square
                 :type="isPwdOld ? 'password' : 'text'"
                 hint="Password dengan toggle"
-                label="Password (Baru)"
+                label="Password (Lama)"
                 stack-label
               >
                 <template v-slot:append>
@@ -579,6 +579,7 @@
             class="q-mr-sm"
             no-caps
             flat
+            dense
             @click="save_pwd()"
           >
             <template v-slot:loading>
@@ -591,6 +592,7 @@
             label="Batal"
             no-caps
             flat
+            dense
             @click="pwdevent = false"
           />
         </q-card-section>

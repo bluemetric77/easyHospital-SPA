@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@handcrafted-market/vue3-numeric": "^1.0.4",
-    "@quasar/extras": "^1.0.0",
+    "@quasar/extras": "^1.16.4",
     "axios": "^1.2.1",
     "core-js": "^3.6.5",
     "mapbox-gl": "^2.14.1",
@@ -25,7 +25,7 @@
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.13.14",
-    "@quasar/app-webpack": "^3.0.0",
+    "@quasar/app-webpack": "^3.9.2",
     "eslint": "^8.10.0",
     "eslint-config-prettier": "^8.1.0",
     "eslint-plugin-vue": "^9.0.0",

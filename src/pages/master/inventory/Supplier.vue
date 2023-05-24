@@ -35,6 +35,7 @@
         </q-input>
       </q-toolbar>
       <q-table
+        dense
         square
         :rows="data"
         :columns="columns"
@@ -50,7 +51,7 @@
         @request="onRequest"
         :loading="loading"
         virtual-scroll
-        table-class="fix-height"
+        table-class="fit-table-ui"
       >
         <template v-slot:loading>
           <q-inner-loading showing>
@@ -606,9 +607,3 @@ export default defineComponent({
   }
 })
 </script>
-<style lang="sass">
-.fix-height
-    height: -webkit-calc(100vh - 180px) !important
-    height:    -moz-calc(100vh - 180px) !important
-    height:         calc(100vh - 180px) !important
-</style>

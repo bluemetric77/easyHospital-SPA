@@ -500,7 +500,7 @@
                   </q-input>
                 </div>
               </div>
-              <div class="row items-start q-col-gutter-sm q-mb-sm">
+              <div class="row items-center q-col-gutter-sm q-mb-sm">
                 <div class="col-12">
                   <q-select
                     v-model="edit.specialist_sysid"
@@ -519,7 +519,7 @@
                   />
                 </div>
               </div>
-              <div class="row items-start q-col-gutter-sm q-mb-sm">
+              <div class="row items-center q-col-gutter-sm q-mb-sm">
                 <div class="col-6">
                   <q-toggle
                     v-model="edit.is_internal"
@@ -545,7 +545,7 @@
                   />
                 </div>
               </div>
-              <div class="row items-start q-col-gutter-sm q-mb-sm">
+              <div class="row items-center q-col-gutter-sm q-mb-sm">
                 <div class="col-6">
                   <q-input
                     v-model="edit.email"

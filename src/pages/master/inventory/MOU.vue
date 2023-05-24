@@ -35,6 +35,7 @@
         </q-input>
       </q-toolbar>
       <q-table
+        dense
         square
         :rows="data"
         :columns="columns"
@@ -104,6 +105,8 @@
                 <div v-else-if="col.name === 'is_active'">
                   <q-toggle
                     v-model="props.row.is_active"
+                    true-value="1"
+                    false-value="0"
                     dense
                     disable
                   />
@@ -206,6 +209,8 @@
             <div class="col-12">
               <q-checkbox
                 v-model="edit.is_active"
+                true-value="1"
+                false-value="0"
                 dense
                 outlined
                 square

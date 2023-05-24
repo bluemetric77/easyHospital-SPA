@@ -35,6 +35,7 @@
         </q-input>
       </q-toolbar>
       <q-table
+        dense
         square
         :rows="data"
         :columns="columns"
@@ -50,7 +51,7 @@
         @request="onRequest"
         :loading="loading"
         virtual-scroll
-        table-class="fix-height"
+        table-class="fit-table-ui"
       >
         <template v-slot:loading>
           <q-inner-loading showing>
@@ -114,6 +115,8 @@
                 <div v-else-if="col.name === 'is_active'">
                   <q-toggle
                     v-model="props.row.is_active"
+                    true-value="1"
+                    false-value="0"
                     dense
                     disable
                   />
@@ -354,6 +357,8 @@
                         <div class="col-6">
                           <q-checkbox
                             v-model="edit.is_price_rounded"
+                            true-value="1"
+                            false-value="0"
                             label="harga jual dibulatkan"
                             dense
                           />
@@ -383,6 +388,8 @@
                         <div class="col-4">
                           <q-checkbox
                             v-model="edit.is_sales"
+                            true-value="1"
+                            false-value="0"
                             label="Jual"
                             dense
                           />
@@ -390,6 +397,8 @@
                         <div class="col-4">
                           <q-checkbox
                             v-model="edit.is_purchase"
+                            true-value="1"
+                            false-value="0"
                             label="Beli"
                             dense
                           />
@@ -397,6 +406,8 @@
                         <div class="col-4">
                           <q-checkbox
                             v-model="edit.is_production"
+                            true-value="1"
+                            false-value="0"
                             label="Produksi"
                             dense
                           />
@@ -406,6 +417,8 @@
                         <div class="col-4">
                           <q-checkbox
                             v-model="edit.is_material"
+                            true-value="1"
+                            false-value="0"
                             label="Bahan Baku"
                             dense
                           />
@@ -413,6 +426,8 @@
                         <div class="col-4">
                           <q-checkbox
                             v-model="edit.is_consignment"
+                            true-value="1"
+                            false-value="0"
                             label="Item Konsinyasi"
                             dense
                           />
@@ -420,6 +435,8 @@
                         <div class="col-4">
                           <q-checkbox
                             v-model="edit.is_formularium"
+                            true-value="1"
+                            false-value="0"
                             label="Item Formularium"
                             dense
                           />
@@ -429,6 +446,8 @@
                         <div class="col-4">
                           <q-checkbox
                             v-model="edit.is_employee"
+                            true-value="1"
+                            false-value="0"
                             label="Obat Karyawan"
                             dense
                           />
@@ -436,6 +455,8 @@
                         <div class="col-4">
                           <q-checkbox
                             v-model="edit.is_inhealth"
+                            true-value="1"
+                            false-value="0"
                             label="Obat Inhealth"
                             dense
                           />
@@ -443,6 +464,8 @@
                         <div class="col-4">
                           <q-checkbox
                             v-model="edit.is_bpjs"
+                            true-value="1"
+                            false-value="0"
                             label="Obat BPJS"
                             dense
                           />
@@ -452,6 +475,8 @@
                         <div class="col-4">
                           <q-checkbox
                             v-model="edit.is_national"
+                            true-value="1"
+                            false-value="0"
                             label="Formularium Nasional"
                             dense
                           />
@@ -459,6 +484,8 @@
                         <div class="col-4">
                           <q-checkbox
                             v-model="edit.is_expired_control"
+                            true-value="1"
+                            false-value="0"
                             label="Kontrol Kadaluarsa"
                             dense
                           />
@@ -466,6 +493,8 @@
                         <div class="col-4">
                           <q-checkbox
                             v-model="edit.is_active"
+                            true-value="1"
+                            false-value="0"
                             label="Item Aktif (terpakai)"
                             dense
                           />
@@ -656,6 +685,8 @@
                         <div class="col-4">
                           <q-checkbox
                             v-model="edit.is_generic"
+                            true-value="1"
+                            false-value="0"
                             label="Obat Generik"
                             dense
                           />
@@ -1127,9 +1158,3 @@ export default defineComponent({
   }
 })
 </script>
-<style lang="sass">
-.fix-height
-    height: -webkit-calc(100vh - 180px) !important
-    height:    -moz-calc(100vh - 180px) !important
-    height:         calc(100vh - 180px) !important
-</style>

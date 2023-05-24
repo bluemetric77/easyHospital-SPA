@@ -54,6 +54,7 @@
         </q-input>
       </q-toolbar>
       <q-table
+        dense
         square
         :rows="data"
         :columns="columns"
@@ -69,7 +70,7 @@
         @request="onRequest"
         :loading="loading"
         virtual-scroll
-        table-class="fix-height"
+        table-class="fit-table-ui-with-parameter-0"
       >
         <template v-slot:loading>
           <q-inner-loading showing>
@@ -122,6 +123,8 @@
                 <div v-else-if="col.name === 'is_active'">
                   <q-toggle
                     v-model="props.row.is_active"
+                    true-value="1"
+                    false-value="0"
                     dense
                     disable
                   />
@@ -554,9 +557,3 @@ export default defineComponent({
   }
 })
 </script>
-<style lang="sass">
-.fix-height
-    height: -webkit-calc(100vh - 230px) !important
-    height:    -moz-calc(100vh - 230px) !important
-    height:         calc(100vh - 230px) !important
-</style>

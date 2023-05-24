@@ -35,6 +35,7 @@
         </q-input>
       </q-toolbar>
       <q-table
+        dense
         square
         :rows="data"
         :columns="columns"
@@ -50,7 +51,7 @@
         @request="onRequest"
         :loading="loading"
         virtual-scroll
-        table-class="fix-height"
+        table-class="fit-table-ui"
       >
         <template v-slot:loading>
           <q-inner-loading showing>
@@ -111,6 +112,8 @@
                 <div v-else-if="col.name === 'is_active'">
                   <q-toggle
                     v-model="props.row.is_active"
+                    true-value="1"
+                    false-value="0"
                     dense
                     disable
                   />
@@ -351,6 +354,8 @@
                         <div class="col-4">
                           <q-checkbox
                             v-model="edit.is_sales"
+                            true-value="1"
+                            false-value="0"
                             label="Jual"
                             dense
                           />
@@ -358,6 +363,8 @@
                         <div class="col-4">
                           <q-checkbox
                             v-model="edit.is_purchase"
+                            true-value="1"
+                            false-value="0"
                             label="Beli"
                             dense
                           />
@@ -365,6 +372,8 @@
                         <div class="col-4">
                           <q-checkbox
                             v-model="edit.is_production"
+                            true-value="1"
+                            false-value="0"
                             label="Produksi"
                             dense
                           />
@@ -374,6 +383,8 @@
                         <div class="col-4">
                           <q-checkbox
                             v-model="edit.is_material"
+                            true-value="1"
+                            false-value="0"
                             label="Bahan Baku"
                             dense
                           />
@@ -381,6 +392,8 @@
                         <div class="col-4">
                           <q-checkbox
                             v-model="edit.is_active"
+                            true-value="1"
+                            false-value="0"
                             label="Item Aktif (terpakai)"
                             dense
                           />
@@ -910,9 +923,3 @@ export default defineComponent({
   }
 })
 </script>
-<style lang="sass">
-.fix-height
-    height: -webkit-calc(100vh - 180px) !important
-    height:    -moz-calc(100vh - 180px) !important
-    height:         calc(100vh - 180px) !important
-</style>

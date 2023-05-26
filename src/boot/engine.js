@@ -162,6 +162,7 @@ function RefineDate(IndDate) {
     return IndDate
   }
 }
+
 function IndonesiaDateTime(IndDate) {
   if (!(IndDate === null) && typeof IndDate !== 'undefined') {
     let flag = IndDate.substr(4, 1)
@@ -170,6 +171,22 @@ function IndonesiaDateTime(IndDate) {
       let bulan = IndDate.substr(5, 2)
       let tanggal = IndDate.substr(8, 2)
       return tanggal + '-' + bulan + '-' + tahun + ' ' + IndDate.substr(11, 8)
+    } else {
+      return IndDate
+    }
+  } else {
+    return IndDate
+  }
+}
+
+function IndonesiaDateTime2(IndDate) {
+  if (!(IndDate === null) && typeof IndDate !== 'undefined') {
+    let flag = IndDate.substr(4, 1)
+    if (flag === '-' || flag === '/') {
+      let tahun = IndDate.substr(0, 4)
+      let bulan = IndDate.substr(5, 2)
+      let tanggal = IndDate.substr(8, 2)
+      return tanggal + '-' + bulan + '-' + tahun + ' ' + IndDate.substr(11, 5)
     } else {
       return IndDate
     }
@@ -674,6 +691,22 @@ function getMonthName(pdate) {
   return monthname
 }
 
+function ymd(date = null) {
+  if (date === null) {
+    return null
+  } else {
+    var day = date.getDate().toString()
+    var month = (date.getMonth() + 1).toString()
+    return (
+      date.getFullYear() +
+      '-' +
+      (month.length !== 2 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1) +
+      '-' +
+      (day.length !== 2 ? '0' + date.getDate() : date.getDate())
+    )
+  }
+}
+
 export default boot(({ app }) => {
   // something to do
   app.use(VueNumeric)
@@ -694,7 +727,9 @@ export default boot(({ app }) => {
   app.config.globalProperties.$formatnumber = formatNumber
   app.config.globalProperties.$INDDate = IndonesiaDate
   app.config.globalProperties.$INDDateTime = IndonesiaDateTime
+  app.config.globalProperties.$INDDateTime2 = IndonesiaDateTime2
   app.config.globalProperties.$Month = getMonthName
+  app.config.globalProperties.$ymd = ymd
 })
 
 export {
@@ -713,5 +748,7 @@ export {
   formatNumber,
   IndonesiaDate,
   IndonesiaDateTime,
-  getMonthName
+  IndonesiaDateTime2,
+  getMonthName,
+  ymd
 }

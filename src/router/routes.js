@@ -97,6 +97,16 @@ const routes = [
         path: 'specialist',
         name: 'specialist',
         component: () => import('pages/setup/ParamedicSpecialist.vue')
+      },
+      {
+        path: 'application/standard-code',
+        name: 'standardcode',
+        component: () => import('pages/setup/application/StandardCode.vue')
+      },
+      {
+        path: 'application/parameters',
+        name: 'parameters',
+        component: () => import('pages/setup/application/Parameters.vue')
       }
     ]
   },
@@ -165,6 +175,19 @@ const routes = [
         path: 'order',
         name: 'item_group',
         component: () => import('pages/cs/CustomerOrder.vue')
+      }
+    ]
+  },
+  {
+    path: '/inventory',
+    meta: { auth: true },
+    component: () => import('layouts/Home.vue'),
+    children: [
+      { path: '', component: () => import('pages/Index.vue') },
+      {
+        path: 'purchase/order',
+        name: 'purchase_order',
+        component: () => import('pages/inventory/PurchaseOrder.vue')
       }
     ]
   },

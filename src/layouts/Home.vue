@@ -222,7 +222,7 @@
                   :content-inset-level="0.1"
                   dense
                   header-class="text-white text-bold"
-                  :group="itmdtl.parent_sysid"
+                  :group="itmdtl.parent_sysid_text"
                   expand-icon-class="text-white"
                 >
                   <q-list

@@ -127,6 +127,7 @@ $bg-toolbar: $blue-grey-8;
     font-size: 12px;
   }
 }
+
 .input {
   padding: 5px 5px;
   border: 0.5px solid #bebebe;
@@ -138,18 +139,22 @@ $bg-toolbar: $blue-grey-8;
   }
 }
 .input:hover {
-  border: 0.5px solid #7c2417;
+  border: 1.5px solid $green-10;
 }
 .input:focus {
   outline: none !important;
   border-color: #719ece;
+  background-color: #ffff;
+  border: 1.5px solid $red-10;
 }
+
 .input select {
   background-color: white;
 }
 .input-uppercase {
   text-transform: uppercase;
 }
+
 .input-normal {
   padding: 3px 5px;
   border: 0.1px solid #bebebe;
@@ -164,14 +169,12 @@ $bg-toolbar: $blue-grey-8;
   outline: none !important;
   border-color: #719ece;
   background-color: #ffff;
-  border: 0.1px solid $red-10;
+  border: 1.5px solid $red-10;
 }
 .input-normal select {
   background-color: white;
 }
-.input-uppercase {
-  text-transform: uppercase;
-}
+
 .right-input {
   text-align: right;
   text-transform: uppercase;
@@ -187,10 +190,12 @@ $bg-toolbar: $blue-grey-8;
   outline: none !important;
   border-color: #719ece;
   background-color: #ffff;
+  border: 1.5px solid $red-10;
 }
 .right-input:hover {
-  border: 0.5px solid #7c2417;
+  border: 1.5px solid $green-10;
 }
+
 .right-input-normal {
   text-align: right;
   padding: 5px 5px;
@@ -201,6 +206,30 @@ $bg-toolbar: $blue-grey-8;
     background-color: $bg-color2;
   }
 }
+
+.select-input {
+  padding: 3px 5px;
+  border: 0.1px solid #bebebe;
+  border-width: thin;
+  background-color: $bg-color2;
+  font-size: 11px;
+  @media (max-width: $breakpoint-xs-max) {
+    background-color: $bg-color2;
+  }
+}
+.select-input:focus {
+  outline: none !important;
+  border-color: #719ece;
+  background-color: #ffff;
+  border: 1.5px solid $red-10;
+}
+.select-input:hover {
+  border: 1.5px solid $green-10;
+}
+.select-input select {
+  background-color: white;
+}
+
 .label-banded {
   color: red;
   font-size: 1.6em;
@@ -310,6 +339,24 @@ $bg-toolbar: $blue-grey-8;
   height: -webkit-calc(100vh - 175px) !important;
   height: -moz-calc(100vh - 175px) !important;
   height: calc(100vh - 175px) !important;
+
+  thead tr th {
+    position: sticky;
+    z-index: 1;
+  }
+  thead tr:first-child th {
+    top: 0;
+  }
+  /* this is when the loading indicator appears */
+  &.q-table--loading thead tr:last-child th {
+    /* height of all previous header rows */
+    top: 48px;
+  }
+}
+.fit-table-ui-dialog-with-parameter {
+  height: -webkit-calc(100vh - 235px) !important;
+  height: -moz-calc(100vh - 235px) !important;
+  height: calc(100vh - 235px) !important;
 
   thead tr th {
     position: sticky;

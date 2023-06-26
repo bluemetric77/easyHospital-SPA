@@ -316,6 +316,18 @@
               />
             </div>
           </div>
+          <div class="row items-center q-col-gutter-sm q-mb-sm">
+            <div class="col-12">
+              <q-input
+                v-model="edit.value"
+                dense
+                outlined
+                square
+                label="Nilai"
+                stack-label
+              />
+            </div>
+          </div>
           <div class="row items-start q-col-gutter-sm q-mb-sm">
             <div class="col-12">
               <q-toggle
@@ -494,6 +506,7 @@ export default defineComponent({
         standard_code: '',
         descriptions: '',
         parent_id: parent_id.value,
+        value: '',
         is_active: '1'
       }
     }

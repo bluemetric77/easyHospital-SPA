@@ -1,7 +1,7 @@
 <template>
   <div>
     <q-dialog
-      v-model="dlgItems"
+      v-model="dlgShow"
       persistent
       transition-show="scale"
       transition-hide="scale"
@@ -11,7 +11,7 @@
         style="width: 800px; max-width: 80vw; max-height: 700px"
       >
         <q-bar class="entry-caption">
-          <span>Master Inventory</span>
+          <span>Pemesanan Pembelian</span>
           <q-space />
           <q-input
             v-model="filter"
@@ -32,19 +32,49 @@
             </template>
           </q-input>
         </q-bar>
+        <q-card-section class="q-pa-sm">
+          <div class="row items-center">
+            <q-input
+              v-model="date1"
+              type="date"
+              dense
+              class="q-mr-sm"
+              label="Periode"
+              outlined
+              square
+            />
+            <q-input
+              v-model="date2"
+              type="date"
+              dense
+              class="q-mr-sm"
+              label
+              outlined
+              square
+            />
+            <q-btn
+              icon="search"
+              label="Query"
+              no-caps
+              flat
+              dense
+              class="btn-action"
+            />
+          </div>
+        </q-card-section>
         <q-table
           square
           :rows="data"
           :columns="columns"
           no-data-label="data kosong"
           no-results-label="data yang kamu cari tidak ditemukan"
-          row-key="item_code"
+          row-key="sysid"
           :filter="filter"
           separator="cell"
           selection="single"
           virtual-scroll
           dense
-          class="fit-table-ui-dialog"
+          class="fit-table-ui-dialog-with-parameter"
           v-model:selected="selected"
           v-model:pagination="pagination"
           binary-state-sort
@@ -95,13 +125,13 @@
                 :props="props"
               >
                 <div class="grid-data">
-                  <div v-if="col.name === 'item_code'">
+                  <div v-if="col.name === 'doc_number'">
                     <q-btn
-                      :label="props.row.item_code"
+                      :label="props.row.doc_number"
                       no-caps
                       dense
                       flat
-                      @click="selectdata(props.row.item_code)"
+                      @click="selectdata(props.row.uuid_rec)"
                     />
                   </div>
                   <div v-else>
@@ -141,52 +171,76 @@
 </template>
 
 <script>
+import { ymd } from 'boot/engine'
 import { defineComponent, ref, onMounted } from 'vue'
 import { useStore } from 'vuex'
 
 export default defineComponent({
-  name: 'items',
-  props: { show: Boolean, state: String },
+  name: 'po',
+  props: { show: Boolean },
   setup(props, context) {
     const $store = useStore()
-    const dlgItems = ref(false)
+    const dlgShow = ref(false)
     const pagination = ref({
-      sortBy: 'item_code',
+      sortBy: 'sysid',
       descending: false,
       page: 1,
-      rowsPerPage: 25,
-      rowsNumber: 25
+      rowsPerPage: 50,
+      rowsNumber: 50
     })
 
     const filter = ref('')
     const selected = ref([])
+    const date1 = ref(null)
+    const date2 = ref(null)
     const columns = ref([
       {
-        name: 'item_code',
+        name: 'doc_number',
         align: 'left',
-        label: 'Kode',
-        field: 'item_code',
+        label: 'No.Pemesanan',
+        field: 'doc_number',
         sortable: true
       },
       {
-        name: 'item_name1',
+        name: 'ref_number',
         align: 'left',
-        label: 'Item Inventory',
-        field: 'item_name1',
+        label: 'Referensi',
+        field: 'ref_number',
         sortable: true
       },
       {
-        name: 'group_name',
+        name: 'ref_date',
         align: 'left',
-        label: 'Jenis',
-        field: 'group_name',
+        label: 'Tanggal',
+        field: 'ref_date',
         sortable: true
       },
       {
-        name: 'item_code_old',
+        name: 'location_name',
         align: 'left',
-        label: 'Kode Lama',
-        field: 'item_code_old',
+        label: 'Lokasi',
+        field: 'location_name',
+        sortable: true
+      },
+      {
+        name: 'partner_name',
+        align: 'left',
+        label: 'Supplier',
+        field: 'partner_name',
+        sortable: true
+      },
+      {
+        name: 'purchase_type',
+        align: 'left',
+        label: 'Tipe Pembelian',
+        field: 'purchase_type',
+        sortable: true
+      },
+      {
+        name: 'order_type',
+        align: 'left',
+        label: 'Jenis Pemesanan',
+        field: 'order_type',
         sortable: true
       }
     ])
@@ -201,12 +255,12 @@ export default defineComponent({
         filter: filter.value
       })
     }
-    function selectdata(account = '') {
-      if (selected.value.length > 0 || account !== '') {
+    function selectdata(uuid = '') {
+      if (selected.value.length > 0 || uuid !== '') {
         let row = null
-        if (account !== '') {
+        if (uuid !== '') {
           data.value.forEach((el) => {
-            if (account === el.item_code) {
+            if (uuid === el.uuid_rec) {
               row = el
             }
           })
@@ -232,11 +286,10 @@ export default defineComponent({
           filter: filter,
           descending: descending,
           sortBy: sortBy,
-          is_active: true,
-          group_name: props.state,
-          url: 'master/inventory/inventory-item'
+          date1: date1.value,
+          date2: date2.value,
+          url: 'inventory/order/purchase'
         }
-        console.info(JSON.stringify(prop))
         let respon = await $store.dispatch('master/GET_DATA', prop)
         data.value = respon.data
         pagination.value = {
@@ -253,10 +306,10 @@ export default defineComponent({
     }
 
     function closedata(record) {
-      dlgItems.value = false
+      dlgShow.value = false
       filter.value = ''
       data.value = []
-      context.emit('CloseItems', false, record)
+      context.emit('ClosePO', false, record)
     }
     function loaddata() {
       onRequest({
@@ -266,7 +319,10 @@ export default defineComponent({
     }
 
     onMounted(async () => {
-      dlgItems.value = props.show
+      dlgShow.value = props.show
+      let skrng = new Date()
+      date1.value = ymd(skrng)
+      date2.value = ymd(skrng)
       loaddata()
     })
 
@@ -281,8 +337,10 @@ export default defineComponent({
       selectdata,
       onRequest,
       closedata,
-      dlgItems,
-      loaddata
+      dlgShow,
+      loaddata,
+      date1,
+      date2
     }
   }
 })

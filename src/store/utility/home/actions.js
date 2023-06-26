@@ -2,9 +2,13 @@ import { getapi, postapi } from 'boot/engine'
 
 export async function GET_DATA(context, props) {
   let url = props.url
+  let progress = typeof (props.progress === 'undefined')
+    ? false
+    : props.progress
+  delete props.progress
   delete props.url
   try {
-    let result = await getapi(url, props)
+    let result = await getapi(url, props, progress)
     if (!(typeof result === 'undefined')) {
       return result.data
     }

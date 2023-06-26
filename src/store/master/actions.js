@@ -15,6 +15,10 @@ export async function GET_DATA(context, props) {
     geterror = props.geterror
     delete props.geterror
   }
+  if (!(typeof props.progress === 'undefined')) {
+    progress = props.progress
+    delete props.progress
+  }
   delete props.url
   try {
     let result = await getapi(url, props, geterror, progress)
@@ -64,6 +68,10 @@ export async function POST_DATA(context, props) {
     file = props.file
     delete props.file
   }
+  if (!(typeof props.progress === 'undefined')) {
+    progress = props.progress
+    delete props.progress
+  }
   try {
     let respon = await postapi(url, props, progress, is_upload, file)
     return respon
@@ -75,10 +83,15 @@ export async function POST_DATA(context, props) {
 export async function UPLOAD_DATA(context, props) {
   let url = props.url
   let file = props.file
+  let progress = true
   delete props.url
   delete props.file
+  if (!(typeof props.progress === 'undefined')) {
+    progress = props.progress
+    delete props.progress
+  }
   try {
-    let respon = await uploadapi(url, file, props, true)
+    let respon = await uploadapi(url, file, props, progress)
     return respon
   } catch (error) {
     return undefined

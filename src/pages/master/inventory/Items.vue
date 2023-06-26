@@ -95,7 +95,7 @@
                     :name="btn.icon"
                     size="xs"
                     color="green-10"
-                    @click="runMethod(btn.onclick, props.row.sysid)"
+                    @click="runMethod(btn.onclick, props.row.uuid_rec)"
                   >
                     <q-tooltip content-class="tooltips-app">
                       {{ btn.tooltips }}
@@ -841,6 +841,7 @@ import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 import { useQuasar } from 'quasar'
 import { Config } from 'boot/engine'
+import esArrayIterator from 'core-js/modules/es.array.iterator'
 
 export default defineComponent({
   name: 'Inventory',
@@ -925,20 +926,20 @@ export default defineComponent({
         manufactur: '',
         prefered_vendor_sysid: -1,
         supplier: '',
-        is_price_rounded: false,
+        is_price_rounded: '0',
         price_rounded: 0,
-        is_sales: false,
-        is_purchase: false,
-        is_production: false,
-        is_material: false,
-        is_consignment: false,
-        is_formularium: false,
-        is_employee: false,
-        is_inhealth: false,
-        is_national: false,
-        is_bpjs: false,
-        is_expired_control: false,
-        is_generic: false,
+        is_sales: '1',
+        is_purchase: '1',
+        is_production: '0',
+        is_material: '0',
+        is_consignment: '0',
+        is_formularium: '0',
+        is_employee: '0',
+        is_inhealth: '0',
+        is_national: '0',
+        is_bpjs: '0',
+        is_expired_control: '0',
+        is_generic: '0',
         trademark: '',
         generic_name: '',
         rate: null,
@@ -949,20 +950,19 @@ export default defineComponent({
         storage_instruction: '',
         inventory_group: 'MEDICAL',
         url_image: '',
-        is_active: true
+        is_active: '1'
       }
       file.value = null
     }
 
-    async function edit_event(primary = -1) {
-      if (selected.value.length > 0 || !(primary === -1)) {
-        if (primary === -1) {
-          let item = selected.value[0]
-          primary = item.sysid
+    async function edit_event(primary = '') {
+      if (selected.value.length > 0 || !(primary === '')) {
+        if (primary === '') {
+          primary = selected.value[0].uuid_rec
         }
         let props = {}
         props.url = api_url.value.edit
-        props.sysid = primary
+        props.uuidrec = primary
         props.group_name = 'MEDICAL'
         props.progress = true
         let respon = await $store.dispatch('master/GET_DATA', props)
@@ -980,20 +980,29 @@ export default defineComponent({
       }
     }
 
-    async function delete_event(primary = -1) {
-      if (selected.value.length > 0 || !(primary === -1)) {
-        if (primary === -1) {
-          let item = selected.value[0]
-          primary = item.sysid
+    async function delete_event(primary = '') {
+      if (selected.value.length > 0 || !(primary === '')) {
+        if (primary === '') {
+          primary = selected.value[0].uuid_rec
         }
+        data.value.forEach((el) => {
+          if (primary === el.uuid_rec) {
+            edit.value = el
+          }
+        })
         $q.dialog({
           title: 'Konfirmasi',
-          message: 'Apakah data ini akan di hapus ?',
+          message:
+            'Apakah data ini akan di hapus .' +
+            edit.value.item_code +
+            ' - ' +
+            edit.value.item_name1 +
+            ' ?',
           cancel: true,
-          persistent: true
+          persistent: false
         }).onOk(() => {
           let json = {}
-          json.sysid = primary
+          json.uuidrec = primary
           json.url = api_url.value.delete
           $store.dispatch('master/DELETE_DATA', json).then((respon) => {
             if (!(typeof respon === 'undefined')) {
@@ -1064,7 +1073,7 @@ export default defineComponent({
       })
     }
 
-    function runMethod(method, primary = -1) {
+    function runMethod(method, primary = '') {
       this[method](primary)
     }
 

@@ -10,7 +10,7 @@
 
       <q-card-section class="q-pa-sm">
         <div class="row items-start q-col-gutter-xs q-mb-sm">
-          <div class="col-xs-12 col-sm-6 col-md-6">
+          <div class="col-xs-12 col-sm-7 col-md-6">
             <div class="row items-start q-mb-sm q-col-gutter-xs">
               <div class="col-xs-6 col-sm-4 col-md-3">
                 <q-input
@@ -75,9 +75,9 @@
               </div>
             </div>
             <div class="row items-start q-col-gutter-xs q-mb-sm">
-              <div class="col-xs-6 col-sm-8 col-md-7">
+              <div class="col-xs-12 col-sm-8 col-md-7">
                 <q-input
-                  v-model="edit.supplier_name"
+                  v-model="edit.partner_name"
                   dense
                   outlined
                   square
@@ -96,7 +96,7 @@
               </div>
             </div>
             <div class="row items-start q-col-gutter-xs q-mb-sm">
-              <div class="col-xs-6 col-sm-8 col-md-7">
+              <div class="col-xs-12 col-sm-8 col-md-7">
                 <q-select
                   v-model="edit.location_id"
                   :options="warehouse_opt"
@@ -115,7 +115,7 @@
               </div>
             </div>
           </div>
-          <div class="col-xs-12 offset-sm-1 col-sm-5 offset-md-2 col-md-4">
+          <div class="col-xs-12 col-sm-5 offset-md-2 col-md-4">
             <div class="row items-start q-col-gutter-xs q-mb-sm">
               <div class="col-6">
                 <q-input
@@ -154,14 +154,14 @@
               </div>
               <div class="col-6">
                 <q-select
-                  v-model="edit.warehouse_id"
-                  :options="warehouse_opt"
+                  v-model="edit.term_id"
+                  :options="term_opt"
                   outlined
                   dense
                   options-dense
                   label="Termin Pembayaran"
-                  option-value="warehouse_id"
-                  option-label="warehouse_name"
+                  option-value="standard_code"
+                  option-label="descriptions"
                   emit-value
                   map-options
                   use-input
@@ -174,13 +174,13 @@
               <div class="col-6">
                 <q-select
                   v-model="edit.purchase_type"
-                  :options="warehouse_opt"
+                  :options="purchase_type_opt"
                   outlined
                   dense
                   options-dense
                   label="Jenis Pembelian"
-                  option-value="warehouse_id"
-                  option-label="warehouse_name"
+                  option-value="standard_code"
+                  option-label="descriptions"
                   emit-value
                   map-options
                   use-input
@@ -190,14 +190,34 @@
               </div>
               <div class="col-6">
                 <q-select
-                  v-model="edit.order_type"
-                  :options="warehouse_opt"
+                  v-model="edit.item_group"
+                  :options="item_group_opt"
                   outlined
                   dense
                   options-dense
-                  label="Jenis Pemesanan"
-                  option-value="warehouse_id"
-                  option-label="warehouse_name"
+                  label="Kelompok Barang"
+                  option-value="standard_code"
+                  option-label="descriptions"
+                  emit-value
+                  map-options
+                  use-input
+                  square
+                  stack-label
+                  v-on:update:model-value="change_group()"
+                />
+              </div>
+            </div>
+            <div class="row items-start q-col-gutter-sm q-mb-sm">
+              <div class="col-12">
+                <q-select
+                  v-model="edit.order_type"
+                  :options="order_type_opt"
+                  outlined
+                  dense
+                  options-dense
+                  label="Kategori Pemesanan"
+                  option-value="standard_code"
+                  option-label="descriptions"
                   emit-value
                   map-options
                   use-input
@@ -232,6 +252,7 @@
           <q-tr align="left">
             <q-td colspan="100%">
               <q-btn
+                v-show="stateform === true"
                 label="Tambah"
                 dense
                 no-caps
@@ -305,7 +326,7 @@
                     <q-icon
                       name="delete"
                       color="red"
-                      size="sm"
+                      size="xs"
                       @click="removeRow(props.row.line_no)"
                     />
                   </div>
@@ -316,7 +337,11 @@
                       style="width: 80px"
                       class="input"
                       v-on:keyup.enter="
-                        getItemByCode(props.row.item_code, props.row.line_no)
+                        getItemByCode(
+                          props.row.item_code,
+                          props.row.line_no,
+                          inv_group
+                        )
                       "
                     />
                     <q-icon
@@ -329,12 +354,15 @@
                   <div v-else-if="col.name === 'line_type'">
                     <select
                       v-model="props.row.line_type"
-                      class="q-field__input normal-input full-width"
+                      class="q-field__input select-input full-width"
                       style="width: 100px"
                     >
                       <option>Follow</option>
                       <option>Kill</option>
                     </select>
+                  </div>
+                  <div v-else-if="col.name === 'package'">
+                    {{ props.row.conversion }} {{ props.row.mou_inventory }}
                   </div>
                   <div v-else-if="col.name === 'qty_draft'">
                     <vue-numeric
@@ -396,17 +424,6 @@
           </q-tr>
         </template>
       </q-table>
-      <q-card-section class="q-pa-sm">
-        <q-input
-          v-model="edit.purchase_instruction"
-          type="textarea"
-          label="Instruksi pengiriman"
-          outlined
-          input-style="max-height:100px"
-          square
-          stack-label
-        />
-      </q-card-section>
     </q-card>
 
     <!-- place QPageSticky at end of page -->
@@ -455,6 +472,17 @@
           class="btn-toolbar q-mx-sm"
           no-caps
           dense
+          @click="stateform = false"
+        />
+        <q-space />
+        <q-btn
+          v-show="stateform"
+          flat
+          icon="more_vert"
+          class="btn-toolbar q-mr-sm text-yellow-10 text-bold"
+          no-caps
+          dense
+          rounded
           @click="stateform = false"
         />
       </q-toolbar>
@@ -922,13 +950,18 @@
     <items
       v-if="dlgItem"
       :show="dlgItem"
-      :state="open"
+      :state="inv_group"
       @CloseItems="getItem"
     />
     <supplier
       v-if="dlgSupplier"
       :show="dlgSupplier"
       @CloseData="getSupplier"
+    />
+    <po
+      v-if="dlgPO"
+      :show="dlgPO"
+      @ClosePO="getPO"
     />
   </q-page>
 </template>
@@ -937,6 +970,7 @@
 import { ymd } from 'boot/engine'
 import items from 'components/master/Items.vue'
 import supplier from 'components/master/Supplier.vue'
+import po from 'components/inventory/PurchaseOrder.vue'
 import { defineComponent, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
@@ -945,7 +979,7 @@ import state from 'src/store/utility/home/state'
 
 export default defineComponent({
   name: 'PurchaseOrder',
-  components: { items, supplier },
+  components: { items, supplier, po },
   setup() {
     const $q = useQuasar()
     const $store = useStore()
@@ -992,32 +1026,26 @@ export default defineComponent({
       {
         name: 'item_code',
         align: 'left',
-        sytle: 'width: 100px',
-        headerStyle: 'width: 100px',
+        sytle: 'width: 120px',
+        headerStyle: 'width: 120px',
         label: 'Kode',
         field: 'item_code'
       },
       {
-        name: 'part_number',
-        align: 'left',
-        sytle: 'width: 170px',
-        headerStyle: 'width: 170px',
-        label: 'Part Number',
-        field: 'part_number'
-      },
-      {
-        name: 'descriptions',
+        name: 'item_name',
         align: 'left',
         label: 'Keterangan',
         sytle: 'width: 250px',
-        field: 'descriptions'
+        headerStyle: 'width: 250px',
+        field: 'item_name'
       },
       {
         name: 'line_type',
         align: 'left',
         label: 'Tipe',
         field: 'line_type',
-        style: 'width:60px'
+        style: 'width:100px',
+        headerStyle: 'width: 100px'
       },
       {
         name: 'qty_draft',
@@ -1042,16 +1070,10 @@ export default defineComponent({
         field: 'mou_purchase'
       },
       {
-        name: 'convertion',
-        align: 'center',
-        label: 'Isi/Unit Beli',
-        field: 'convertion'
-      },
-      {
-        name: 'mou_warehouse',
+        name: 'package',
         align: 'left',
-        label: 'Unit Simpan',
-        field: 'mou_warehouse'
+        label: 'Kemasan',
+        field: 'package'
       },
       {
         name: 'price',
@@ -1062,8 +1084,14 @@ export default defineComponent({
       {
         name: 'prc_discount1',
         align: 'right',
-        label: 'Diskon (%)',
+        label: 'Diskon 1(%)',
         field: 'prc_discount1'
+      },
+      {
+        name: 'prc_discount2',
+        align: 'right',
+        label: 'Diskon 2(%)',
+        field: 'prc_discount2'
       },
       { name: 'prc_tax', align: 'right', label: 'PPN (%)', field: 'prc_tax' },
       { name: 'total', align: 'right', label: 'Total', field: 'total' },
@@ -1210,6 +1238,13 @@ export default defineComponent({
       rowsNumber: 0
     })
 
+    const term_opt = ref([])
+    const purchase_type_opt = ref([])
+    const order_type_opt = ref([])
+    const item_group_opt = ref([])
+    const inv_group = ref('')
+    const dlgPO = ref(false)
+
     function runMethod(method, transid = -1) {
       this[method](transid)
     }
@@ -1279,43 +1314,27 @@ export default defineComponent({
         location_id: '',
         ref_document: 'General PO',
         project_title: '-',
+        curr_rate: 1,
+        curr_code: 'IDR',
         partner_id: '',
         partner_name: '',
         doc_purchase_request: '-',
         purchase_request_id: -1,
-        purchase_instruction: '-',
+        remarks: '',
         total: 0,
-        term_id: null,
-        purchase_type: null,
-        order_type: null
+        term_id: 'C003@30',
+        purchase_type: 'C001@R',
+        order_type: null,
+        downpayment: 0,
+        delivery_fee: 0,
+        state: 'Draft',
+        is_tax: '0'
       }
       detail.value = []
     }
 
     async function edit_event(uuidrec = -1) {
-      if (selected.value.length > 0 || !(uuidrec === '')) {
-        operation.value = 'updated'
-        if (transid === -1) {
-          let item = selected.value[0]
-          uuidrec = item.uuid_rec
-        }
-
-        let props = {}
-        props.url = api_url.value.edit
-        props.uuidrec = uuidrec
-        props.progress = true
-        let respon = await $store.dispatch('master/GET_DATA', props)
-        if (!(typeof respon === 'undefined')) {
-          stateform.value = true
-          lblSave.value = 'Simpan'
-          edit.value = respon.header
-          if (respon.detail === null) {
-            detail.value = []
-          } else {
-            detail.value = respon.detail
-          }
-        }
-      }
+      dlgPO.value = true
     }
 
     async function posting_event(transid = -1, showrespon = true) {
@@ -1452,7 +1471,8 @@ export default defineComponent({
                 position: 'top',
                 timeout: 2000
               })
-              loaddata()
+              edit.value = {}
+              detail.value = []
             } else {
               $q.notify({
                 color: 'red-10',
@@ -1501,11 +1521,11 @@ export default defineComponent({
           qty_draft: 0,
           price: 0,
           prc_discount1: 0,
-          amount_discount1: 0,
+          discount1: 0,
           prc_discount2: 0,
-          amount_discount2: 0,
+          discount2: 0,
           prc_tax: 0,
-          amount_tax: 0,
+          tax: 0,
           total: 0,
           line_type: 'Follow',
           source_line: 'FreeLine',
@@ -1556,23 +1576,25 @@ export default defineComponent({
         for (i = 0; i < detail.value.length; i++) {
           if (detail.value[i].line_no === current_row.value) {
             detail.value[i].item_code = data.item_code
-            detail.value[i].descriptions = data.descriptions
+            detail.value[i].item_name = data.item_name1
             detail.value[i].mou_purchase = data.mou_purchase
-            detail.value[i].mou_warehouse = data.mou_warehouse
+            detail.value[i].mou_inventory = data.mou_inventory
             detail.value[i].current_stock = 0
-            detail.value[i].convertion = data.convertion
-            detail.value[i].part_number = data.part_number
-            detail.value[i].price = data.purchase_price
-            detail.value[i].prc_discount1 = data.purchase_discount
-            detail.value[i].prc_tax = data.purchase_tax
+            detail.value[i].conversion = data.conversion
+            detail.value[i].price = 0
+            detail.value[i].prc_discount1 = 0
+            detail.value[i].prc_discount2 = 0
+            detail.value[i].prc_tax = 0
+            console.info(JSON.stringify(data))
           }
         }
       }
     }
-    function getItemByCode(item_code, line_no = -1) {
+    function getItemByCode(item_code, line_no = -1, invgroup = '') {
       let props = {}
-      props.url = 'master/inventory/items/getitem'
+      props.url = 'master/inventory/inventory-item/getitem'
       props.item_code = item_code
+      props.group_name = invgroup
       props.progress = true
       $store.dispatch('master/GET_DATA', props).then((respon) => {
         let item = respon
@@ -1581,15 +1603,15 @@ export default defineComponent({
           for (i = 0; i < detail.value.length; i++) {
             if (detail.value[i].line_no === line_no) {
               detail.value[i].item_code = item.item_code
-              detail.value[i].descriptions = item.descriptions
+              detail.value[i].item_name = item.item_name1
               detail.value[i].mou_purchase = item.mou_purchase
-              detail.value[i].mou_warehouse = item.mou_warehouse
+              detail.value[i].mou_inventory = item.mou_inventory
               detail.value[i].current_stock = 0
-              detail.value[i].convertion = item.convertion
-              detail.value[i].part_number = item.part_number
-              detail.value[i].price = item.purchase_price
-              detail.value[i].prc_discount1 = item.purchase_discount
-              detail.value[i].prc_tax = item.purchase_tax
+              detail.value[i].conversion = data.value.conversion
+              detail.value[i].price = 0
+              detail.value[i].prc_discount1 = 0
+              detail.value[i].prc_discount2 = 0
+              detail.value[i].prc_tax = 0
             }
           }
         } else {
@@ -1629,12 +1651,12 @@ export default defineComponent({
       let disc2 = detail.value[idx].prc_discount2
       let tax = detail.value[idx].prc_tax
       let total = qty * price
-      disc1 = total * (disc1 / 100)
-      disc2 = (total - disc1) * (disc2 / 100)
-      tax = (total - (disc1 + disc2)) * (tax / 100)
-      detail.value[idx].amount_discount1 = disc1
-      detail.value[idx].amount_discount2 = disc2
-      detail.value[idx].amount_tax = tax
+      disc1 = Math.round(total * (disc1 / 100), 2)
+      disc2 = Math.round((total - disc1) * (disc2 / 100), 2)
+      tax = Math.round((total - (disc1 + disc2)) * (tax / 100), 2)
+      detail.value[idx].discount1 = disc1
+      detail.value[idx].discount2 = disc2
+      detail.value[idx].tax = tax
       total = total - (disc1 + disc2) + tax
       detail.value[idx].total = total
       let totalpo = 0
@@ -1702,7 +1724,7 @@ export default defineComponent({
               detail.value[i].prc_discount1 = info.purchase_discount
               detail.value[i].prc_tax = info.vat
               detail.value[i].current_stock = 0
-              detail.value[i].convertion = info.convertion
+              detail.value[i].conversion = info.conversion
               calculate(detail.value[i].line_no, true)
             }
           }
@@ -1715,8 +1737,7 @@ export default defineComponent({
       if (typeof data.sysid !== 'undefined') {
         console.info('entered')
         edit.value.partner_id = data.sysid
-        edit.value.supplier_name =
-          data.supplier_code + ' - ' + data.supplier_name
+        edit.value.partner_name = data.supplier_name
       }
     }
     function open_request() {
@@ -1779,6 +1800,29 @@ export default defineComponent({
         dlgRequestDtl.value = false
       }
     }
+    function change_group() {
+      item_group_opt.value.forEach((el) => {
+        if (edit.value.item_group === el.standard_code) {
+          inv_group.value = el.value
+          console.info('INV GROUP :' + inv_group.value)
+        }
+      })
+    }
+
+    function getPO(closed, data) {
+      dlgPO.value = closed
+      console.info(JSON.stringify(data))
+      if (typeof data.uuid_rec !== 'undefined') {
+        let props = {}
+        props.url = 'inventory/order/purchase/get'
+        props.uuidrec = data.uuid_rec
+        $store.dispatch('master/GET_DATA', props).then((response) => {
+          edit.value = response.header
+          detail.value = response.detail
+          stateform.value = true
+        })
+      }
+    }
 
     onMounted(async () => {
       let property = await $store.dispatch(
@@ -1799,6 +1843,33 @@ export default defineComponent({
       props.type = 'RECEIVE'
       $store.dispatch('master/GET_DATA', props).then((response) => {
         warehouse_opt.value = response
+      })
+
+      props = {}
+      props.url = 'setup/application/standard-code/list'
+      props.parent_code = 'C001'
+      $store.dispatch('master/GET_DATA', props).then((response) => {
+        purchase_type_opt.value = response
+      })
+
+      props = {}
+      props.url = 'setup/application/standard-code/list'
+      props.parent_code = 'C002'
+      $store.dispatch('master/GET_DATA', props).then((response) => {
+        order_type_opt.value = response
+      })
+
+      props = {}
+      props.url = 'setup/application/standard-code/list'
+      props.parent_code = 'C003'
+      $store.dispatch('master/GET_DATA', props).then((response) => {
+        term_opt.value = response
+      })
+      props = {}
+      props.url = 'setup/application/standard-code/list'
+      props.parent_code = 'C004'
+      $store.dispatch('master/GET_DATA', props).then((response) => {
+        item_group_opt.value = response
       })
     })
 
@@ -1868,7 +1939,16 @@ export default defineComponent({
       requestsDtl,
       selected_requestsDtl,
       pagination_requestsDtl,
-      select_requestdtl
+      select_requestdtl,
+      term_opt,
+      purchase_type_opt,
+      order_type_opt,
+      item_group_opt,
+      change_group,
+      inv_group,
+      changeitem_mou,
+      dlgPO,
+      getPO
     }
   }
 })

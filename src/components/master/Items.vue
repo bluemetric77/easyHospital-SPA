@@ -157,7 +157,7 @@ export default defineComponent({
       rowsPerPage: 25,
       rowsNumber: 25
     })
-
+    const group_name = ref('')
     const filter = ref('')
     const selected = ref([])
     const columns = ref([
@@ -233,10 +233,9 @@ export default defineComponent({
           descending: descending,
           sortBy: sortBy,
           is_active: true,
-          group_name: props.state,
+          group_name: group_name.value,
           url: 'master/inventory/inventory-item'
         }
-        console.info(JSON.stringify(prop))
         let respon = await $store.dispatch('master/GET_DATA', prop)
         data.value = respon.data
         pagination.value = {
@@ -267,6 +266,7 @@ export default defineComponent({
 
     onMounted(async () => {
       dlgItems.value = props.show
+      group_name.value = props.state
       loaddata()
     })
 
@@ -282,7 +282,8 @@ export default defineComponent({
       onRequest,
       closedata,
       dlgItems,
-      loaddata
+      loaddata,
+      group_name
     }
   }
 })

@@ -8,10 +8,10 @@
     >
       <q-card
         class="icard"
-        style="width: 800px; max-width: 80vw; max-height: 700px"
+        style="width: 900px; max-width: 80vw; max-height: 700px"
       >
         <q-bar class="entry-caption">
-          <span>Pemesanan Pembelian</span>
+          Pemesanan Pembelian
           <q-space />
           <q-input
             v-model="filter"
@@ -128,6 +128,13 @@
                   <div v-if="col.name === 'doc_number'">
                     <q-btn
                       :label="props.row.doc_number"
+                      :class="
+                        props.row.is_posted === '1'
+                          ? 'bg-green-10 text-white'
+                          : props.row.is_void === '1'
+                          ? 'bg-red-10 text-white'
+                          : 'text-blue'
+                      "
                       no-caps
                       dense
                       flat
@@ -150,7 +157,6 @@
           <q-btn
             no-caps
             label="Pilih"
-            color="positive"
             icon="check"
             flat
             class="q-mr-sm"
@@ -158,7 +164,6 @@
           />
           <q-btn
             no-caps
-            color="negative"
             label="Tutup"
             icon="close"
             flat
@@ -216,6 +221,13 @@ export default defineComponent({
         sortable: true
       },
       {
+        name: 'state',
+        align: 'left',
+        label: 'Status 1',
+        field: 'state',
+        sortable: false
+      },
+      {
         name: 'location_name',
         align: 'left',
         label: 'Lokasi',
@@ -242,6 +254,13 @@ export default defineComponent({
         label: 'Jenis Pemesanan',
         field: 'order_type',
         sortable: true
+      },
+      {
+        name: 'order_state',
+        align: 'left',
+        label: 'Status 2',
+        field: 'order_state',
+        sortable: false
       }
     ])
 

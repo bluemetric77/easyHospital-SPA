@@ -53,7 +53,7 @@
                   dense
                   outlined
                   type="text"
-                  label="No.Pemesanan"
+                  label="No.Pembelian"
                   square
                   stack-label
                 />
@@ -79,7 +79,7 @@
                   outlined
                   dense
                   options-dense
-                  label="Jenis Pemesanan"
+                  label="Jenis Pembelian"
                   emit-value
                   map-options
                   fill-input
@@ -91,20 +91,20 @@
               </div>
               <div class="col-xs-6 col-sm-4 col-md-4">
                 <q-input
-                  v-model="edit.doc_purchase_request"
-                  label="Dokumen Permintaan"
+                  v-model="edit.order_number"
+                  label="Dokumen Pemesanan"
                   outlined
                   dense
                   square
                   stack-label
-                  :readonly="edit.ref_document === 'Purchase Request'"
+                  :readonly="edit.ref_document === 'Penerimaan PO'"
                 >
                   <template v-slot:append>
                     <q-icon
                       name="search"
                       size="sm"
-                      v-show="edit.ref_document === 'Purchase Request'"
-                      @click="open_request()"
+                      v-show="edit.ref_document === 'Penerimaan PO'"
+                      @click="open_Order()"
                     />
                   </template>
                 </q-input>
@@ -132,26 +132,6 @@
                 </q-input>
               </div>
             </div>
-            <div class="row items-start q-col-gutter-xs q-mb-sm">
-              <div class="col-xs-12 col-sm-8 col-md-7">
-                <q-select
-                  v-model="edit.location_id"
-                  :options="warehouse_opt"
-                  outlined
-                  dense
-                  options-dense
-                  label="Lokasi"
-                  option-value="sysid"
-                  option-label="location_name"
-                  emit-value
-                  map-options
-                  use-input
-                  square
-                  stack-label
-                  :disable="ref_action !== 'save'"
-                />
-              </div>
-            </div>
           </div>
           <div class="col-xs-12 col-sm-5 offset-md-2 col-md-4">
             <div class="row items-start q-col-gutter-xs q-mb-sm">
@@ -161,33 +141,7 @@
                   dense
                   outlined
                   type="date"
-                  label="Tanggal Pemesanan"
-                  square
-                  stack-label
-                  :disable="ref_action !== 'save'"
-                />
-              </div>
-              <div class="col-6">
-                <q-input
-                  v-model="edit.expired_date"
-                  dense
-                  outlined
-                  type="date"
-                  label="Berlaku s/d"
-                  square
-                  stack-label
-                  :disable="ref_action !== 'save'"
-                />
-              </div>
-            </div>
-            <div class="row items-start q-col-gutter-xs q-mb-sm">
-              <div class="col-6">
-                <q-input
-                  v-model="edit.delivery_date"
-                  dense
-                  outlined
-                  type="date"
-                  label="Tanggal Pengiriman"
+                  label="Tanggal Pembelian"
                   square
                   stack-label
                   :disable="ref_action !== 'save'"
@@ -209,23 +163,18 @@
                   square
                   stack-label
                   :disable="ref_action !== 'save'"
+                  v-on:update:model-value="change_term()"
                 />
               </div>
             </div>
-            <div class="row items-start q-col-gutter-sm q-mb-sm">
+            <div class="row items-start q-col-gutter-xs q-mb-sm">
               <div class="col-6">
-                <q-select
-                  v-model="edit.purchase_type"
-                  :options="purchase_type_opt"
-                  outlined
+                <q-input
+                  v-model="edit.due_date"
                   dense
-                  options-dense
-                  label="Jenis Pembelian"
-                  option-value="standard_code"
-                  option-label="descriptions"
-                  emit-value
-                  map-options
-                  use-input
+                  outlined
+                  type="date"
+                  label="Jatuh Tempo"
                   square
                   stack-label
                   :disable="ref_action !== 'save'"
@@ -251,17 +200,17 @@
                 />
               </div>
             </div>
-            <div class="row items-start q-col-gutter-sm q-mb-sm">
+            <div class="row items-start q-col-gutter-xs q-mb-sm">
               <div class="col-12">
                 <q-select
-                  v-model="edit.order_type"
-                  :options="order_type_opt"
+                  v-model="edit.location_id"
+                  :options="warehouse_opt"
                   outlined
                   dense
                   options-dense
-                  label="Kategori Pemesanan"
-                  option-value="standard_code"
-                  option-label="descriptions"
+                  label="Lokasi"
+                  option-value="sysid"
+                  option-label="location_name"
                   emit-value
                   map-options
                   use-input
@@ -781,15 +730,15 @@
     </q-dialog>
 
     <q-dialog
-      v-model="dlgRequest"
+      v-model="dlgOrder"
       persistent
     >
       <q-card
         square
-        style="width: 800px; max-width: 95vw"
+        style="width: 1000px; max-width: 95vw"
       >
-        <q-bar class="entry-caption"
-          >Permintaan Pembelian
+        <q-bar class="entry-caption">
+          Pemesanan Pembelian
           <q-space />
           <q-btn
             icon="close"
@@ -802,19 +751,21 @@
         </q-bar>
         <q-table
           square
-          :rows="requests"
-          :columns="colrequest"
+          dense
+          :rows="Orders"
+          :columns="colOrder"
           no-data-label="data kosong"
           no-results-label="data yang kamu cari tidak ditemukan"
-          row-key="transid"
+          row-key="sysid"
           separator="cell"
           selection="single"
-          v-model:selected="selected_requests"
-          v-model:pagination="pagination_requests"
+          v-model:selected="selected_Order"
+          v-model:pagination="pagination_Order"
           binary-state-sort
           class="grid-tables fix-table-dialog"
           virtual-scroll
-          dense
+          @request="onRequestOrder"
+          :loading="loading_table"
         >
           <template v-slot:loading>
             <q-spinner-ios
@@ -887,18 +838,18 @@
         >
           <q-btn
             label="Pilih"
-            color="positive"
             icon="check"
             flat
             class="q-mr-sm"
-            @click="select_request()"
+            no-caps
+            @click="select_Order()"
           />
         </q-card-section>
       </q-card>
     </q-dialog>
 
     <q-dialog
-      v-model="dlgRequestDtl"
+      v-model="dlgOrderDtl"
       persistent
     >
       <q-card
@@ -1051,6 +1002,7 @@ export default defineComponent({
 
     const dlgPurchaseOrder = ref(false)
     const loading = ref(false)
+    const loading_table = ref(false)
     const date1 = ref(null)
     const date2 = ref(null)
     const stateform = ref(false)
@@ -1058,7 +1010,7 @@ export default defineComponent({
     const patient = ref({})
     const title = ref('Tambah Data')
     const filter = ref('')
-    const refopt = ref(['Purchase Request', 'General PO'])
+    const refopt = ref(['Penerimaan PO', 'Pembelian Bebas'])
     const dlgItem = ref(false)
     const operation = ref('')
     const ref_action = ref('')
@@ -1113,20 +1065,20 @@ export default defineComponent({
         headerStyle: 'width: 100px'
       },
       {
-        name: 'qty_draft',
-        align: 'right',
-        sytle: 'width: 30px',
-        headerStyle: 'width: 30px',
-        label: 'Jml.Draft',
-        field: 'qty_draft'
-      },
-      {
         name: 'qty_order',
         align: 'right',
         sytle: 'width: 30px',
         headerStyle: 'width: 30px',
-        label: 'Jml.Order',
+        label: 'Jml.Pesan',
         field: 'qty_order'
+      },
+      {
+        name: 'qty_received',
+        align: 'right',
+        sytle: 'width: 30px',
+        headerStyle: 'width: 30px',
+        label: 'Jml.Terima',
+        field: 'qty_received'
       },
       {
         name: 'mou_purchase',
@@ -1159,25 +1111,7 @@ export default defineComponent({
         field: 'prc_discount2'
       },
       { name: 'prc_tax', align: 'right', label: 'PPN (%)', field: 'prc_tax' },
-      { name: 'total', align: 'right', label: 'Total', field: 'total' },
-      {
-        name: 'qty_request',
-        align: 'right',
-        label: 'Permintaan',
-        field: 'qty_request'
-      },
-      {
-        name: 'current_stock',
-        align: 'right',
-        label: 'Stock',
-        field: 'current_stock'
-      },
-      {
-        name: 'source_line',
-        align: 'left',
-        label: 'Jenis',
-        field: 'source_line'
-      }
+      { name: 'total', align: 'right', label: 'Total', field: 'total' }
     ])
     const detail = ref([])
     const selected_detail = ref([])
@@ -1198,32 +1132,32 @@ export default defineComponent({
     const is_cancel = ref(false)
     const lblSave = ref('Simpan')
     const warehouse_opt = ref([])
-    const dlgRequest = ref(false)
-    const colrequest = ref([
+    const dlgOrder = ref(false)
+    const colOrder = ref([
       {
         name: 'doc_number',
         align: 'Left',
-        label: 'No.Permintaan',
+        label: 'No.Pemesanan',
         field: 'doc_number'
       },
       { name: 'ref_date', align: 'left', label: 'Tanggal', field: 'ref_date' },
       {
-        name: 'warehouse_id',
+        name: 'location_name',
         align: 'left',
-        label: 'Gudang',
-        field: 'warehouse_id'
+        label: 'Lokasi',
+        field: 'location_name'
       },
       {
-        name: 'descriptions',
+        name: 'ref_number',
         align: 'left',
-        label: 'Keterangan',
-        field: 'descriptions'
+        label: 'Referensi',
+        field: 'ref_number'
       },
       {
-        name: 'priority',
+        name: 'partner_name',
         align: 'left',
-        label: 'Prioritas',
-        field: 'priority'
+        label: 'Supplier',
+        field: 'partner_name'
       },
       {
         name: 'posted_date',
@@ -1232,23 +1166,30 @@ export default defineComponent({
         field: 'posted_date'
       },
       {
-        name: 'user_posted',
+        name: 'purchase_type',
         align: 'left',
-        label: 'User Posting',
-        field: 'user_posted'
+        label: 'Jenis Pembelian',
+        field: 'purchase_type'
+      },
+      {
+        name: 'order_type',
+        align: 'left',
+        label: 'Jenis Pemesanan',
+        field: 'order_type'
       }
     ])
-    const requests = ref([])
-    const selected_requests = ref([])
-    const pagination_requests = ref({
-      sortBy: 'transid',
+    const Orders = ref([])
+    const filter_Order = ref('')
+    const selected_Order = ref([])
+    const pagination_Order = ref({
+      sortBy: 'sysid',
       descending: true,
       page: 1,
       rowsPerPage: 0,
       rowsNumber: 0
     })
-    const dlgRequestDtl = ref(false)
-    const colrequestDtl = ref([
+    const dlgOrderDtl = ref(false)
+    const colOrderDtl = ref([
       { name: 'item_code', align: 'Left', label: 'Kode', field: 'item_code' },
       {
         name: 'part_number',
@@ -1293,9 +1234,9 @@ export default defineComponent({
         field: 'partner_name'
       }
     ])
-    const requestsDtl = ref([])
-    const selected_requestsDtl = ref([])
-    const pagination_requestsDtl = ref({
+    const OrderDtl = ref([])
+    const selected_OrderDtl = ref([])
+    const pagination_OrderDtl = ref({
       sortBy: 'line_no',
       descending: true,
       page: 1,
@@ -1370,14 +1311,12 @@ export default defineComponent({
       ref_action.value = 'save'
       edit.value = {
         sysid: -1,
-        site_code: '',
         ref_date: ymd(skrng),
-        expired_date: ymd(skrng),
-        delivery_date: null,
+        due_date: null,
         doc_number: '(NEW)',
         location_id: '',
-        ref_document: 'General PO',
-        project_title: '-',
+        invoice_number: '',
+        ref_document: 'Penerimaan PO',
         curr_rate: 1,
         curr_code: 'IDR',
         partner_id: '',
@@ -1388,10 +1327,6 @@ export default defineComponent({
         total: 0,
         term_id: 'C003@30',
         purchase_type: 'C001@R',
-        order_type: null,
-        downpayment: 0,
-        delivery_fee: 0,
-        state: 'Draft',
         is_tax: '0',
         uuid_rec: '(NEW)'
       }
@@ -1681,23 +1616,60 @@ export default defineComponent({
         edit.value.partner_name = data.supplier_name
       }
     }
-    function open_request() {
-      let props = {}
-      props.url = 'inventory/purchase-request/open'
-      $store.dispatch('master/GET_DATA', props).then((response) => {
-        requests.value = response
+    function open_Order() {
+      selected_Order.value = []
+      onRequestOrder({
+        pagination: pagination_Order.value,
+        filter: filter_Order.value
       })
-      dlgRequest.value = true
+      dlgOrder.value = true
     }
-    function select_request() {
-      if (selected_requests.value.length > 0) {
-        let item = selected_requests.value[0]
-        edit.value.purchase_request_id = item.transid
-        edit.value.doc_purchase_request = item.doc_number
-        dlgRequest.value = false
+
+    async function onRequestOrder(props) {
+      let { page, rowsPerPage, rowsNumber, sortBy, descending } =
+        props.pagination
+      let filter = props.filter
+
+      let fetchCount = rowsPerPage === 0 ? rowsNumber : rowsPerPage
+      loading_table.value = true
+      try {
+        let props = {
+          page: page,
+          limit: fetchCount,
+          filter: filter,
+          sortBy: sortBy,
+          descending: descending,
+          url: 'inventory/order/purchase/open'
+        }
+        let respon = await $store.dispatch('master/GET_DATA', props)
+        Orders.value = respon.data
+        pagination_Order.value = {
+          rowsNumber: respon.total,
+          page: respon.current_page,
+          rowsPerPage: respon.per_page,
+          sortBy: sortBy,
+          descending: descending
+        }
+      } catch (error) {
+      } finally {
+        loading_table.value = false
       }
     }
-    function select_requestdtl() {
+
+    function select_Order() {
+      if (selected_Order.value.length > 0) {
+        let item = selected_Order.value[0]
+        edit.value.order_sysid = item.sysid
+        edit.value.order_number = item.doc_number
+        edit.value.partner_id = item.partner_id
+        edit.value.partner_name = item.partner_name
+        edit.value.location_id = item.location_id
+        edit.value.term_id = item.term_id
+        edit.value.item_group = item.item_group
+        dlgOrder.value = false
+      }
+    }
+    function select_Orderdtl() {
       if (selected_requestsDtl.value.length > 0) {
         let founded = false
         selected_requestsDtl.value.forEach((el) => {
@@ -1741,6 +1713,7 @@ export default defineComponent({
         dlgRequestDtl.value = false
       }
     }
+
     function change_group() {
       item_group_opt.value.forEach((el) => {
         if (edit.value.item_group === el.standard_code) {
@@ -1749,7 +1722,16 @@ export default defineComponent({
         }
       })
     }
-
+    function change_term() {
+      term_opt.value.forEach((el) => {
+        if (edit.value.term_id === el.standard_code) {
+          console.info(JSON.stringify(el))
+          let date = new Date(edit.value.ref_date)
+          date.setDate(date.getDate() + parseInt(el.value))
+          edit.value.due_date = ymd(date)
+        }
+      })
+    }
     function getPO(closed, data) {
       dlgPO.value = closed
       if (typeof data.uuid_rec !== 'undefined') {
@@ -1823,6 +1805,7 @@ export default defineComponent({
     return {
       dlgPurchaseOrder,
       loading,
+      loading_table,
       stateform,
       data,
       patient,
@@ -1872,19 +1855,20 @@ export default defineComponent({
       warehouse_opt,
       getSupplier,
       getItemByCode,
-      open_request,
-      dlgRequest,
-      colrequest,
-      requests,
-      selected_requests,
-      pagination_requests,
-      select_request,
-      dlgRequestDtl,
-      colrequestDtl,
-      requestsDtl,
-      selected_requestsDtl,
-      pagination_requestsDtl,
-      select_requestdtl,
+      open_Order,
+      dlgOrder,
+      colOrder,
+      Orders,
+      selected_Order,
+      pagination_Order,
+      filter_Order,
+      select_Order,
+      dlgOrderDtl,
+      colOrderDtl,
+      OrderDtl,
+      selected_OrderDtl,
+      pagination_OrderDtl,
+      select_Orderdtl,
       term_opt,
       purchase_type_opt,
       order_type_opt,
@@ -1896,7 +1880,9 @@ export default defineComponent({
       getPO,
       approved_event,
       ref_action,
-      cancel_entry
+      cancel_entry,
+      change_term,
+      onRequestOrder
     }
   }
 })

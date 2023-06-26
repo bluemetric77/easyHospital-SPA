@@ -188,6 +188,11 @@ const routes = [
         path: 'purchase/order',
         name: 'purchase_order',
         component: () => import('pages/inventory/PurchaseOrder.vue')
+      },
+      {
+        path: 'purchase/receive',
+        name: 'purchase_receive',
+        component: () => import('pages/inventory/Purchase.vue')
       }
     ]
   },

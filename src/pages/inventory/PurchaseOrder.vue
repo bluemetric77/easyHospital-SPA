@@ -553,234 +553,6 @@
     </q-page-sticky>
 
     <q-dialog
-      v-model="dlgPurchaseOrder"
-      persistent
-    >
-      <q-card
-        v-show="!stateform && Filtered"
-        square
-        class="icard q-mb-sm"
-      >
-        <q-bar
-          class="entry-caption"
-          style="font-size: 10px"
-        >
-          <span><strong>Filter</strong></span>
-          <q-space />
-          <q-btn
-            dense
-            flat
-            icon="ti-close"
-            color="white"
-            size="xs"
-            @click="Filtered = !Filtered"
-          />
-        </q-bar>
-        <q-card-section class="q-pa-sm">
-          <div class="row items-center q-gutter-sm">
-            <q-input
-              v-model="date1"
-              type="date"
-              dense
-              outlined
-              square
-              label="Tanggal"
-            />
-            <q-input
-              v-model="date2"
-              type="date"
-              dense
-              outlined
-              square
-              label="Tanggal"
-            />
-            <q-btn
-              glossy
-              rounded
-              label="Perbaharui"
-              icon="refresh"
-              color="green-10"
-              no-caps
-              @click="loaddata()"
-            />
-          </div>
-        </q-card-section>
-      </q-card>
-
-      <q-card
-        v-show="!stateform"
-        square
-        class="icard"
-      >
-        <q-bar class="entry-caption">
-          <span
-            ><strong>{{ pagetitle }}</strong></span
-          >
-          <q-space />
-          <q-input
-            v-model="filter"
-            dense
-            outline
-            debounce="300"
-            label-color="white"
-            borderless
-            placeholder="Pencarian"
-            input-class="text-white"
-          >
-            <template v-slot:append>
-              <q-icon
-                v-if="filter === ''"
-                name="search"
-                color="white"
-                size="sm"
-              />
-              <q-icon
-                v-else
-                name="clear"
-                class="cursor-pointer"
-                color="white"
-                size="sm"
-                @click="filter = ''"
-              />
-            </template>
-          </q-input>
-        </q-bar>
-        <q-table
-          square
-          :rows="data"
-          :columns="columns"
-          no-data-label="data kosong"
-          no-results-label="data yang kamu cari tidak ditemukan"
-          row-key="transid"
-          :filter="filter"
-          separator="cell"
-          selection="single"
-          v-model:selected="selected"
-          v-model:pagination="pagination"
-          binary-state-sort
-          @request="onRequest"
-          :loading="loading"
-          :class="
-            Filtered
-              ? 'grid-tables fix-table-with-parameter'
-              : 'grid-tables fix-table'
-          "
-          virtual-scroll
-          dense
-        >
-          <template v-slot:loading>
-            <q-spinner-ios
-              showing
-              color="primary"
-            />
-          </template>
-          <template v-slot:no-data="{ icon, message, filter }">
-            <div class="full-width row flex-top text-accent q-gutter-sm">
-              <q-icon
-                size="2em"
-                name="sentiment_dissatisfied"
-              />
-              <span>{{ message }}</span>
-              <q-icon
-                size="2em"
-                :name="filter ? 'filter_b_and_w' : icon"
-              />
-            </div>
-          </template>
-          <template v-slot:header="props">
-            <q-tr :props="props">
-              <q-th
-                v-for="col in props.cols"
-                :key="col.name"
-                :props="props"
-              >
-                {{ col.label }}
-              </q-th>
-            </q-tr>
-          </template>
-          <template v-slot:body="props">
-            <q-tr
-              :props="props"
-              @click="props.selected = !props.selected"
-              :class="
-                props.row.is_cancel === '1'
-                  ? 'q-pa-xs text-grey'
-                  : props.row.is_posted === '1'
-                  ? 'q-pa-xs text-green-10'
-                  : props.row.is_cancel === '1'
-                  ? 'q-pa-xs text-red-10 text-strike'
-                  : 'q-pa-xs'
-              "
-            >
-              <q-td
-                v-for="col in props.cols"
-                :key="col.name"
-                :props="props"
-              >
-                <div class="grid-data">
-                  <div v-if="col.name === 'action'">
-                    <q-icon
-                      v-for="(btn, index) in btns"
-                      v-show="btn.is_allowed && btn.is_show"
-                      :key="index"
-                      no-caps
-                      flat
-                      class="q-mr-sm"
-                      :name="btn.icon"
-                      size="xs"
-                      color="green-10"
-                      @click="runMethod(btn.onclick, props.row.transid)"
-                    >
-                      <q-tooltip content-class="tooltips-app">
-                        {{ btn.tooltips }}
-                      </q-tooltip>
-                    </q-icon>
-                  </div>
-                  <div v-else-if="col.name === 'status'">
-                    <span>{{
-                      props.row.is_cancel === '1'
-                        ? 'Dibatalkan'
-                        : props.row.is_posted === '1'
-                        ? 'Disetujui'
-                        : 'Draft'
-                    }}</span>
-                  </div>
-                  <div v-else-if="col.name === 'ref_date'">
-                    {{ $INDDate(props.row.ref_date) }}
-                  </div>
-                  <div v-else-if="col.name === 'validate_date'">
-                    {{ $INDDate(props.row.validate_date) }}
-                  </div>
-                  <div v-else-if="col.name === 'total'">
-                    {{ $formatnumber(props.row.total) }}
-                  </div>
-                  <div v-else-if="col.name === 'approved_total'">
-                    {{ $formatnumber(props.row.approved_total) }}
-                  </div>
-                  <div v-else-if="col.name === 'posted_date'">
-                    {{ $INDDateTime(props.row.posted_date) }}
-                  </div>
-                  <div v-else-if="col.name === 'doc_name'">
-                    <q-icon
-                      name="fas fa-cloud-upload-alt"
-                      size="xs"
-                      color="blue"
-                      class="q-mr-sm"
-                      @click="upload_event(props.row.transid)"
-                    /><span>{{ props.row.doc_name }}</span>
-                  </div>
-                  <div v-else>
-                    {{ col.value }}
-                  </div>
-                </div>
-              </q-td>
-            </q-tr>
-          </template>
-        </q-table>
-      </q-card>
-    </q-dialog>
-
-    <q-dialog
       v-model="dlgRequest"
       persistent
     >
@@ -1345,7 +1117,7 @@ export default defineComponent({
           descending: descending,
           date1: date1.value,
           date2: date2.value,
-          url: api_url.value.retrieve,
+          url: 'inventory/purchase/order',
           isopen: Filtered.value ? '1' : '0',
           all: postate.value === 'ALL' ? '1' : '0'
         }
@@ -1429,11 +1201,11 @@ export default defineComponent({
           app.header = edit.value
           app.detail = detail.value
           if (ref_action.value === 'save') {
-            app.url = 'inventory/order/purchase'
+            app.url = 'inventory/purchase/order'
           } else if (ref_action.value === 'approved') {
-            app.url = 'inventory/order/purchase/posting'
+            app.url = 'inventory/purchase/order/posting'
           } else if (ref_action.value === 'deleted') {
-            app.url = 'inventory/order/purchase'
+            app.url = 'inventory/purchase/order'
           }
           app.progress = true
           let respon = {}
@@ -1754,7 +1526,7 @@ export default defineComponent({
       dlgPO.value = closed
       if (typeof data.uuid_rec !== 'undefined') {
         let props = {}
-        props.url = 'inventory/order/purchase/get'
+        props.url = 'inventory/purchase/order/get'
         props.uuidrec = data.uuid_rec
         $store.dispatch('master/GET_DATA', props).then((response) => {
           edit.value = response.header

@@ -54,11 +54,12 @@
             />
             <q-btn
               icon="search"
-              label="Query"
+              label="Perbaharui Data"
               no-caps
-              flat
               dense
-              class="btn-action"
+              flat
+              size="md"
+              class="btn-operation"
             />
           </div>
         </q-card-section>
@@ -307,7 +308,7 @@ export default defineComponent({
           sortBy: sortBy,
           date1: date1.value,
           date2: date2.value,
-          url: 'inventory/order/purchase'
+          url: 'inventory/purchase/order'
         }
         let respon = await $store.dispatch('master/GET_DATA', prop)
         data.value = respon.data

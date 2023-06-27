@@ -159,7 +159,6 @@
                   option-label="descriptions"
                   emit-value
                   map-options
-                  use-input
                   square
                   stack-label
                   :disable="ref_action !== 'save'"
@@ -192,7 +191,6 @@
                   option-label="descriptions"
                   emit-value
                   map-options
-                  use-input
                   square
                   stack-label
                   :disable="ref_action !== 'save'"
@@ -280,151 +278,38 @@
               :key="col.name"
               :props="props"
             >
-              <div v-if="ref_action === 'approved'">
-                <div class="grid-data">
-                  <div v-if="col.name === 'qty_draft'">
-                    {{ $formatnumber(props.row.qty_draft, 2) }}
-                  </div>
-                  <div v-else-if="col.name === 'qty_order'">
-                    <vue-numeric
-                      v-model="props.row.qty_order"
-                      class="q-field__input right-input"
-                      separator="."
-                      :disable="ref_action !== 'save'"
-                      @input="calculate(props.row.line_no, false)"
-                    />
-                  </div>
-                  <div v-else-if="col.name === 'package'">
-                    {{ props.row.conversion }} {{ props.row.mou_inventory }}
-                  </div>
-                  <div v-else-if="col.name === 'price'">
-                    {{ $formatnumber(props.row.price, 0) }}
-                  </div>
-                  <div v-else-if="col.name === 'prc_discount1'">
-                    {{ $formatnumber(props.row.prc_discount1, 2) }}
-                  </div>
-                  <div v-else-if="col.name === 'prc_discount2'">
-                    {{ $formatnumber(props.row.prc_discount2, 2) }}
-                  </div>
-                  <div v-else-if="col.name === 'prc_tax'">
-                    {{ $formatnumber(props.row.prc_tax, 2) }}
-                  </div>
-                  <div v-else-if="col.name === 'total'">
-                    {{ $formatnumber(props.row.total) }}
-                  </div>
-                  <div v-else>
-                    {{ col.value }}
-                  </div>
+              <div class="grid-data">
+                <div v-if="col.name === 'qty_order'">
+                  {{ $formatnumber(props.row.qty_order, 2) }}
                 </div>
-              </div>
-              <div v-else>
-                <div class="grid-data">
-                  <div v-if="col.name === 'line_no'">
-                    {{ col.value }}
-                    <q-icon
-                      v-show="ref_action !== 'deleted'"
-                      name="delete"
-                      color="red"
-                      size="xs"
-                      @click="removeRow(props.row.line_no)"
-                    />
-                  </div>
-                  <div v-else-if="col.name === 'item_code'">
-                    <input
-                      v-model="props.row.item_code"
-                      type="text"
-                      style="width: 80px"
-                      class="input"
-                      :disabled="ref_action === 'deleted'"
-                      v-on:keyup.enter="
-                        getItemByCode(
-                          props.row.item_code,
-                          props.row.line_no,
-                          inv_group
-                        )
-                      "
-                    />
-                    <q-icon
-                      v-show="ref_action !== 'deleted'"
-                      name="search"
-                      color="blue"
-                      size="sm"
-                      @click="openitem(props.row.line_no)"
-                    />
-                  </div>
-                  <div v-else-if="col.name === 'line_type'">
-                    <select
-                      v-model="props.row.line_type"
-                      class="q-field__input select-input full-width"
-                      style="width: 100px"
-                      :disabled="ref_action === 'deleted'"
-                    >
-                      <option>Follow</option>
-                      <option>Kill</option>
-                    </select>
-                  </div>
-                  <div v-else-if="col.name === 'package'">
-                    {{ props.row.conversion }} {{ props.row.mou_inventory }}
-                  </div>
-                  <div v-else-if="col.name === 'qty_draft'">
-                    <vue-numeric
-                      v-model="props.row.qty_draft"
-                      class="q-field__input right-input"
-                      separator="."
-                      @input="calculate(props.row.line_no, true)"
-                      :disabled="ref_action === 'deleted'"
-                    />
-                  </div>
-                  <div v-else-if="col.name === 'qty_order'">
-                    <span style="color: red">{{
-                      $formatnumber(props.row.qty_order, 2)
-                    }}</span>
-                  </div>
-                  <div v-else-if="col.name === 'price'">
-                    <vue-numeric
-                      v-model="props.row.price"
-                      class="q-field__input right-input"
-                      separator="."
-                      @input="calculate(props.row.line_no, true)"
-                      :disabled="ref_action === 'deleted'"
-                    />
-                  </div>
-                  <div v-else-if="col.name === 'prc_discount1'">
-                    <vue-numeric
-                      v-model="props.row.prc_discount1"
-                      class="q-field__input right-input"
-                      separator="."
-                      :v-bind:precision="2"
-                      @input="calculate(props.row.line_no, true)"
-                      :disabled="ref_action === 'deleted'"
-                    />
-                  </div>
-                  <div v-else-if="col.name === 'prc_discount2'">
-                    <vue-numeric
-                      v-model="props.row.prc_discount2"
-                      class="q-field__input right-input"
-                      separator="."
-                      :v-bind:precision="2"
-                      @input="calculate(props.row.line_no, true)"
-                      :disabled="ref_action === 'deleted'"
-                    />
-                  </div>
-                  <div v-else-if="col.name === 'prc_tax'">
-                    <vue-numeric
-                      v-model="props.row.prc_tax"
-                      class="q-field__input right-input"
-                      separator="."
-                      :v-bind:precision="2"
-                      :disabled="ref_action === 'deleted'"
-                      @input="calculate(props.row.line_no, true)"
-                    />
-                  </div>
-                  <div v-else-if="col.name === 'total'">
-                    {{ $formatnumber(props.row.total) }}
-                  </div>
-                  <div v-else>
-                    {{ col.value }}
-                  </div>
+                <div v-else-if="col.name === 'qty_received'">
+                  <vue-numeric
+                    v-model="props.row.qty_received"
+                    class="q-field__input right-input"
+                    separator="."
+                    @input="calculate(props.row.line_no)"
+                  />
+                </div>
+                <div v-else-if="col.name === 'package'">
+                  {{ props.row.conversion }} {{ props.row.mou_inventory }}
+                </div>
+                <div v-else-if="col.name === 'price'">
+                  {{ $formatnumber(props.row.price, 0) }}
+                </div>
+                <div v-else-if="col.name === 'prc_discount1'">
+                  {{ $formatnumber(props.row.prc_discount1, 2) }}
+                </div>
+                <div v-else-if="col.name === 'prc_discount2'">
+                  {{ $formatnumber(props.row.prc_discount2, 2) }}
+                </div>
+                <div v-else-if="col.name === 'prc_tax'">
+                  {{ $formatnumber(props.row.prc_tax, 2) }}
+                </div>
+                <div v-else-if="col.name === 'total'">
+                  {{ $formatnumber(props.row.total) }}
+                </div>
+                <div v-else>
+                  {{ col.value }}
                 </div>
               </div>
             </q-td>
@@ -500,234 +385,6 @@
         />
       </q-toolbar>
     </q-page-sticky>
-
-    <q-dialog
-      v-model="dlgPurchaseOrder"
-      persistent
-    >
-      <q-card
-        v-show="!stateform && Filtered"
-        square
-        class="icard q-mb-sm"
-      >
-        <q-bar
-          class="entry-caption"
-          style="font-size: 10px"
-        >
-          <span><strong>Filter</strong></span>
-          <q-space />
-          <q-btn
-            dense
-            flat
-            icon="ti-close"
-            color="white"
-            size="xs"
-            @click="Filtered = !Filtered"
-          />
-        </q-bar>
-        <q-card-section class="q-pa-sm">
-          <div class="row items-center q-gutter-sm">
-            <q-input
-              v-model="date1"
-              type="date"
-              dense
-              outlined
-              square
-              label="Tanggal"
-            />
-            <q-input
-              v-model="date2"
-              type="date"
-              dense
-              outlined
-              square
-              label="Tanggal"
-            />
-            <q-btn
-              glossy
-              rounded
-              label="Perbaharui"
-              icon="refresh"
-              color="green-10"
-              no-caps
-              @click="loaddata()"
-            />
-          </div>
-        </q-card-section>
-      </q-card>
-
-      <q-card
-        v-show="!stateform"
-        square
-        class="icard"
-      >
-        <q-bar class="entry-caption">
-          <span
-            ><strong>{{ pagetitle }}</strong></span
-          >
-          <q-space />
-          <q-input
-            v-model="filter"
-            dense
-            outline
-            debounce="300"
-            label-color="white"
-            borderless
-            placeholder="Pencarian"
-            input-class="text-white"
-          >
-            <template v-slot:append>
-              <q-icon
-                v-if="filter === ''"
-                name="search"
-                color="white"
-                size="sm"
-              />
-              <q-icon
-                v-else
-                name="clear"
-                class="cursor-pointer"
-                color="white"
-                size="sm"
-                @click="filter = ''"
-              />
-            </template>
-          </q-input>
-        </q-bar>
-        <q-table
-          square
-          :rows="data"
-          :columns="columns"
-          no-data-label="data kosong"
-          no-results-label="data yang kamu cari tidak ditemukan"
-          row-key="transid"
-          :filter="filter"
-          separator="cell"
-          selection="single"
-          v-model:selected="selected"
-          v-model:pagination="pagination"
-          binary-state-sort
-          @request="onRequest"
-          :loading="loading"
-          :class="
-            Filtered
-              ? 'grid-tables fix-table-with-parameter'
-              : 'grid-tables fix-table'
-          "
-          virtual-scroll
-          dense
-        >
-          <template v-slot:loading>
-            <q-spinner-ios
-              showing
-              color="primary"
-            />
-          </template>
-          <template v-slot:no-data="{ icon, message, filter }">
-            <div class="full-width row flex-top text-accent q-gutter-sm">
-              <q-icon
-                size="2em"
-                name="sentiment_dissatisfied"
-              />
-              <span>{{ message }}</span>
-              <q-icon
-                size="2em"
-                :name="filter ? 'filter_b_and_w' : icon"
-              />
-            </div>
-          </template>
-          <template v-slot:header="props">
-            <q-tr :props="props">
-              <q-th
-                v-for="col in props.cols"
-                :key="col.name"
-                :props="props"
-              >
-                {{ col.label }}
-              </q-th>
-            </q-tr>
-          </template>
-          <template v-slot:body="props">
-            <q-tr
-              :props="props"
-              @click="props.selected = !props.selected"
-              :class="
-                props.row.is_cancel === '1'
-                  ? 'q-pa-xs text-grey'
-                  : props.row.is_posted === '1'
-                  ? 'q-pa-xs text-green-10'
-                  : props.row.is_cancel === '1'
-                  ? 'q-pa-xs text-red-10 text-strike'
-                  : 'q-pa-xs'
-              "
-            >
-              <q-td
-                v-for="col in props.cols"
-                :key="col.name"
-                :props="props"
-              >
-                <div class="grid-data">
-                  <div v-if="col.name === 'action'">
-                    <q-icon
-                      v-for="(btn, index) in btns"
-                      v-show="btn.is_allowed && btn.is_show"
-                      :key="index"
-                      no-caps
-                      flat
-                      class="q-mr-sm"
-                      :name="btn.icon"
-                      size="xs"
-                      color="green-10"
-                      @click="runMethod(btn.onclick, props.row.transid)"
-                    >
-                      <q-tooltip content-class="tooltips-app">
-                        {{ btn.tooltips }}
-                      </q-tooltip>
-                    </q-icon>
-                  </div>
-                  <div v-else-if="col.name === 'status'">
-                    <span>{{
-                      props.row.is_cancel === '1'
-                        ? 'Dibatalkan'
-                        : props.row.is_posted === '1'
-                        ? 'Disetujui'
-                        : 'Draft'
-                    }}</span>
-                  </div>
-                  <div v-else-if="col.name === 'ref_date'">
-                    {{ $INDDate(props.row.ref_date) }}
-                  </div>
-                  <div v-else-if="col.name === 'validate_date'">
-                    {{ $INDDate(props.row.validate_date) }}
-                  </div>
-                  <div v-else-if="col.name === 'total'">
-                    {{ $formatnumber(props.row.total) }}
-                  </div>
-                  <div v-else-if="col.name === 'approved_total'">
-                    {{ $formatnumber(props.row.approved_total) }}
-                  </div>
-                  <div v-else-if="col.name === 'posted_date'">
-                    {{ $INDDateTime(props.row.posted_date) }}
-                  </div>
-                  <div v-else-if="col.name === 'doc_name'">
-                    <q-icon
-                      name="fas fa-cloud-upload-alt"
-                      size="xs"
-                      color="blue"
-                      class="q-mr-sm"
-                      @click="upload_event(props.row.transid)"
-                    /><span>{{ props.row.doc_name }}</span>
-                  </div>
-                  <div v-else>
-                    {{ col.value }}
-                  </div>
-                </div>
-              </q-td>
-            </q-tr>
-          </template>
-        </q-table>
-      </q-card>
-    </q-dialog>
 
     <q-dialog
       v-model="dlgOrder"
@@ -854,7 +511,7 @@
     >
       <q-card
         square
-        style="width: 800px; max-width: 95vw"
+        style="width: 1000px; max-width: 95vw"
       >
         <q-bar class="entry-caption"
           >Detail Permintaan Pembelian
@@ -870,19 +527,19 @@
         </q-bar>
         <q-table
           square
-          :rows="requestsDtl"
-          :columns="colrequestDtl"
+          dense
+          :rows="OrderDtl"
+          :columns="colOrderDtl"
           no-data-label="data kosong"
           no-results-label="data yang kamu cari tidak ditemukan"
           row-key="line_no"
           separator="cell"
           selection="multiple"
-          v-model:selected="selected_requestsDtl"
-          v-model:pagination="pagination_requestsDtl"
+          v-model:selected="selected_OrderDtl"
+          v-model:pagination="pagination_OrderDtl"
           binary-state-sort
           class="grid-tables fix-table-dialog"
           virtual-scroll
-          dense
         >
           <template v-slot:loading>
             <q-spinner-ios
@@ -926,17 +583,27 @@
                 :props="props"
               >
                 <div class="grid-data">
-                  <div v-if="col.name === 'ref_date'">
-                    {{ $INDDate(props.row.ref_date) }}
+                  <div v-if="col.name === 'conversion'">
+                    1 {{ props.row.mou_purchase }} ({{ props.row.conversion }}
+                    {{ props.row.mou_inventory }})
                   </div>
-                  <div v-else-if="col.name === 'posted_date'">
-                    {{ $INDDateTime(props.row.posted_date) }}
+                  <div v-else-if="col.name === 'qty_received'">
+                    {{ $formatnumber(props.row.qty_received) }}
                   </div>
-                  <div v-else-if="col.name === 'qty_request'">
-                    {{ $formatnumber(props.row.qty_request) }}
+                  <div v-else-if="col.name === 'qty_order'">
+                    {{ $formatnumber(props.row.qty_order) }}
                   </div>
-                  <div v-else-if="col.name === 'line_supply'">
-                    {{ $formatnumber(props.row.line_supply) }}
+                  <div v-else-if="col.name === 'price'">
+                    {{ $formatnumber(props.row.price) }}
+                  </div>
+                  <div v-else-if="col.name === 'prc_discount1'">
+                    {{ $formatnumber(props.row.prc_discount1, 2) }}
+                  </div>
+                  <div v-else-if="col.name === 'prc_discount2'">
+                    {{ $formatnumber(props.row.prc_discount2, 2) }}
+                  </div>
+                  <div v-else-if="col.name === 'prc_tax'">
+                    {{ $formatnumber(props.row.prc_tax) }}
                   </div>
                   <div v-else>
                     {{ col.value }}
@@ -952,11 +619,11 @@
         >
           <q-btn
             label="Pilih"
-            color="positive"
+            no-caps
             icon="check"
             flat
             class="q-mr-sm"
-            @click="select_requestdtl()"
+            @click="select_Orderdtl()"
           />
         </q-card-section>
       </q-card>
@@ -974,8 +641,8 @@
       @CloseData="getSupplier"
     />
     <po
-      v-if="dlgPO"
-      :show="dlgPO"
+      v-if="dlgReceive"
+      :show="dlgReceive"
       @ClosePO="getPO"
     />
   </q-page>
@@ -1000,7 +667,7 @@ export default defineComponent({
     const $store = useStore()
     const $router = useRouter()
 
-    const dlgPurchaseOrder = ref(false)
+    const dlgPurchaseReceive = ref(false)
     const loading = ref(false)
     const loading_table = ref(false)
     const date1 = ref(null)
@@ -1055,14 +722,6 @@ export default defineComponent({
         sytle: 'width: 250px',
         headerStyle: 'width: 250px',
         field: 'item_name'
-      },
-      {
-        name: 'line_type',
-        align: 'left',
-        label: 'Tipe',
-        field: 'line_type',
-        style: 'width:100px',
-        headerStyle: 'width: 100px'
       },
       {
         name: 'qty_order',
@@ -1192,46 +851,52 @@ export default defineComponent({
     const colOrderDtl = ref([
       { name: 'item_code', align: 'Left', label: 'Kode', field: 'item_code' },
       {
-        name: 'part_number',
+        name: 'item_name',
         align: 'left',
-        label: 'Part Numner',
-        field: 'part_number'
+        label: 'Nama Barang/Jasa',
+        field: 'item_name'
       },
       {
-        name: 'descriptions',
-        align: 'left',
-        label: 'Nama Item',
-        field: 'descriptions'
-      },
-      {
-        name: 'qty_request',
+        name: 'qty_order',
         align: 'right',
-        label: 'Permintaan',
-        field: 'qty_request'
+        label: 'Pemesanan',
+        field: 'qty_order'
       },
       {
-        name: 'line_supply',
+        name: 'qty_received',
         align: 'right',
-        label: 'Sudah PO',
-        field: 'line_supply'
+        label: 'Terkirim',
+        field: 'qty_received'
       },
       {
-        name: 'mou_purchase',
-        align: 'left',
-        label: 'Satuan Beli',
-        field: 'mou_purchase'
+        name: 'conversion',
+        align: 'right',
+        label: 'Kemasan',
+        field: 'conversion'
       },
       {
-        name: 'current_stock',
-        align: 'left',
-        label: 'Stock Gudang',
-        field: 'current_stock'
+        name: 'price',
+        align: 'right',
+        label: 'Harga',
+        field: 'price'
       },
       {
-        name: 'partner_name',
-        align: 'left',
-        label: 'Supplier terakhir',
-        field: 'partner_name'
+        name: 'prc_discount1',
+        align: 'right',
+        label: 'Diskon 1 (%)',
+        field: 'prc_discount1'
+      },
+      {
+        name: 'prc_discount2',
+        align: 'right',
+        label: 'Diskon 2 (%)',
+        field: 'prc_discount2'
+      },
+      {
+        name: 'prc_tax',
+        align: 'right',
+        label: 'PPN (%)',
+        field: 'prc_tax'
       }
     ])
     const OrderDtl = ref([])
@@ -1249,7 +914,7 @@ export default defineComponent({
     const order_type_opt = ref([])
     const item_group_opt = ref([])
     const inv_group = ref('')
-    const dlgPO = ref(false)
+    const dlgReceive = ref(false)
 
     function runMethod(method, transid = -1) {
       this[method](transid)
@@ -1321,41 +986,30 @@ export default defineComponent({
         curr_code: 'IDR',
         partner_id: '',
         partner_name: '',
-        doc_purchase_request: '-',
-        purchase_request_id: -1,
+        order_number: '-',
+        order_sysid: -1,
         remarks: '',
         total: 0,
-        term_id: 'C003@30',
-        purchase_type: 'C001@R',
+        term_id: 'C003@0',
         is_tax: '0',
-        uuid_rec: '(NEW)'
+        uuid_rec: '(NEW)',
+        uuid_rec_order: ''
       }
       detail.value = []
     }
 
     async function edit_event(uuidrec = '') {
-      dlgPO.value = true
-      ref_action.value = 'save'
+      dlgReceive.value = true
     }
 
     async function approved_event(uuidrec = '') {
-      dlgPO.value = true
-      ref_action.value = 'approved'
-    }
-    async function delete_event(transid = '') {
-      dlgPO.value = true
-      ref_action.value = 'deleted'
+      dlgReceive.value = true
     }
 
     function save_data() {
       $q.dialog({
         title: 'Konfirmasi',
-        message:
-          ref_action.value === 'save'
-            ? 'Apakah order pembelian ini akan disimpan ?'
-            : ref_action.value === 'deleted'
-            ? 'Apakah order pembelian ini akan dibatalkan ?'
-            : 'Apakah order pembelian ini akan disetujui ?',
+        message: 'Apakah invoice pembelian ini akan disimpan ?',
         cancel: true,
         persistent: true
       }).onOk(async () => {
@@ -1363,20 +1017,10 @@ export default defineComponent({
           let app = {}
           app.header = edit.value
           app.detail = detail.value
-          if (ref_action.value === 'save') {
-            app.url = 'inventory/order/purchase'
-          } else if (ref_action.value === 'approved') {
-            app.url = 'inventory/order/purchase/posting'
-          } else if (ref_action.value === 'deleted') {
-            app.url = 'inventory/order/purchase'
-          }
+          app.url = 'inventory/purchase/receive'
           app.progress = true
           let respon = {}
-          if (ref_action.value !== 'deleted') {
-            respon = await $store.dispatch('master/POST_DATA', app)
-          } else {
-            respon = await $store.dispatch('master/DELETE_DATA', app)
-          }
+          respon = await $store.dispatch('master/POST_DATA', app)
           if (!(typeof respon === 'undefined')) {
             let msg = respon.data
             if (respon.success) {
@@ -1407,26 +1051,8 @@ export default defineComponent({
       })
     }
 
-    async function print_event(transid = -1) {
-      if (selected.value.length > 0 || !(transid === -1)) {
-        if (transid === -1) {
-          let item = selected.value[0]
-          transid = item.transid
-        }
-        $q.loading.show({ delay: 200 })
-        try {
-          let props = {}
-          props.url = api_url.value.print
-          props.transid = transid
-          await $store.dispatch('master/GET_DOWNLOAD', props)
-        } finally {
-          $q.loading.hide()
-        }
-      }
-    }
-
     async function addrow() {
-      if (edit.value.doc_purchase_request === '-') {
+      if (edit.value.order_number === '-') {
         let data = {}
         data = {
           transid: -1,
@@ -1436,7 +1062,8 @@ export default defineComponent({
           mou_purchase: '',
           mou_warehouse: '',
           convertion: 0,
-          qty_draft: 0,
+          qty_order: 0,
+          qty_received: 0,
           price: 0,
           prc_discount1: 0,
           discount1: 0,
@@ -1445,24 +1072,18 @@ export default defineComponent({
           prc_tax: 0,
           tax: 0,
           total: 0,
-          line_type: 'Follow',
-          source_line: 'FreeLine',
-          line_state: 'O',
-          qty_request: 0,
-          current_stock: 0,
-          purchase_request_id: -1,
-          purchase_line_no: -1
+          order_sysid: -1,
+          order_number: ''
         }
         detail.value.push(data)
         openitem(data.line_no)
       } else {
-        selected_requestsDtl.value = []
-        dlgRequestDtl.value = true
+        selected_OrderDtl.value = []
+        dlgOrderDtl.value = true
         let props = {}
-        props.url = 'inventory/purchase-order/dtlrequest'
-        props.doc_number = edit.value.doc_purchase_request
-        props.all = '0'
-        requestsDtl.value = await $store.dispatch('master/GET_DATA', props)
+        props.url = 'inventory/purchase/order/detail'
+        props.uuid_rec = edit.value.uuid_rec_order
+        OrderDtl.value = await $store.dispatch('master/GET_DATA', props)
       }
     }
 
@@ -1543,27 +1164,10 @@ export default defineComponent({
       })
     }
 
-    function calculate(lineno, isdraft = false) {
+    function calculate(lineno) {
       let idx = lineno - 1
-      if (isdraft === true) {
-        if (detail.value[idx].source_line === 'ReqLine') {
-          if (detail.value[idx].qty_draft > detail.value[idx].qty_request) {
-            $q.dialog({
-              title: 'Peringatan',
-              message: 'Jumlah Order tidak boleh besar dari permintaan',
-              persistent: true
-            })
-            return
-          }
-        }
-      }
       let qty = 0
-      if (isdraft) {
-        qty = detail.value[idx].qty_draft
-        detail.value[idx].qty_order = qty
-      } else {
-        qty = detail.value[idx].qty_order
-      }
+      qty = detail.value[idx].qty_received
       let price = detail.value[idx].price
       let disc1 = detail.value[idx].prc_discount1
       let disc2 = detail.value[idx].prc_discount2
@@ -1577,11 +1181,11 @@ export default defineComponent({
       detail.value[idx].tax = tax
       total = total - (disc1 + disc2) + tax
       detail.value[idx].total = total
-      let totalpo = 0
+      let total_inv = 0
       detail.value.forEach((el) => {
-        totalpo = totalpo + el.total
+        total_inv = total_inv + el.total
       })
-      edit.value.total = totalpo
+      edit.value.total = total_inv
     }
 
     async function changeref() {}
@@ -1602,7 +1206,7 @@ export default defineComponent({
               detail.value[i].prc_tax = info.vat
               detail.value[i].current_stock = 0
               detail.value[i].conversion = info.conversion
-              calculate(detail.value[i].line_no, true)
+              calculate(detail.value[i].line_no)
             }
           }
         }
@@ -1639,7 +1243,7 @@ export default defineComponent({
           filter: filter,
           sortBy: sortBy,
           descending: descending,
-          url: 'inventory/order/purchase/open'
+          url: 'inventory/purchase/order/open'
         }
         let respon = await $store.dispatch('master/GET_DATA', props)
         Orders.value = respon.data
@@ -1666,13 +1270,16 @@ export default defineComponent({
         edit.value.location_id = item.location_id
         edit.value.term_id = item.term_id
         edit.value.item_group = item.item_group
+        edit.value.uuid_rec_order = item.uuid_rec
+        change_term()
         dlgOrder.value = false
+        detail.value = []
       }
     }
     function select_Orderdtl() {
-      if (selected_requestsDtl.value.length > 0) {
+      if (selected_OrderDtl.value.length > 0) {
         let founded = false
-        selected_requestsDtl.value.forEach((el) => {
+        selected_OrderDtl.value.forEach((el) => {
           founded = false
           detail.value.forEach((dtl) => {
             if (dtl.item_code === el.item_code) {
@@ -1683,34 +1290,29 @@ export default defineComponent({
           if (!founded) {
             let data = {}
             data = {
-              transid: -1,
+              sysid: -1,
               line_no: detail.value.length + 1,
               item_code: el.item_code,
-              descriptions: el.descriptions,
+              item_name: el.item_name,
               mou_purchase: el.mou_purchase,
-              mou_warehouse: el.mou_inventory,
-              convertion: el.convertion,
-              qty_draft: el.qty_request - el.line_supply,
-              price: el.purchase_price,
-              prc_discount1: 0,
-              amount_discount1: 0,
-              prc_discount2: 0,
-              amount_discount2: 0,
-              prc_tax: 0,
-              amount_tax: 0,
-              total: (el.qty_request - el.line_supply) * el.purchase_price,
-              line_type: 'Follow',
-              source_line: 'ReqLine',
-              line_state: 'O',
-              qty_request: el.qty_request - el.line_supply,
-              current_stock: 0,
-              purchase_request_id: el.transid,
-              purchase_line_no: el.line_no
+              mou_inventory: el.mou_inventory,
+              conversion: el.conversion,
+              qty_order: el.qty_order - el.qty_received,
+              qty_received: el.qty_order - el.qty_received,
+              price: el.price,
+              prc_discount1: el.prc_discount1,
+              discount1: 0,
+              prc_discount2: el.prc_discount2,
+              discount2: 0,
+              prc_tax: el.prc_tax,
+              tax: 0,
+              total: 0
             }
             detail.value.push(data)
+            calculate(data.line_no)
           }
         })
-        dlgRequestDtl.value = false
+        dlgOrderDtl.value = false
       }
     }
 
@@ -1733,7 +1335,7 @@ export default defineComponent({
       })
     }
     function getPO(closed, data) {
-      dlgPO.value = closed
+      dlgReceive.value = closed
       if (typeof data.uuid_rec !== 'undefined') {
         let props = {}
         props.url = 'inventory/order/purchase/get'
@@ -1750,7 +1352,6 @@ export default defineComponent({
       stateform.value = false
       edit.value = {}
       detail.value = []
-      ref_action.value = ''
     }
 
     onMounted(async () => {
@@ -1803,7 +1404,7 @@ export default defineComponent({
     })
 
     return {
-      dlgPurchaseOrder,
+      dlgPurchaseReceive,
       loading,
       loading_table,
       stateform,
@@ -1823,7 +1424,6 @@ export default defineComponent({
       onRequest,
       add_event,
       edit_event,
-      delete_event,
       loaddata,
       save_data,
       refopt,
@@ -1833,7 +1433,6 @@ export default defineComponent({
       detail,
       selected_detail,
       current_row,
-      print_event,
       Filtered,
       postate,
       coldetail,
@@ -1876,13 +1475,13 @@ export default defineComponent({
       change_group,
       inv_group,
       changeitem_mou,
-      dlgPO,
+      dlgReceive,
       getPO,
       approved_event,
-      ref_action,
       cancel_entry,
       change_term,
-      onRequestOrder
+      onRequestOrder,
+      ref_action
     }
   }
 })

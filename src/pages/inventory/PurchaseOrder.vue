@@ -445,7 +445,7 @@
                       v-model="props.row.prc_discount1"
                       class="q-field__input right-input"
                       separator="."
-                      :v-bind:precision="2"
+                      precision="2"
                       @input="calculate(props.row.line_no, true)"
                       :disabled="ref_action === 'deleted'"
                     />
@@ -455,7 +455,7 @@
                       v-model="props.row.prc_discount2"
                       class="q-field__input right-input"
                       separator="."
-                      :v-bind:precision="2"
+                      precision="2"
                       @input="calculate(props.row.line_no, true)"
                       :disabled="ref_action === 'deleted'"
                     />
@@ -465,7 +465,7 @@
                       v-model="props.row.prc_tax"
                       class="q-field__input right-input"
                       separator="."
-                      :v-bind:precision="2"
+                      precision="2"
                       :disabled="ref_action === 'deleted'"
                       @input="calculate(props.row.line_no, true)"
                     />

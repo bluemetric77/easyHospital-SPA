@@ -15,29 +15,11 @@
         >
           <q-chip
             class="glossy"
-            :color="
-              edit.is_posted === '1'
-                ? 'green-10'
-                : edit.is_void === '1'
-                ? 'red-10'
-                : ''
-            "
+            :color="edit.is_process === '1' ? 'green-10' : ''"
             text-color="white"
-            :icon-right="
-              edit.is_posted === '1'
-                ? 'thumb_up'
-                : edit.is_void === '1'
-                ? 'thumb_down'
-                : ''
-            "
+            :icon-right="edit.is_process === '1' ? 'thumb_up' : ''"
           >
-            {{
-              edit.is_posted === '1'
-                ? 'SUDAH DISETUJUI'
-                : edit.is_void === '1'
-                ? 'SUDAH DIBATALKAN'
-                : ''
-            }}
+            {{ edit.is_posted === '1' ? 'TERINVOICE' : '' }}
           </q-chip>
         </div>
       </q-bar>
@@ -60,7 +42,7 @@
               </div>
               <div class="col-xs-6 col-sm-4 col-md-4">
                 <q-input
-                  v-model="edit.ref_number"
+                  v-model="edit.invoice_number"
                   dense
                   outlined
                   type="text"
@@ -288,25 +270,59 @@
                     class="q-field__input right-input"
                     separator="."
                     @input="calculate(props.row.line_no)"
+                    :disabled="edit.is_process === '1'"
                   />
                 </div>
                 <div v-else-if="col.name === 'package'">
                   {{ props.row.conversion }} {{ props.row.mou_inventory }}
                 </div>
                 <div v-else-if="col.name === 'price'">
-                  {{ $formatnumber(props.row.price, 0) }}
+                  <vue-numeric
+                    v-model="props.row.price"
+                    class="q-field__input right-input"
+                    separator="."
+                    @input="calculate(props.row.line_no, true)"
+                    :disabled="edit.is_process === '1'"
+                  />
                 </div>
                 <div v-else-if="col.name === 'prc_discount1'">
-                  {{ $formatnumber(props.row.prc_discount1, 2) }}
+                  <vue-numeric
+                    v-model="props.row.prc_discount1"
+                    class="q-field__input right-input"
+                    separator="."
+                    precision="2"
+                    @input="calculate(props.row.line_no)"
+                    :disabled="edit.is_process === '1'"
+                  />
                 </div>
                 <div v-else-if="col.name === 'prc_discount2'">
-                  {{ $formatnumber(props.row.prc_discount2, 2) }}
+                  <vue-numeric
+                    v-model="props.row.prc_discount2"
+                    class="q-field__input right-input"
+                    separator="."
+                    precision="2"
+                    @input="calculate(props.row.line_no)"
+                    :disabled="edit.is_process === '1'"
+                  />
                 </div>
                 <div v-else-if="col.name === 'prc_tax'">
-                  {{ $formatnumber(props.row.prc_tax, 2) }}
+                  <vue-numeric
+                    v-model="props.row.prc_tax"
+                    class="q-field__input right-input"
+                    precision="2"
+                    separator="."
+                    @input="calculate(props.row.line_no)"
+                    :disabled="edit.is_process === '1'"
+                  />
                 </div>
                 <div v-else-if="col.name === 'total'">
-                  {{ $formatnumber(props.row.total) }}
+                  <vue-numeric
+                    v-model="props.row.total"
+                    class="q-field__input right-input"
+                    separator="."
+                    @input="calculate(props.row.line_no)"
+                    disabled
+                  />
                 </div>
                 <div v-else>
                   {{ col.value }}
@@ -344,13 +360,7 @@
           v-show="stateform"
           flat
           icon="save"
-          :label="
-            ref_action === 'approved'
-              ? 'Persetujuan'
-              : ref_action === 'deleted'
-              ? 'Pembatalan '
-              : 'Simpan'
-          "
+          label="Simpan"
           class="btn-toolbar q-mx-sm"
           no-caps
           dense
@@ -640,10 +650,10 @@
       :show="dlgSupplier"
       @CloseData="getSupplier"
     />
-    <po
+    <receive
       v-if="dlgReceive"
       :show="dlgReceive"
-      @ClosePO="getPO"
+      @CloseReceive="getReceive"
     />
   </q-page>
 </template>
@@ -652,7 +662,7 @@
 import { ymd } from 'boot/engine'
 import items from 'components/master/Items.vue'
 import supplier from 'components/master/Supplier.vue'
-import po from 'components/inventory/PurchaseOrder.vue'
+import receive from 'components/inventory/Purchase.vue'
 import { defineComponent, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
@@ -661,7 +671,7 @@ import state from 'src/store/utility/home/state'
 
 export default defineComponent({
   name: 'PurchaseOrder',
-  components: { items, supplier, po },
+  components: { items, supplier, receive },
   setup() {
     const $q = useQuasar()
     const $store = useStore()
@@ -910,8 +920,6 @@ export default defineComponent({
     })
 
     const term_opt = ref([])
-    const purchase_type_opt = ref([])
-    const order_type_opt = ref([])
     const item_group_opt = ref([])
     const inv_group = ref('')
     const dlgReceive = ref(false)
@@ -993,17 +1001,15 @@ export default defineComponent({
         term_id: 'C003@0',
         is_tax: '0',
         uuid_rec: '(NEW)',
-        uuid_rec_order: ''
+        uuid_rec_order: '',
+        is_process: '0'
       }
       detail.value = []
     }
 
     async function edit_event(uuidrec = '') {
       dlgReceive.value = true
-    }
-
-    async function approved_event(uuidrec = '') {
-      dlgReceive.value = true
+      ref_action.value = 'save'
     }
 
     function save_data() {
@@ -1287,7 +1293,7 @@ export default defineComponent({
             }
           })
 
-          if (!founded) {
+          if (!founded && el.qty_order - el.qty_received > 0) {
             let data = {}
             data = {
               sysid: -1,
@@ -1334,11 +1340,11 @@ export default defineComponent({
         }
       })
     }
-    function getPO(closed, data) {
+    function getReceive(closed, data) {
       dlgReceive.value = closed
       if (typeof data.uuid_rec !== 'undefined') {
         let props = {}
-        props.url = 'inventory/order/purchase/get'
+        props.url = 'inventory/purchase/receive/get'
         props.uuidrec = data.uuid_rec
         $store.dispatch('master/GET_DATA', props).then((response) => {
           edit.value = response.header
@@ -1373,20 +1379,6 @@ export default defineComponent({
       props.type = 'RECEIVE'
       $store.dispatch('master/GET_DATA', props).then((response) => {
         warehouse_opt.value = response
-      })
-
-      props = {}
-      props.url = 'setup/application/standard-code/list'
-      props.parent_code = 'C001'
-      $store.dispatch('master/GET_DATA', props).then((response) => {
-        purchase_type_opt.value = response
-      })
-
-      props = {}
-      props.url = 'setup/application/standard-code/list'
-      props.parent_code = 'C002'
-      $store.dispatch('master/GET_DATA', props).then((response) => {
-        order_type_opt.value = response
       })
 
       props = {}
@@ -1469,15 +1461,12 @@ export default defineComponent({
       pagination_OrderDtl,
       select_Orderdtl,
       term_opt,
-      purchase_type_opt,
-      order_type_opt,
       item_group_opt,
       change_group,
       inv_group,
       changeitem_mou,
       dlgReceive,
-      getPO,
-      approved_event,
+      getReceive,
       cancel_entry,
       change_term,
       onRequestOrder,

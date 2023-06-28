@@ -11,7 +11,7 @@
         style="width: 1000px; max-width: 80vw; max-height: 700px"
       >
         <q-bar class="entry-caption">
-          Pemesanan Pembelian
+          Pembelian
           <q-space />
           <q-input
             v-model="filter"
@@ -183,7 +183,7 @@ import { defineComponent, ref, onMounted } from 'vue'
 import { useStore } from 'vuex'
 
 export default defineComponent({
-  name: 'po',
+  name: 'purcahse',
   props: { show: Boolean },
   setup(props, context) {
     const $store = useStore()
@@ -209,10 +209,10 @@ export default defineComponent({
         sortable: true
       },
       {
-        name: 'ref_number',
+        name: 'invoice_number',
         align: 'left',
         label: 'Referensi',
-        field: 'ref_number',
+        field: 'invoice_number',
         sortable: true
       },
       {
@@ -223,10 +223,24 @@ export default defineComponent({
         sortable: true
       },
       {
-        name: 'state',
+        name: 'due_date',
         align: 'left',
-        label: 'Status 1',
-        field: 'state',
+        label: 'Jatuh Tempo',
+        field: 'due_date',
+        sortable: false
+      },
+      {
+        name: 'partner_name',
+        align: 'left',
+        label: 'Supplier',
+        field: 'partner_name',
+        sortable: true
+      },
+      {
+        name: 'total',
+        align: 'right',
+        label: 'Total',
+        field: 'total',
         sortable: false
       },
       {
@@ -237,32 +251,18 @@ export default defineComponent({
         sortable: true
       },
       {
-        name: 'partner_name',
+        name: 'order_number',
         align: 'left',
-        label: 'Supplier',
-        field: 'partner_name',
+        label: 'No.Pemesanan',
+        field: 'order_number',
         sortable: true
       },
       {
-        name: 'purchase_type',
+        name: 'payable_number',
         align: 'left',
-        label: 'Tipe Pembelian',
-        field: 'purchase_type',
+        label: 'Invoice Hutang',
+        field: 'payable_number',
         sortable: true
-      },
-      {
-        name: 'order_type',
-        align: 'left',
-        label: 'Jenis Pemesanan',
-        field: 'order_type',
-        sortable: true
-      },
-      {
-        name: 'order_state',
-        align: 'left',
-        label: 'Status 2',
-        field: 'order_state',
-        sortable: false
       }
     ])
 
@@ -309,7 +309,7 @@ export default defineComponent({
           sortBy: sortBy,
           date1: date1.value,
           date2: date2.value,
-          url: 'inventory/purchase/order'
+          url: 'inventory/purchase/receive'
         }
         let respon = await $store.dispatch('master/GET_DATA', prop)
         data.value = respon.data
@@ -330,7 +330,7 @@ export default defineComponent({
       dlgShow.value = false
       filter.value = ''
       data.value = []
-      context.emit('ClosePO', false, record)
+      context.emit('CloseReceive', false, record)
     }
     function loaddata() {
       onRequest({

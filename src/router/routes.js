@@ -193,6 +193,11 @@ const routes = [
         path: 'purchase/receive',
         name: 'purchase_receive',
         component: () => import('pages/inventory/Purchase.vue')
+      },
+      {
+        path: 'purchase/receive/credit',
+        name: 'purchase_receive_credit',
+        component: () => import('pages/inventory/PurchaseCN.vue')
       }
     ]
   },

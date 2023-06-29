@@ -429,7 +429,7 @@
           v-model:selected="selected_Order"
           v-model:pagination="pagination_Order"
           binary-state-sort
-          class="grid-tables fix-table-dialog"
+          class="grid-tables fit-table-ui-dialog-with-parameter"
           virtual-scroll
           @request="onRequestOrder"
           :loading="loading_table"
@@ -548,7 +548,7 @@
           v-model:selected="selected_OrderDtl"
           v-model:pagination="pagination_OrderDtl"
           binary-state-sort
-          class="grid-tables fix-table-dialog"
+          class="grid-tables fit-table-ui-dialog-with-parameter"
           virtual-scroll
         >
           <template v-slot:loading>
@@ -670,7 +670,7 @@ import { useQuasar, QSpinnerIos } from 'quasar'
 import state from 'src/store/utility/home/state'
 
 export default defineComponent({
-  name: 'PurchaseOrder',
+  name: 'PurchaseReceive',
   components: { items, supplier, receive },
   setup() {
     const $q = useQuasar()

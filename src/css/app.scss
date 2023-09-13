@@ -192,6 +192,7 @@ $bg-toolbar: $blue-grey-8;
   background-color: #ffff;
   border: 1.5px solid $red-10;
 }
+
 .right-input:hover {
   border: 1.5px solid $green-10;
 }
@@ -370,4 +371,17 @@ $bg-toolbar: $blue-grey-8;
     /* height of all previous header rows */
     top: 48px;
   }
+}
+.btn-toolbar:hover {
+  color: $bg-toolbar;
+  background-color: #ffff;
+}
+.btn-link {
+  color: $blue;
+  background-color: #fff;
+}
+
+.btn-link:hover {
+  color: $blue;
+  text-decoration: underline;
 }

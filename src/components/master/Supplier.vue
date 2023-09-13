@@ -10,36 +10,38 @@
       class="icard"
       style="width: 500px; max-width: 80vw"
     >
-      <q-toolbar class="entry-caption">
-        <strong>Supplier</strong>
+      <q-bar class="entry-caption">
+        Data Supplier
         <q-space />
-        <q-input
-          dark
-          v-model="filter"
-          standout
-          rounded
-          dense
-          outline
-          debounce="500"
-          label-color="white"
-          placeholder="Pencarian"
-        >
-          <template v-slot:append>
-            <q-icon
-              v-if="filter === ''"
-              name="search"
-              size="sm"
-            />
-            <q-icon
-              v-else
-              name="clear"
-              class="cursor-pointer"
-              size="sm"
-              @click="filter = ''"
-            />
-          </template>
-        </q-input>
-      </q-toolbar>
+        <q-icon
+          name="close"
+          size="sm"
+          flat
+          @click="closedata()"
+        />
+      </q-bar>
+      <q-card-section class="q-pa-xs">
+        <div class="row items-start">
+          <q-input
+            v-model="filter"
+            square
+            dense
+            outlined
+            debounce="500"
+            label-color="white"
+            placeholder="Pencarian"
+            class="full-width"
+          >
+            <template v-slot:append>
+              <q-icon
+                name="search"
+                color="green-10"
+                size="sm"
+              />
+            </template>
+          </q-input>
+        </div>
+      </q-card-section>
       <q-table
         square
         :rows="data"
@@ -105,7 +107,7 @@
               <div class="grid-data">
                 <div v-if="col.name === 'supplier_code'">
                   <span
-                    class="text-primary cursor-pointer"
+                    class="btn-link cursor-pointer"
                     @click="selectdata(props.row.sysid)"
                   >
                     {{ props.row.supplier_code }}

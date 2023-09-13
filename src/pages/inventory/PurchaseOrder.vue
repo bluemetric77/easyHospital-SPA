@@ -277,7 +277,7 @@
       <q-table
         square
         dense
-        class="grid-tables"
+        class="grid-tables fit-table-entry"
         :rows="detail"
         :columns="coldetail"
         no-data-label="data kosong"
@@ -293,17 +293,16 @@
         auto-width
         hide-no-data
       >
-        <template v-slot:bottom-row>
+        <template v-slot:top>
           <q-tr align="left">
             <q-td colspan="100%">
               <q-btn
                 v-show="stateform === true && ref_action === 'save'"
-                label="Tambah"
+                label="Tambah item"
                 dense
                 no-caps
                 flat
-                icon="add"
-                class="text-primary"
+                class="btn-link cursor-pointer"
                 @click="addrow"
               />
             </q-td>
@@ -561,17 +560,6 @@
           no-caps
           dense
           @click="cancel_entry()"
-        />
-        <q-space />
-        <q-btn
-          v-show="stateform"
-          flat
-          icon="more_vert"
-          class="btn-toolbar q-mr-sm text-yellow-10 text-bold"
-          no-caps
-          dense
-          rounded
-          @click="stateform = false"
         />
       </q-toolbar>
     </q-page-sticky>
@@ -1295,7 +1283,7 @@ export default defineComponent({
           purchase_line_no: -1
         }
         detail.value.push(data)
-        openitem(data.line_no)
+        //openitem(data.line_no)
       } else {
         selected_requestsDtl.value = []
         dlgRequestDtl.value = true
@@ -1677,3 +1665,23 @@ export default defineComponent({
   }
 })
 </script>
+<style lang="scss">
+.fit-table-entry {
+  height: -webkit-calc(100vh - 345px) !important;
+  height: -moz-calc(100vh - 345px) !important;
+  height: calc(100vh - 345px) !important;
+
+  thead tr th {
+    position: sticky;
+    z-index: 1;
+  }
+  thead tr:first-child th {
+    top: 0;
+  }
+  /* this is when the loading indicator appears */
+  &.q-table--loading thead tr:last-child th {
+    /* height of all previous header rows */
+    top: 48px;
+  }
+}
+</style>

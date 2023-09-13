@@ -206,7 +206,7 @@
       <q-table
         square
         dense
-        class="grid-tables"
+        class="grid-tables fit-table-entry"
         :rows="detail"
         :columns="coldetail"
         no-data-label="data kosong"
@@ -222,7 +222,7 @@
         auto-width
         hide-no-data
       >
-        <template v-slot:bottom-row>
+        <template v-slot:top>
           <q-tr align="left">
             <q-td colspan="100%">
               <q-btn
@@ -231,8 +231,7 @@
                 dense
                 no-caps
                 flat
-                icon="add"
-                class="text-primary"
+                class="btn-link cursor-pointer"
                 @click="addrow"
               />
             </q-td>
@@ -416,6 +415,27 @@
             v-close-popup
           />
         </q-bar>
+        <q-card-section class="q-pa-xs">
+          <div class="row items-start q-gutter-sm">
+            <q-input
+              v-model="filter_order"
+              placeholder="Pencarian data"
+              outlined
+              square
+              dense
+              class="full-width"
+              debounce="500"
+            >
+              <template v-slot:append>
+                <q-icon
+                  name="search"
+                  color="green-10"
+                  size="sm"
+                />
+              </template>
+            </q-input>
+          </div>
+        </q-card-section>
         <q-table
           square
           dense
@@ -433,6 +453,7 @@
           virtual-scroll
           @request="onRequestOrder"
           :loading="loading_table"
+          :filter="filter_order"
         >
           <template v-slot:loading>
             <q-spinner-ios
@@ -485,7 +506,16 @@
                 :props="props"
               >
                 <div class="grid-data">
-                  <div v-if="col.name === 'ref_date'">
+                  <div v-if="col.name === 'doc_number'">
+                    <q-btn
+                      :label="props.row.doc_number"
+                      dense
+                      flat
+                      class="btn-link"
+                      @click="select_Order(props.row.uuid_rec)"
+                    />
+                  </div>
+                  <div v-else-if="col.name === 'ref_date'">
                     {{ $INDDate(props.row.ref_date) }}
                   </div>
                   <div v-else-if="col.name === 'posted_date'">
@@ -509,7 +539,7 @@
             flat
             class="q-mr-sm"
             no-caps
-            @click="select_Order()"
+            @click="select_Order('')"
           />
         </q-card-section>
       </q-card>
@@ -524,7 +554,7 @@
         style="width: 1000px; max-width: 95vw"
       >
         <q-bar class="entry-caption"
-          >Detail Permintaan Pembelian
+          >Detail Pemesanan Pembelian
           <q-space />
           <q-btn
             icon="close"
@@ -573,6 +603,16 @@
           <template v-slot:header="props">
             <q-tr :props="props">
               <q-th
+                class="bg-blue-grey-10 text-white"
+                style="width: 20px"
+              >
+                <q-checkbox
+                  v-model="props.selected"
+                  dense
+                  class="bg-white"
+                />
+              </q-th>
+              <q-th
                 v-for="col in props.cols"
                 :key="col.name"
                 :props="props"
@@ -582,11 +622,20 @@
               </q-th>
             </q-tr>
           </template>
+          <template v-slot:header-selection="scope">
+            <q-toggle v-model="scope.selected" />
+          </template>
           <template v-slot:body="props">
             <q-tr
               :props="props"
               @click="props.selected = !props.selected"
             >
+              <q-td>
+                <q-checkbox
+                  v-model="props.selected"
+                  dense
+                />
+              </q-td>
               <q-td
                 v-for="col in props.cols"
                 :key="col.name"
@@ -624,7 +673,7 @@
           </template>
         </q-table>
         <q-card-section
-          class="q-pa-xs dialog-action"
+          class="q-pa-sm dialog-action"
           align="right"
         >
           <q-btn
@@ -667,7 +716,6 @@ import { defineComponent, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 import { useQuasar, QSpinnerIos } from 'quasar'
-import state from 'src/store/utility/home/state'
 
 export default defineComponent({
   name: 'PurchaseReceive',
@@ -923,6 +971,7 @@ export default defineComponent({
     const item_group_opt = ref([])
     const inv_group = ref('')
     const dlgReceive = ref(false)
+    const filter_order = ref('')
 
     function runMethod(method, transid = -1) {
       this[method](transid)
@@ -1266,9 +1315,20 @@ export default defineComponent({
       }
     }
 
-    function select_Order() {
-      if (selected_Order.value.length > 0) {
-        let item = selected_Order.value[0]
+    function select_Order(uuidrec = '') {
+      let item = null
+      if (uuidrec !== '') {
+        Orders.value.forEach((el) => {
+          if (uuidrec === el.uuid_rec) {
+            item = el
+          }
+        })
+      } else {
+        if (selected_Order.value.length > 0) {
+          item = selected_Order.value[0]
+        }
+      }
+      if (typeof item !== 'undefined') {
         edit.value.order_sysid = item.sysid
         edit.value.order_number = item.doc_number
         edit.value.partner_id = item.partner_id
@@ -1470,8 +1530,29 @@ export default defineComponent({
       cancel_entry,
       change_term,
       onRequestOrder,
-      ref_action
+      ref_action,
+      filter_order
     }
   }
 })
 </script>
+<style lang="scss">
+.fit-table-entry {
+  height: -webkit-calc(100vh - 295px) !important;
+  height: -moz-calc(100vh - 295px) !important;
+  height: calc(100vh - 295px) !important;
+
+  thead tr th {
+    position: sticky;
+    z-index: 1;
+  }
+  thead tr:first-child th {
+    top: 0;
+  }
+  /* this is when the loading indicator appears */
+  &.q-table--loading thead tr:last-child th {
+    /* height of all previous header rows */
+    top: 48px;
+  }
+}
+</style>

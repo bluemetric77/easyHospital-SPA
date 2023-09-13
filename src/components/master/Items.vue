@@ -13,25 +13,36 @@
         <q-bar class="entry-caption">
           <span>Master Inventory</span>
           <q-space />
-          <q-input
-            v-model="filter"
+          <q-icon
+            name="close"
+            size="xs"
+            flat
             dense
-            outline
-            label-color="white"
-            borderless
-            placeholder="Pencarian"
-            input-class="text-white"
-            debounce="200"
-          >
-            <template v-slot:append>
-              <q-icon
-                name="search"
-                color="white"
-                size="xs"
-              />
-            </template>
-          </q-input>
+            @click="closedata()"
+          />
         </q-bar>
+        <q-card-section class="q-pa-xs">
+          <div class="row items-start">
+            <q-input
+              v-model="filter"
+              dense
+              outlined
+              label-color="white"
+              square
+              placeholder="Pencarian"
+              debounce="2000"
+              class="full-width"
+            >
+              <template v-slot:append>
+                <q-icon
+                  name="search"
+                  color="green-10"
+                  size="sm"
+                />
+              </template>
+            </q-input>
+          </div>
+        </q-card-section>
         <q-table
           square
           :rows="data"
@@ -102,6 +113,7 @@
                       dense
                       flat
                       @click="selectdata(props.row.item_code)"
+                      class="btn-link"
                     />
                   </div>
                   <div v-else>

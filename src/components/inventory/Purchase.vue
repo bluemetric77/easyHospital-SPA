@@ -32,6 +32,7 @@
                 label="Periode"
                 outlined
                 square
+                @blur="loaddata()"
               />
             </div>
             <div class="col-xs-6 col-sm-2">
@@ -43,6 +44,7 @@
                 label="s/d"
                 outlined
                 square
+                @blur="loaddata()"
               />
             </div>
             <div class="col-xs-12 col-sm-8">
@@ -52,6 +54,7 @@
                 square
                 outlined
                 label="Pencarian"
+                debounce="500"
               >
                 <template v-slot:append>
                   <q-icon

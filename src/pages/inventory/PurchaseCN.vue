@@ -7,21 +7,33 @@
       <q-bar class="entry-caption">
         {{ pagetitle }}
         <q-space />
-        <div
-          v-if="
-            typeof edit.is_posted !== 'undefined' &&
-            typeof edit.is_void !== 'undefined'
+
+        <q-chip
+          v-show="
+            typeof edit.is_process !== 'undefined' &&
+            typeof edit.is_void !== 'undefined' &&
+            operation !== 'inserted'
           "
+          outline
+          flat
+          :color="edit.is_void === '1' ? 'red' : 'white'"
+          :icon-right="
+            edit.is_process === '1'
+              ? 'thumb_up'
+              : edit.is_void === '1'
+              ? 'thumb_down'
+              : 'inventory'
+          "
+          size="sm"
         >
-          <q-chip
-            class="glossy"
-            :color="edit.is_process === '1' ? 'green-10' : ''"
-            text-color="white"
-            :icon-right="edit.is_process === '1' ? 'thumb_up' : ''"
-          >
-            {{ edit.is_posted === '1' ? 'TERINVOICE' : '' }}
-          </q-chip>
-        </div>
+          {{
+            edit.is_process === '1'
+              ? 'SUDAH PEMBAYARAN'
+              : edit.is_void === '1'
+              ? 'DIBATALKAN'
+              : 'OPEN'
+          }}
+        </q-chip>
       </q-bar>
 
       <q-card-section class="q-pa-sm">
@@ -35,7 +47,7 @@
                   dense
                   outlined
                   type="text"
-                  label="No.Pembelian"
+                  label="No. Retur"
                   square
                   stack-label
                 />
@@ -61,7 +73,7 @@
                   outlined
                   dense
                   options-dense
-                  label="Jenis Pembelian"
+                  label="Jenis Retur"
                   emit-value
                   map-options
                   fill-input
@@ -74,7 +86,7 @@
               <div class="col-xs-6 col-sm-4 col-md-4">
                 <q-input
                   v-model="edit.order_number"
-                  label="Dokumen Pembelian"
+                  label="Invoice Pembelian"
                   outlined
                   dense
                   square
@@ -86,7 +98,7 @@
                       name="search"
                       size="sm"
                       v-show="edit.ref_document === 'Retur Pembelian'"
-                      @click="open_Order()"
+                      @click="open_receive()"
                     />
                   </template>
                 </q-input>
@@ -117,13 +129,25 @@
           </div>
           <div class="col-xs-12 col-sm-5 offset-md-2 col-md-4">
             <div class="row items-start q-col-gutter-xs q-mb-sm">
-              <div class="col-6">
+              <div class="col-3">
                 <q-input
                   v-model="edit.ref_date"
                   dense
                   outlined
                   type="date"
-                  label="Tanggal Pembelian"
+                  label="Tanggal Retur"
+                  square
+                  stack-label
+                  :disable="ref_action !== 'save'"
+                />
+              </div>
+              <div class="col-3">
+                <q-input
+                  v-model="edit.ref_time"
+                  dense
+                  outlined
+                  type="time"
+                  label="Jam"
                   square
                   stack-label
                   :disable="ref_action !== 'save'"
@@ -206,7 +230,7 @@
       <q-table
         square
         dense
-        class="grid-tables"
+        class="grid-tables fit-table-entry"
         :rows="detail"
         :columns="coldetail"
         no-data-label="data kosong"
@@ -222,7 +246,7 @@
         auto-width
         hide-no-data
       >
-        <template v-slot:bottom-row>
+        <template v-slot:top>
           <q-tr align="left">
             <q-td colspan="100%">
               <q-btn
@@ -231,8 +255,7 @@
                 dense
                 no-caps
                 flat
-                icon="add"
-                class="text-primary"
+                class="btn-link cursor-pointer"
                 @click="addrow"
               />
             </q-td>
@@ -261,7 +284,17 @@
               :props="props"
             >
               <div class="grid-data">
-                <div v-if="col.name === 'qty_order'">
+                <div v-if="col.name === 'line_no'">
+                  {{ col.value }}
+                  <q-icon
+                    v-show="ref_action !== 'deleted'"
+                    name="delete"
+                    color="red"
+                    size="xs"
+                    @click="removeRow(props.row.line_no)"
+                  />
+                </div>
+                <div v-else-if="col.name === 'qty_order'">
                   {{ $formatnumber(props.row.qty_order, 2) }}
                 </div>
                 <div v-else-if="col.name === 'qty_received'">
@@ -360,7 +393,7 @@
           v-show="stateform"
           flat
           icon="save"
-          label="Simpan"
+          :label="ref_action === 'save' ? 'Simpan' : 'Pembatalan'"
           class="btn-toolbar q-mx-sm"
           no-caps
           dense
@@ -397,7 +430,7 @@
     </q-page-sticky>
 
     <q-dialog
-      v-model="dlgOrder"
+      v-model="dlgReceive"
       persistent
     >
       <q-card
@@ -405,7 +438,7 @@
         style="width: 1000px; max-width: 95vw"
       >
         <q-bar class="entry-caption">
-          Pemesanan Pembelian
+          Pembelian (Penerimaan Barang)
           <q-space />
           <q-btn
             icon="close"
@@ -416,23 +449,71 @@
             v-close-popup
           />
         </q-bar>
+        <q-card-section class="q-pa-sm">
+          <div class="row items-center q-col-gutter-xs q-mb-xs">
+            <div class="col-xs-6 col-sm-2">
+              <q-input
+                v-model="date1"
+                type="date"
+                dense
+                class="q-mr-sm"
+                label="Periode"
+                outlined
+                square
+                @blur="load_receive()"
+              />
+            </div>
+            <div class="col-xs-6 col-sm-2">
+              <q-input
+                v-model="date2"
+                type="date"
+                dense
+                class="q-mr-sm"
+                label="s/d"
+                outlined
+                square
+                @blur="load_receive()"
+              />
+            </div>
+            <div class="col-xs-12 col-sm-8">
+              <q-input
+                v-model="filter_Receive"
+                dense
+                square
+                outlined
+                label="Pencarian"
+                debounce="500"
+              >
+                <template v-slot:append>
+                  <q-icon
+                    name="search"
+                    color="green-10"
+                    size="sm"
+                    @click="load_receive()"
+                  />
+                </template>
+              </q-input>
+            </div>
+          </div>
+        </q-card-section>
         <q-table
           square
           dense
-          :rows="Orders"
+          :rows="Receives"
           :columns="colOrder"
           no-data-label="data kosong"
           no-results-label="data yang kamu cari tidak ditemukan"
           row-key="sysid"
           separator="cell"
           selection="single"
-          v-model:selected="selected_Order"
-          v-model:pagination="pagination_Order"
+          v-model:selected="selected_Receive"
+          v-model:pagination="pagination_Receive"
           binary-state-sort
-          class="grid-tables fix-table-dialog"
+          class="grid-tables fit-table-ui-dialog-with-parameter"
           virtual-scroll
-          @request="onRequestOrder"
+          @request="onRequestReceive"
           :loading="loading_table"
+          :filter="filter_Receive"
         >
           <template v-slot:loading>
             <q-spinner-ios
@@ -485,11 +566,20 @@
                 :props="props"
               >
                 <div class="grid-data">
-                  <div v-if="col.name === 'ref_date'">
+                  <div v-if="col.name === 'doc_number'">
+                    <q-btn
+                      :label="props.row.doc_number"
+                      dense
+                      flat
+                      class="btn-link"
+                      @click="select_Receive(props.row.uuid_rec)"
+                    />
+                  </div>
+                  <div v-else-if="col.name === 'ref_date'">
                     {{ $INDDate(props.row.ref_date) }}
                   </div>
-                  <div v-else-if="col.name === 'posted_date'">
-                    {{ $INDDateTime(props.row.posted_date) }}
+                  <div v-else-if="col.name === 'total'">
+                    {{ $formatnumber(props.row.total) }}
                   </div>
                   <div v-else>
                     {{ col.value }}
@@ -509,14 +599,14 @@
             flat
             class="q-mr-sm"
             no-caps
-            @click="select_Order()"
+            @click="select_Receive('')"
           />
         </q-card-section>
       </q-card>
     </q-dialog>
 
     <q-dialog
-      v-model="dlgOrderDtl"
+      v-model="dlgReceiveDtl"
       persistent
     >
       <q-card
@@ -524,7 +614,7 @@
         style="width: 1000px; max-width: 95vw"
       >
         <q-bar class="entry-caption"
-          >Detail Permintaan Pembelian
+          >Detail pembelian barang
           <q-space />
           <q-btn
             icon="close"
@@ -539,16 +629,16 @@
           square
           dense
           :rows="OrderDtl"
-          :columns="colOrderDtl"
+          :columns="colReceiveDtl"
           no-data-label="data kosong"
           no-results-label="data yang kamu cari tidak ditemukan"
           row-key="line_no"
           separator="cell"
           selection="multiple"
-          v-model:selected="selected_OrderDtl"
-          v-model:pagination="pagination_OrderDtl"
+          v-model:selected="selected_ReceiveDtl"
+          v-model:pagination="pagination_ReceiveDtl"
           binary-state-sort
-          class="grid-tables fix-table-dialog"
+          class="grid-tables fit-table-ui-dialog-with-parameter"
           virtual-scroll
         >
           <template v-slot:loading>
@@ -573,6 +663,16 @@
           <template v-slot:header="props">
             <q-tr :props="props">
               <q-th
+                class="bg-blue-grey-10 text-white"
+                style="width: 20px"
+              >
+                <q-checkbox
+                  v-model="props.selected"
+                  dense
+                  class="bg-white"
+                />
+              </q-th>
+              <q-th
                 v-for="col in props.cols"
                 :key="col.name"
                 :props="props"
@@ -582,11 +682,20 @@
               </q-th>
             </q-tr>
           </template>
+          <template v-slot:header-selection="scope">
+            <q-toggle v-model="scope.selected" />
+          </template>
           <template v-slot:body="props">
             <q-tr
               :props="props"
               @click="props.selected = !props.selected"
             >
+              <q-td>
+                <q-checkbox
+                  v-model="props.selected"
+                  dense
+                />
+              </q-td>
               <q-td
                 v-for="col in props.cols"
                 :key="col.name"
@@ -624,7 +733,7 @@
           </template>
         </q-table>
         <q-card-section
-          class="q-pa-xs dialog-action"
+          class="q-pa-sm dialog-action"
           align="right"
         >
           <q-btn
@@ -633,7 +742,7 @@
             icon="check"
             flat
             class="q-mr-sm"
-            @click="select_Orderdtl()"
+            @click="select_ReceiveDtl()"
           />
         </q-card-section>
       </q-card>
@@ -651,9 +760,10 @@
       @CloseData="getSupplier"
     />
     <receive
-      v-if="dlgReceive"
-      :show="dlgReceive"
-      @CloseReceive="getReceive"
+      v-if="dlgRetur"
+      :show="dlgRetur"
+      @CloseReceive="getReturn"
+      state="retur"
     />
   </q-page>
 </template>
@@ -667,10 +777,9 @@ import { defineComponent, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 import { useQuasar, QSpinnerIos } from 'quasar'
-import state from 'src/store/utility/home/state'
 
 export default defineComponent({
-  name: 'PurchaseReceiveCN',
+  name: 'PurchaseReceive',
   components: { items, supplier, receive },
   setup() {
     const $q = useQuasar()
@@ -738,7 +847,7 @@ export default defineComponent({
         align: 'right',
         sytle: 'width: 30px',
         headerStyle: 'width: 30px',
-        label: 'Jml.Pesan',
+        label: 'Jml.Beli',
         field: 'qty_order'
       },
       {
@@ -746,7 +855,7 @@ export default defineComponent({
         align: 'right',
         sytle: 'width: 30px',
         headerStyle: 'width: 30px',
-        label: 'Jml.Terima',
+        label: 'Jml.Retur',
         field: 'qty_received'
       },
       {
@@ -764,7 +873,7 @@ export default defineComponent({
       {
         name: 'price',
         align: 'right',
-        label: 'Harga/Unit Beli',
+        label: 'Harga/Unit Retur',
         field: 'price'
       },
       {
@@ -801,12 +910,12 @@ export default defineComponent({
     const is_cancel = ref(false)
     const lblSave = ref('Simpan')
     const warehouse_opt = ref([])
-    const dlgOrder = ref(false)
+    const dlgReceive = ref(false)
     const colOrder = ref([
       {
         name: 'doc_number',
         align: 'Left',
-        label: 'No.Pemesanan',
+        label: 'No.Penerimaan',
         field: 'doc_number'
       },
       { name: 'ref_date', align: 'left', label: 'Tanggal', field: 'ref_date' },
@@ -817,10 +926,10 @@ export default defineComponent({
         field: 'location_name'
       },
       {
-        name: 'ref_number',
+        name: 'invoice_number',
         align: 'left',
         label: 'Referensi',
-        field: 'ref_number'
+        field: 'invoice_number'
       },
       {
         name: 'partner_name',
@@ -829,36 +938,24 @@ export default defineComponent({
         field: 'partner_name'
       },
       {
-        name: 'posted_date',
-        align: 'left',
-        label: 'Waktu Posting',
-        field: 'posted_date'
-      },
-      {
-        name: 'purchase_type',
-        align: 'left',
-        label: 'Jenis Pembelian',
-        field: 'purchase_type'
-      },
-      {
-        name: 'order_type',
-        align: 'left',
-        label: 'Jenis Pemesanan',
-        field: 'order_type'
+        name: 'total',
+        align: 'Right',
+        label: 'Total',
+        field: 'total'
       }
     ])
-    const Orders = ref([])
-    const filter_Order = ref('')
-    const selected_Order = ref([])
-    const pagination_Order = ref({
+    const Receives = ref([])
+    const filter_Receive = ref('')
+    const selected_Receive = ref([])
+    const pagination_Receive = ref({
       sortBy: 'sysid',
       descending: true,
       page: 1,
       rowsPerPage: 0,
       rowsNumber: 0
     })
-    const dlgOrderDtl = ref(false)
-    const colOrderDtl = ref([
+    const dlgReceiveDtl = ref(false)
+    const colReceiveDtl = ref([
       { name: 'item_code', align: 'Left', label: 'Kode', field: 'item_code' },
       {
         name: 'item_name',
@@ -875,7 +972,7 @@ export default defineComponent({
       {
         name: 'qty_received',
         align: 'right',
-        label: 'Terkirim',
+        label: 'Terima',
         field: 'qty_received'
       },
       {
@@ -910,8 +1007,8 @@ export default defineComponent({
       }
     ])
     const OrderDtl = ref([])
-    const selected_OrderDtl = ref([])
-    const pagination_OrderDtl = ref({
+    const selected_ReceiveDtl = ref([])
+    const pagination_ReceiveDtl = ref({
       sortBy: 'line_no',
       descending: true,
       page: 1,
@@ -922,70 +1019,21 @@ export default defineComponent({
     const term_opt = ref([])
     const item_group_opt = ref([])
     const inv_group = ref('')
-    const dlgReceive = ref(false)
+    const dlgRetur = ref(false)
 
     function runMethod(method, transid = -1) {
       this[method](transid)
     }
-    async function loaddata() {
-      selected.value = []
-      onRequest({
-        pagination: pagination.value,
-        filter: filter.value
-      })
-    }
-
-    function refresh_po() {
-      selected.value = []
-      onRequest({
-        pagination: pagination.value,
-        filter: filter.value
-      })
-    }
-
-    async function onRequest(props) {
-      let { page, rowsPerPage, rowsNumber, sortBy, descending } =
-        props.pagination
-      let filter = props.filter
-
-      let fetchCount = rowsPerPage === 0 ? rowsNumber : rowsPerPage
-      $q.loading.show({ delay: 100 })
-      try {
-        let props = {
-          page: page,
-          limit: fetchCount,
-          filter: filter,
-          sortBy: sortBy,
-          descending: descending,
-          date1: date1.value,
-          date2: date2.value,
-          url: api_url.value.retrieve,
-          isopen: Filtered.value ? '1' : '0',
-          all: postate.value === 'ALL' ? '1' : '0'
-        }
-        let respon = await $store.dispatch('master/GET_DATA', props)
-        data.value = respon.data
-        pagination.value = {
-          rowsNumber: respon.total,
-          page: respon.current_page,
-          rowsPerPage: respon.per_page,
-          sortBy: sortBy,
-          descending: descending
-        }
-      } catch (error) {
-      } finally {
-        $q.loading.hide()
-      }
-    }
-
     async function add_event() {
-      let skrng = new Date()
+      let today = new Date()
+      operation.value = 'inserted'
       stateform.value = true
       ref_action.value = 'save'
       edit.value = {
         sysid: -1,
-        ref_date: ymd(skrng),
-        due_date: null,
+        ref_date: ymd(today),
+        ref_time: today.getHours() + ':' + today.getMinutes(),
+        due_date: ymd(today),
         doc_number: '(NEW)',
         location_id: '',
         invoice_number: '',
@@ -1001,22 +1049,30 @@ export default defineComponent({
         term_id: 'C003@0',
         is_tax: '0',
         uuid_rec: '(NEW)',
-        uuid_rec_order: '',
+        uuid_rec_invoice: '',
         is_process: '0',
-        is_credit_notes: '1'
+        is_void: '0'
       }
       detail.value = []
     }
 
     async function edit_event(uuidrec = '') {
-      dlgReceive.value = true
+      operation.value = 'updated'
+      dlgRetur.value = true
       ref_action.value = 'save'
     }
-
+    async function delete_event(uuidrec = '') {
+      dlgRetur.value = true
+      operation.value = 'deleted'
+      ref_action.value = 'deleted'
+    }
     function save_data() {
       $q.dialog({
         title: 'Konfirmasi',
-        message: 'Apakah invoice pembelian ini akan disimpan ?',
+        message:
+          ref_action.value === 'save'
+            ? 'Apakah retur/koreksi pembelian barang (invoice) ini akan disimpan ?'
+            : 'Apakah retur/koreksi pembelian barang (invoice) ini akan dibatalkan ?',
         cancel: true,
         persistent: true
       }).onOk(async () => {
@@ -1024,10 +1080,14 @@ export default defineComponent({
           let app = {}
           app.header = edit.value
           app.detail = detail.value
-          app.url = 'inventory/purchase/receive'
+          app.url = 'inventory/purchase/receive/credit'
           app.progress = true
           let respon = {}
-          respon = await $store.dispatch('master/POST_DATA', app)
+          if (ref_action.value !== 'deleted') {
+            respon = await $store.dispatch('master/POST_DATA', app)
+          } else {
+            respon = await $store.dispatch('master/DELETE_DATA', app)
+          }
           if (!(typeof respon === 'undefined')) {
             let msg = respon.data
             if (respon.success) {
@@ -1059,7 +1119,7 @@ export default defineComponent({
     }
 
     async function addrow() {
-      if (edit.value.order_number === '-') {
+      if (edit.value.ref_document === 'Koreksi Pembelian') {
         let data = {}
         data = {
           transid: -1,
@@ -1085,11 +1145,11 @@ export default defineComponent({
         detail.value.push(data)
         openitem(data.line_no)
       } else {
-        selected_OrderDtl.value = []
-        dlgOrderDtl.value = true
+        selected_ReceiveDtl.value = []
+        dlgReceiveDtl.value = true
         let props = {}
-        props.url = 'inventory/purchase/order/detail'
-        props.uuid_rec = edit.value.uuid_rec_order
+        props.url = 'inventory/purchase/receive/detail'
+        props.uuid_rec = edit.value.uuid_rec_invoice
         OrderDtl.value = await $store.dispatch('master/GET_DATA', props)
       }
     }
@@ -1227,16 +1287,23 @@ export default defineComponent({
         edit.value.partner_name = data.supplier_name
       }
     }
-    function open_Order() {
-      selected_Order.value = []
-      onRequestOrder({
-        pagination: pagination_Order.value,
-        filter: filter_Order.value
+    function open_receive() {
+      selected_Receive.value = []
+      onRequestReceive({
+        pagination: pagination_Receive.value,
+        filter: filter_Receive.value
       })
-      dlgOrder.value = true
+      dlgReceive.value = true
+    }
+    function load_receive() {
+      selected_Receive.value = []
+      onRequestReceive({
+        pagination: pagination_Receive.value,
+        filter: filter_Receive.value
+      })
     }
 
-    async function onRequestOrder(props) {
+    async function onRequestReceive(props) {
       let { page, rowsPerPage, rowsNumber, sortBy, descending } =
         props.pagination
       let filter = props.filter
@@ -1250,11 +1317,14 @@ export default defineComponent({
           filter: filter,
           sortBy: sortBy,
           descending: descending,
-          url: 'inventory/purchase/order/open'
+          date1: date1.value,
+          date2: date2.value,
+          state: 'invoice',
+          url: 'inventory/purchase/receive'
         }
         let respon = await $store.dispatch('master/GET_DATA', props)
-        Orders.value = respon.data
-        pagination_Order.value = {
+        Receives.value = respon.data
+        pagination_Receive.value = {
           rowsNumber: respon.total,
           page: respon.current_page,
           rowsPerPage: respon.per_page,
@@ -1267,9 +1337,20 @@ export default defineComponent({
       }
     }
 
-    function select_Order() {
-      if (selected_Order.value.length > 0) {
-        let item = selected_Order.value[0]
+    function select_Receive(uuidrec = '') {
+      let item = null
+      if (uuidrec !== '') {
+        Receives.value.forEach((el) => {
+          if (uuidrec === el.uuid_rec) {
+            item = el
+          }
+        })
+      } else {
+        if (selected_Receive.value.length > 0) {
+          item = selected_Receive.value[0]
+        }
+      }
+      if (typeof item !== 'undefined') {
         edit.value.order_sysid = item.sysid
         edit.value.order_number = item.doc_number
         edit.value.partner_id = item.partner_id
@@ -1277,16 +1358,16 @@ export default defineComponent({
         edit.value.location_id = item.location_id
         edit.value.term_id = item.term_id
         edit.value.item_group = item.item_group
-        edit.value.uuid_rec_order = item.uuid_rec
+        edit.value.uuid_rec_invoice = item.uuid_rec
         change_term()
-        dlgOrder.value = false
+        dlgReceive.value = false
         detail.value = []
       }
     }
-    function select_Orderdtl() {
-      if (selected_OrderDtl.value.length > 0) {
+    function select_ReceiveDtl() {
+      if (selected_ReceiveDtl.value.length > 0) {
         let founded = false
-        selected_OrderDtl.value.forEach((el) => {
+        selected_ReceiveDtl.value.forEach((el) => {
           founded = false
           detail.value.forEach((dtl) => {
             if (dtl.item_code === el.item_code) {
@@ -1319,7 +1400,7 @@ export default defineComponent({
             calculate(data.line_no)
           }
         })
-        dlgOrderDtl.value = false
+        dlgReceiveDtl.value = false
       }
     }
 
@@ -1341,8 +1422,8 @@ export default defineComponent({
         }
       })
     }
-    function getReceive(closed, data) {
-      dlgReceive.value = closed
+    function getReturn(closed, data) {
+      dlgRetur.value = closed
       if (typeof data.uuid_rec !== 'undefined') {
         let props = {}
         props.url = 'inventory/purchase/receive/get'
@@ -1414,10 +1495,8 @@ export default defineComponent({
       btns,
       access,
       runMethod,
-      onRequest,
       add_event,
       edit_event,
-      loaddata,
       save_data,
       refopt,
       date1,
@@ -1433,7 +1512,6 @@ export default defineComponent({
       getItem,
       dlgSupplier,
       removeRow,
-      refresh_po,
       operation,
       addrow,
       calculate,
@@ -1447,32 +1525,54 @@ export default defineComponent({
       warehouse_opt,
       getSupplier,
       getItemByCode,
-      open_Order,
-      dlgOrder,
+      open_receive,
+      dlgReceive,
       colOrder,
-      Orders,
-      selected_Order,
-      pagination_Order,
-      filter_Order,
-      select_Order,
-      dlgOrderDtl,
-      colOrderDtl,
+      Receives,
+      selected_Receive,
+      pagination_Receive,
+      filter_Receive,
+      select_Receive,
+      dlgReceiveDtl,
+      colReceiveDtl,
       OrderDtl,
-      selected_OrderDtl,
-      pagination_OrderDtl,
-      select_Orderdtl,
+      selected_ReceiveDtl,
+      pagination_ReceiveDtl,
+      select_ReceiveDtl,
       term_opt,
       item_group_opt,
       change_group,
       inv_group,
       changeitem_mou,
-      dlgReceive,
-      getReceive,
+      dlgRetur,
+      getReturn,
       cancel_entry,
       change_term,
-      onRequestOrder,
-      ref_action
+      onRequestReceive,
+      ref_action,
+      delete_event,
+      load_receive
     }
   }
 })
 </script>
+<style lang="scss">
+.fit-table-entry {
+  height: -webkit-calc(100vh - 295px) !important;
+  height: -moz-calc(100vh - 295px) !important;
+  height: calc(100vh - 295px) !important;
+
+  thead tr th {
+    position: sticky;
+    z-index: 1;
+  }
+  thead tr:first-child th {
+    top: 0;
+  }
+  /* this is when the loading indicator appears */
+  &.q-table--loading thead tr:last-child th {
+    /* height of all previous header rows */
+    top: 48px;
+  }
+}
+</style>

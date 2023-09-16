@@ -12,7 +12,7 @@
         style="width: 1000px; max-width: 80vw; max-height: 700px"
       >
         <q-bar class="entry-caption">
-          Pembelian
+          Pemesanan Barang
           <q-space />
           <q-btn
             dense
@@ -22,7 +22,7 @@
             @click="closedata({})"
           />
         </q-bar>
-        <q-card-section class="q-pa-sm">
+        <q-card-section class="q-pa-xs">
           <div class="row items-center q-col-gutter-xs q-mb-xs">
             <div class="col-xs-6 col-sm-2">
               <q-input
@@ -33,7 +33,7 @@
                 label="Periode"
                 outlined
                 square
-                @blur="loaddata()"
+                @blur="loaddata"
               />
             </div>
             <div class="col-xs-6 col-sm-2">
@@ -45,7 +45,7 @@
                 label="s/d"
                 outlined
                 square
-                @blur="loaddata()"
+                @blur="loaddata"
               />
             </div>
             <div class="col-xs-12 col-sm-8">
@@ -127,9 +127,11 @@
                 :props="props"
                 @click="props.selected = !props.selected"
                 :class="
-                  props.row.is_void === '0'
-                    ? 'q-pa-xs'
-                    : 'q-pa-xs text-strike text-red-10'
+                  props.row.is_approved === '1'
+                    ? 'text-green'
+                    : props.row.is_void === '1'
+                    ? 'text-red text-strike'
+                    : ''
                 "
               >
                 <q-td
@@ -148,8 +150,8 @@
                         @click="selectdata(props.row.uuid_rec)"
                       />
                     </div>
-                    <div v-else-if="col.name === 'total'">
-                      {{ $formatnumber(props.row.total) }}
+                    <div v-else-if="col.name === 'ref_date'">
+                      {{ $INDDate(props.row.ref_date) }}
                     </div>
                     <div v-else>
                       {{ col.value }}
@@ -171,8 +173,8 @@ import { defineComponent, ref, onMounted } from 'vue'
 import { useStore } from 'vuex'
 
 export default defineComponent({
-  name: 'purcahse',
-  props: { show: Boolean, state: String },
+  name: 'ItemsRequest',
+  props: { show: Boolean },
   setup(props, context) {
     const $store = useStore()
     const dlgShow = ref(false)
@@ -183,7 +185,7 @@ export default defineComponent({
       rowsPerPage: 50,
       rowsNumber: 50
     })
-    const data_state = ref('all')
+
     const filter = ref('')
     const selected = ref([])
     const date1 = ref(null)
@@ -197,10 +199,10 @@ export default defineComponent({
         sortable: true
       },
       {
-        name: 'invoice_number',
+        name: 'ref_number',
         align: 'left',
         label: 'Referensi',
-        field: 'invoice_number',
+        field: 'ref_number',
         sortable: true
       },
       {
@@ -211,45 +213,31 @@ export default defineComponent({
         sortable: true
       },
       {
-        name: 'due_date',
+        name: 'location_name_from',
         align: 'left',
-        label: 'Jatuh Tempo',
-        field: 'due_date',
+        label: 'Dari Lokasi',
+        field: 'location_name_from',
+        sortable: true
+      },
+      {
+        name: 'location_name_to',
+        align: 'left',
+        label: 'kepada Lokasi',
+        field: 'location_name_to',
+        sortable: true
+      },
+      {
+        name: 'remarks',
+        align: 'left',
+        label: 'Catatan',
+        field: 'remarks',
         sortable: false
       },
       {
-        name: 'partner_name',
+        name: 'request_state',
         align: 'left',
-        label: 'Supplier',
-        field: 'partner_name',
-        sortable: true
-      },
-      {
-        name: 'total',
-        align: 'right',
-        label: 'Total',
-        field: 'total',
-        sortable: false
-      },
-      {
-        name: 'location_name',
-        align: 'left',
-        label: 'Lokasi',
-        field: 'location_name',
-        sortable: true
-      },
-      {
-        name: 'order_number',
-        align: 'left',
-        label: 'No.Pemesanan',
-        field: 'order_number',
-        sortable: true
-      },
-      {
-        name: 'payable_number',
-        align: 'left',
-        label: 'Invoice Hutang',
-        field: 'payable_number',
+        label: 'Status',
+        field: 'request_state',
         sortable: true
       }
     ])
@@ -294,8 +282,7 @@ export default defineComponent({
           sortBy: sortBy,
           date1: date1.value,
           date2: date2.value,
-          state: data_state.value,
-          url: 'inventory/purchase/receive'
+          url: 'inventory/item/request'
         }
         let respon = await $store.dispatch('master/GET_DATA', prop)
         data.value = respon.data
@@ -316,7 +303,7 @@ export default defineComponent({
       dlgShow.value = false
       filter.value = ''
       data.value = []
-      context.emit('CloseReceive', false, record)
+      context.emit('CloseRequest', false, record)
     }
     function loaddata() {
       onRequest({
@@ -327,7 +314,6 @@ export default defineComponent({
 
     onMounted(async () => {
       dlgShow.value = props.show
-      data_state.value = props.state
       let skrng = new Date()
       date1.value = ymd(skrng)
       date2.value = ymd(skrng)
@@ -348,8 +334,7 @@ export default defineComponent({
       dlgShow,
       loaddata,
       date1,
-      date2,
-      data_state
+      date2
     }
   }
 })

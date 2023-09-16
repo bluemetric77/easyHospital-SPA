@@ -7,21 +7,33 @@
       <q-bar class="entry-caption">
         {{ pagetitle }}
         <q-space />
-        <div
-          v-if="
-            typeof edit.is_posted !== 'undefined' &&
-            typeof edit.is_void !== 'undefined'
+
+        <q-chip
+          v-show="
+            typeof edit.is_process !== 'undefined' &&
+            typeof edit.is_void !== 'undefined' &&
+            operation !== 'inserted'
           "
+          outline
+          flat
+          :color="edit.is_void === '1' ? 'red' : 'white'"
+          :icon-right="
+            edit.is_process === '1'
+              ? 'thumb_up'
+              : edit.is_void === '1'
+              ? 'thumb_down'
+              : 'inventory'
+          "
+          size="sm"
         >
-          <q-chip
-            class="glossy"
-            :color="edit.is_process === '1' ? 'green-10' : ''"
-            text-color="white"
-            :icon-right="edit.is_process === '1' ? 'thumb_up' : ''"
-          >
-            {{ edit.is_posted === '1' ? 'TERINVOICE' : '' }}
-          </q-chip>
-        </div>
+          {{
+            edit.is_process === '1'
+              ? 'SUDAH PEMBAYARAN'
+              : edit.is_void === '1'
+              ? 'DIBATALKAN'
+              : 'OPEN'
+          }}
+        </q-chip>
       </q-bar>
 
       <q-card-section class="q-pa-sm">
@@ -117,13 +129,25 @@
           </div>
           <div class="col-xs-12 col-sm-5 offset-md-2 col-md-4">
             <div class="row items-start q-col-gutter-xs q-mb-sm">
-              <div class="col-6">
+              <div class="col-3">
                 <q-input
                   v-model="edit.ref_date"
                   dense
                   outlined
                   type="date"
                   label="Tanggal Pembelian"
+                  square
+                  stack-label
+                  :disable="ref_action !== 'save'"
+                />
+              </div>
+              <div class="col-3">
+                <q-input
+                  v-model="edit.ref_time"
+                  dense
+                  outlined
+                  type="time"
+                  label="Jam"
                   square
                   stack-label
                   :disable="ref_action !== 'save'"
@@ -260,7 +284,17 @@
               :props="props"
             >
               <div class="grid-data">
-                <div v-if="col.name === 'qty_order'">
+                <div v-if="col.name === 'line_no'">
+                  {{ col.value }}
+                  <q-icon
+                    v-show="ref_action !== 'deleted'"
+                    name="delete"
+                    color="red"
+                    size="xs"
+                    @click="removeRow(props.row.line_no)"
+                  />
+                </div>
+                <div v-else-if="col.name === 'qty_order'">
                   {{ $formatnumber(props.row.qty_order, 2) }}
                 </div>
                 <div v-else-if="col.name === 'qty_received'">
@@ -359,7 +393,7 @@
           v-show="stateform"
           flat
           icon="save"
-          label="Simpan"
+          :label="ref_action === 'save' ? 'Simpan' : 'Pembatalan'"
           class="btn-toolbar q-mx-sm"
           no-caps
           dense
@@ -976,65 +1010,17 @@ export default defineComponent({
     function runMethod(method, transid = -1) {
       this[method](transid)
     }
-    async function loaddata() {
-      selected.value = []
-      onRequest({
-        pagination: pagination.value,
-        filter: filter.value
-      })
-    }
-
-    function refresh_po() {
-      selected.value = []
-      onRequest({
-        pagination: pagination.value,
-        filter: filter.value
-      })
-    }
-
-    async function onRequest(props) {
-      let { page, rowsPerPage, rowsNumber, sortBy, descending } =
-        props.pagination
-      let filter = props.filter
-
-      let fetchCount = rowsPerPage === 0 ? rowsNumber : rowsPerPage
-      $q.loading.show({ delay: 100 })
-      try {
-        let props = {
-          page: page,
-          limit: fetchCount,
-          filter: filter,
-          sortBy: sortBy,
-          descending: descending,
-          date1: date1.value,
-          date2: date2.value,
-          url: api_url.value.retrieve,
-          isopen: Filtered.value ? '1' : '0',
-          all: postate.value === 'ALL' ? '1' : '0'
-        }
-        let respon = await $store.dispatch('master/GET_DATA', props)
-        data.value = respon.data
-        pagination.value = {
-          rowsNumber: respon.total,
-          page: respon.current_page,
-          rowsPerPage: respon.per_page,
-          sortBy: sortBy,
-          descending: descending
-        }
-      } catch (error) {
-      } finally {
-        $q.loading.hide()
-      }
-    }
 
     async function add_event() {
-      let skrng = new Date()
+      let today = new Date()
+      operation.value = 'inserted'
       stateform.value = true
       ref_action.value = 'save'
       edit.value = {
         sysid: -1,
-        ref_date: ymd(skrng),
-        due_date: null,
+        ref_date: ymd(today),
+        ref_time: today.getHours() + ':' + today.getMinutes(),
+        due_date: ymd(today),
         doc_number: '(NEW)',
         location_id: '',
         invoice_number: '',
@@ -1051,20 +1037,29 @@ export default defineComponent({
         is_tax: '0',
         uuid_rec: '(NEW)',
         uuid_rec_order: '',
-        is_process: '0'
+        is_process: '0',
+        is_void: '0'
       }
       detail.value = []
     }
 
     async function edit_event(uuidrec = '') {
+      operation.value = 'updated'
       dlgReceive.value = true
       ref_action.value = 'save'
     }
-
+    async function delete_event(uuidrec = '') {
+      dlgReceive.value = true
+      operation.value = 'deleted'
+      ref_action.value = 'deleted'
+    }
     function save_data() {
       $q.dialog({
         title: 'Konfirmasi',
-        message: 'Apakah invoice pembelian ini akan disimpan ?',
+        message:
+          ref_action.value === 'save'
+            ? 'Apakah penerimaan barang (invoice) ini akan disimpan ?'
+            : 'Apakah penerimaan (invoice) ini akan dibatalkan ?',
         cancel: true,
         persistent: true
       }).onOk(async () => {
@@ -1075,7 +1070,11 @@ export default defineComponent({
           app.url = 'inventory/purchase/receive'
           app.progress = true
           let respon = {}
-          respon = await $store.dispatch('master/POST_DATA', app)
+          if (ref_action.value !== 'deleted') {
+            respon = await $store.dispatch('master/POST_DATA', app)
+          } else {
+            respon = await $store.dispatch('master/DELETE_DATA', app)
+          }
           if (!(typeof respon === 'undefined')) {
             let msg = respon.data
             if (respon.success) {
@@ -1107,7 +1106,7 @@ export default defineComponent({
     }
 
     async function addrow() {
-      if (edit.value.order_number === '-') {
+      if (edit.value.ref_document === 'Pembelian Bebas') {
         let data = {}
         data = {
           transid: -1,
@@ -1473,10 +1472,8 @@ export default defineComponent({
       btns,
       access,
       runMethod,
-      onRequest,
       add_event,
       edit_event,
-      loaddata,
       save_data,
       refopt,
       date1,
@@ -1492,7 +1489,6 @@ export default defineComponent({
       getItem,
       dlgSupplier,
       removeRow,
-      refresh_po,
       operation,
       addrow,
       calculate,
@@ -1531,7 +1527,8 @@ export default defineComponent({
       change_term,
       onRequestOrder,
       ref_action,
-      filter_order
+      filter_order,
+      delete_event
     }
   }
 })

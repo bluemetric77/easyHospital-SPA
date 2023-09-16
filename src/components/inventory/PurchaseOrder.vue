@@ -8,6 +8,7 @@
     >
       <q-card
         class="icard"
+        square
         style="width: 1000px; max-width: 80vw; max-height: 700px"
       >
         <q-bar class="entry-caption">
@@ -125,6 +126,13 @@
               <q-tr
                 :props="props"
                 @click="props.selected = !props.selected"
+                :class="
+                  props.row.is_posted === '1'
+                    ? 'text-green'
+                    : props.row.is_void === '1'
+                    ? 'text-red text-strike'
+                    : ''
+                "
               >
                 <q-td
                   v-for="col in props.cols"
@@ -135,13 +143,7 @@
                     <div v-if="col.name === 'doc_number'">
                       <q-btn
                         :label="props.row.doc_number"
-                        :class="
-                          props.row.is_posted === '1'
-                            ? 'bg-green-10 text-white'
-                            : props.row.is_void === '1'
-                            ? 'bg-red-10 text-white'
-                            : 'text-blue'
-                        "
+                        class="btn-link"
                         no-caps
                         dense
                         flat
@@ -265,20 +267,17 @@ export default defineComponent({
       })
     }
     function selectdata(uuid = '') {
-      if (selected.value.length > 0 || uuid !== '') {
-        let row = null
-        if (uuid !== '') {
-          data.value.forEach((el) => {
-            if (uuid === el.uuid_rec) {
-              row = el
-            }
-          })
-        } else {
-          let item = selected.value[0]
-          row = item
-        }
-        closedata(row)
+      let row = {}
+      if (uuid !== '') {
+        data.value.forEach((el) => {
+          if (uuid === el.uuid_rec) {
+            row = el
+          }
+        })
+      } else if (selected.value.length > 0) {
+        row = selected.value[0]
       }
+      closedata(row)
     }
 
     async function onRequest(props) {

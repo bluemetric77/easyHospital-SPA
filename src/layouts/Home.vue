@@ -155,7 +155,9 @@
       v-model="drawer"
       :mini="miniState"
       mini-to-overlay
-      @click.capture="drawerClick"
+      @click.capture="drawerClick()"
+      @mouseover="miniState = false"
+      @mouseleave="miniState = true"
       :width="300"
       :breakpoint="350"
       :mini-width="50"
@@ -182,13 +184,12 @@
           :class="
             miniState === false
               ? 'shadow-5 overflow-hidden q-mb-sm q-mx-xs'
-              : 'q-mb-sm q-mx-xs'
+              : 'q-mb-sm q-mx-xs q-ma-sm'
           "
-          style="
-            border-radius: 15px;
-            border-style: none;
-            border-width: 0.2px;
-            border-color: teal;
+          :style="
+            miniState === false
+              ? 'border:0.2px solid #ffff;border-radius:20px'
+              : 'border-style:none;'
           "
           group="somegroup"
           dense
@@ -211,6 +212,8 @@
                   :to="itmdtl.url_link"
                   @click="drawer = false"
                   dense
+                  :active="active"
+                  class="my-menu-link"
                 >
                   <q-item-section>{{ itmdtl.title }}</q-item-section>
                 </q-item>
@@ -242,6 +245,8 @@
                         :to="itmsub.url_link"
                         @click="drawer = false"
                         dense
+                        class="my-menu-link"
+                        :active="active"
                       >
                         <q-item-section>{{ itmsub.title }}</q-item-section>
                       </q-item>
@@ -458,8 +463,8 @@
         style="width: 500px"
         square
       >
-        <q-bar class="dialog-caption">
-          <div style="color: white; font-size: 0.7em">Ubah Password</div>
+        <q-bar class="entry-caption">
+          Ubah Password
           <q-space />
           <q-btn
             v-close-popup
@@ -634,6 +639,7 @@ export default defineComponent({
     const isPwdOld = ref(true)
     const isPwd1 = ref(true)
     const isPwd2 = ref(true)
+    const active = ref(false)
 
     const baricons = computed(() => {
       return $store.state.home.baricons
@@ -967,6 +973,7 @@ export default defineComponent({
       openlink,
       detail,
       save_pwd,
+      active,
       photoprofile,
       thumbStyle: {
         right: '4px',
@@ -988,8 +995,12 @@ export default defineComponent({
 })
 </script>
 <style lang="scss">
-my-menu-link {
+.my-menu-link {
   color: white;
-  background: #f2c037;
+  background: $blue-grey-9;
+}
+.my-menu-link:hover {
+  color: red;
+  background: #fff;
 }
 </style>

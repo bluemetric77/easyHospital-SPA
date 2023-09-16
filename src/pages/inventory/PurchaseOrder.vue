@@ -14,15 +14,15 @@
           "
         >
           <q-chip
-            class="glossy"
+            flat
+            outline
             :color="
               edit.is_posted === '1'
-                ? 'green-10'
+                ? 'green'
                 : edit.is_void === '1'
-                ? 'red-10'
+                ? 'red'
                 : ''
             "
-            text-color="white"
             :icon-right="
               edit.is_posted === '1'
                 ? 'thumb_up'
@@ -30,6 +30,7 @@
                 ? 'thumb_down'
                 : ''
             "
+            size="sm"
           >
             {{
               edit.is_posted === '1'
@@ -155,13 +156,25 @@
           </div>
           <div class="col-xs-12 col-sm-5 offset-md-2 col-md-4">
             <div class="row items-start q-col-gutter-xs q-mb-sm">
-              <div class="col-6">
+              <div class="col-3">
                 <q-input
                   v-model="edit.ref_date"
                   dense
                   outlined
                   type="date"
                   label="Tanggal Pemesanan"
+                  square
+                  stack-label
+                  :disable="ref_action !== 'save'"
+                />
+              </div>
+              <div class="col-3">
+                <q-input
+                  v-model="edit.ref_time"
+                  dense
+                  outlined
+                  type="time"
+                  label="Jam"
                   square
                   stack-label
                   :disable="ref_action !== 'save'"
@@ -383,29 +396,6 @@
                       color="red"
                       size="xs"
                       @click="removeRow(props.row.line_no)"
-                    />
-                  </div>
-                  <div v-else-if="col.name === 'item_code'">
-                    <input
-                      v-model="props.row.item_code"
-                      type="text"
-                      style="width: 80px"
-                      class="input"
-                      :disabled="ref_action === 'deleted'"
-                      v-on:keyup.enter="
-                        getItemByCode(
-                          props.row.item_code,
-                          props.row.line_no,
-                          inv_group
-                        )
-                      "
-                    />
-                    <q-icon
-                      v-show="ref_action !== 'deleted'"
-                      name="search"
-                      color="blue"
-                      size="sm"
-                      @click="openitem(props.row.line_no)"
                     />
                   </div>
                   <div v-else-if="col.name === 'line_type'">
@@ -1077,66 +1067,17 @@ export default defineComponent({
     function runMethod(method, transid = -1) {
       this[method](transid)
     }
-    async function loaddata() {
-      selected.value = []
-      onRequest({
-        pagination: pagination.value,
-        filter: filter.value
-      })
-    }
-
-    function refresh_po() {
-      selected.value = []
-      onRequest({
-        pagination: pagination.value,
-        filter: filter.value
-      })
-    }
-
-    async function onRequest(props) {
-      let { page, rowsPerPage, rowsNumber, sortBy, descending } =
-        props.pagination
-      let filter = props.filter
-
-      let fetchCount = rowsPerPage === 0 ? rowsNumber : rowsPerPage
-      $q.loading.show({ delay: 100 })
-      try {
-        let props = {
-          page: page,
-          limit: fetchCount,
-          filter: filter,
-          sortBy: sortBy,
-          descending: descending,
-          date1: date1.value,
-          date2: date2.value,
-          url: 'inventory/purchase/order',
-          isopen: Filtered.value ? '1' : '0',
-          all: postate.value === 'ALL' ? '1' : '0'
-        }
-        let respon = await $store.dispatch('master/GET_DATA', props)
-        data.value = respon.data
-        pagination.value = {
-          rowsNumber: respon.total,
-          page: respon.current_page,
-          rowsPerPage: respon.per_page,
-          sortBy: sortBy,
-          descending: descending
-        }
-      } catch (error) {
-      } finally {
-        $q.loading.hide()
-      }
-    }
 
     async function add_event() {
-      let skrng = new Date()
+      let today = new Date()
       stateform.value = true
       ref_action.value = 'save'
       edit.value = {
         sysid: -1,
         site_code: '',
-        ref_date: ymd(skrng),
-        expired_date: ymd(skrng),
+        ref_date: ymd(today),
+        ref_time: today.getHours() + ':' + today.getMinutes(),
+        expired_date: ymd(today),
         delivery_date: null,
         doc_number: '(NEW)',
         location_id: '',
@@ -1171,6 +1112,7 @@ export default defineComponent({
       dlgPO.value = true
       ref_action.value = 'approved'
     }
+
     async function delete_event(transid = '') {
       dlgPO.value = true
       ref_action.value = 'deleted'
@@ -1255,7 +1197,7 @@ export default defineComponent({
     }
 
     async function addrow() {
-      if (edit.value.doc_purchase_request === '-') {
+      if (edit.value.ref_document === 'General PO') {
         let data = {}
         data = {
           transid: -1,
@@ -1283,7 +1225,7 @@ export default defineComponent({
           purchase_line_no: -1
         }
         detail.value.push(data)
-        //openitem(data.line_no)
+        openitem(data.line_no)
       } else {
         selected_requestsDtl.value = []
         dlgRequestDtl.value = true
@@ -1601,11 +1543,9 @@ export default defineComponent({
       btns,
       access,
       runMethod,
-      onRequest,
       add_event,
       edit_event,
       delete_event,
-      loaddata,
       save_data,
       refopt,
       date1,
@@ -1622,7 +1562,6 @@ export default defineComponent({
       getItem,
       dlgSupplier,
       removeRow,
-      refresh_po,
       operation,
       addrow,
       calculate,

@@ -44,9 +44,9 @@
       </q-bar>
 
       <q-card-section class="q-pa-sm">
-        <div class="row items-start q-col-gutter-xs q-mb-sm">
+        <div class="row items-center q-col-gutter-xs q-mb-sm">
           <div class="col-xs-12 col-sm-7 col-md-6">
-            <div class="row items-start q-mb-sm q-col-gutter-xs">
+            <div class="row items-center q-mb-sm q-col-gutter-xs">
               <div class="col-xs-6 col-sm-4 col-md-3">
                 <q-input
                   v-model="edit.doc_number"
@@ -54,7 +54,7 @@
                   dense
                   outlined
                   type="text"
-                  label="No.Permintaan"
+                  label="No.Distribusi"
                   square
                   stack-label
                 />
@@ -65,11 +65,20 @@
                   dense
                   outlined
                   type="text"
-                  label="Referensi Dokumen"
+                  label="Referensi Dokumen (Permintaan)"
                   square
                   stack-label
                   :disable="ref_action !== 'save'"
-                />
+                >
+                  <template v-slot:append>
+                    <q-icon
+                      name="search"
+                      color="green-10"
+                      size="sm"
+                      @click="load_request()"
+                    />
+                  </template>
+                </q-input>
               </div>
             </div>
             <div class="row items-start q-col-gutter-xs q-mb-sm">
@@ -244,29 +253,39 @@
                     @click="removeRow(props.row.line_no)"
                   />
                 </div>
-                <div v-else-if="col.name === 'qty_received'">
-                  {{ $formatnumber(props.row.qty_received, 2) }}
+                <div v-else-if="col.name === 'quantity_received'">
+                  {{ $formatnumber(props.row.quantity_received, 2) }}
                 </div>
-                <div v-else-if="col.name === 'qty_order'">
+                <div v-else-if="col.name === 'quantity_distribution'">
                   <vue-numeric
-                    v-model="props.row.qty_order"
+                    v-model="props.row.quantity_distribution"
                     class="q-field__input right-input"
                     separator="."
                     :disable="ref_action !== 'save'"
-                    @input="
-                      props.row.qty_request =
-                        props.row.qty_order * props.row.convertion
-                    "
+                    @input="calculate_line(props.row.line_no)"
                   />
                 </div>
-                <div v-else-if="col.name === 'qty_distribustion'">
-                  {{ $formatnumber(props.row.qty_distribustion, 2) }}
-                </div>
                 <div v-else-if="col.name === 'package'">
-                  {{ props.row.convertion }} {{ props.row.mou_inventory }}
+                  1 {{ props.row.mou_issue }} = {{ props.row.convertion }}
+                  {{ props.row.mou_inventory }}
                 </div>
-                <div v-else-if="col.name === 'request'">
-                  {{ props.row.qty_request }} {{ props.row.mou_inventory }}
+                <div v-else-if="col.name === 'quantity_request'">
+                  {{ props.row.quantity_request }} {{ props.row.mou_inventory }}
+                </div>
+                <div v-else-if="col.name === 'quantity_update'">
+                  {{ props.row.quantity_update }} {{ props.row.mou_inventory }}
+                </div>
+                <div v-else-if="col.name === 'item_cost'">
+                  {{ $formatnumber(props.row.item_cost, 2, ',', 0, true) }}
+                </div>
+                <div v-else-if="col.name === 'line_cost'">
+                  {{ $formatnumber(props.row.line_cost, 2, ',', 0, true) }}
+                </div>
+                <div v-else-if="col.name === 'remarks'">
+                  <input
+                    v-model="props.row.remarks"
+                    class="q-field__input input-normal full-width"
+                  />
                 </div>
                 <div v-else>
                   {{ col.value }}
@@ -345,7 +364,13 @@
     <ItemsRequest
       v-if="dlgRequest"
       :show="dlgRequest"
+      state="'A'"
       @CloseRequest="getRequest"
+    />
+    <ItemsDistribution
+      v-if="dlgDistribution"
+      :show="dlgDistribution"
+      @CloseRequest="getDistribution"
     />
   </q-page>
 </template>
@@ -354,6 +379,7 @@
 import { ymd } from 'boot/engine'
 import items from 'components/master/Items.vue'
 import ItemsRequest from 'components/inventory/ItemsRequest.vue'
+import ItemsDistribution from 'components/inventory/ItemsDistribution.vue'
 import { defineComponent, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
@@ -361,7 +387,7 @@ import { useQuasar } from 'quasar'
 
 export default defineComponent({
   name: 'ItemRequest',
-  components: { items, ItemsRequest },
+  components: { items, ItemsRequest, ItemsDistribution },
   setup() {
     const $q = useQuasar()
     const $store = useStore()
@@ -372,7 +398,7 @@ export default defineComponent({
     const date2 = ref(null)
     const stateform = ref(false)
     const edit = ref({})
-    const patient = ref({})
+    const dlgRequest = ref(false)
     const title = ref('Tambah Data')
     const filter = ref('')
     const dlgItem = ref(false)
@@ -413,20 +439,28 @@ export default defineComponent({
         field: 'item_name'
       },
       {
-        name: 'qty_order',
+        name: 'quantity_request',
         align: 'right',
         sytle: 'width: 30px',
         headerStyle: 'width: 30px',
         label: 'Jml.Permintaan',
-        field: 'qty_order'
+        field: 'quantity_request'
       },
       {
-        name: 'mou_request',
+        name: 'quantity_distribution',
+        align: 'right',
+        sytle: 'width: 30px',
+        headerStyle: 'width: 30px',
+        label: 'Jml.Distribusi',
+        field: 'quantity_distribution'
+      },
+      {
+        name: 'mou_issue',
         align: 'left',
         sytle: 'width: 30px',
         headerStyle: 'width: 30px',
-        label: 'Satuan Minta',
-        field: 'mou_request'
+        label: 'Unit Distribusi',
+        field: 'mou_issue'
       },
       {
         name: 'package',
@@ -435,20 +469,34 @@ export default defineComponent({
         field: 'package'
       },
       {
-        name: 'request',
+        name: 'quantity_update',
         align: 'left',
         sytle: 'width: 30px',
         headerStyle: 'width: 30px',
-        label: 'Permintaan',
-        field: 'request'
+        label: 'Total Distribusi',
+        field: 'quantity_update'
       },
       {
-        name: 'qty_distribution',
+        name: 'item_cost',
         align: 'right',
         sytle: 'width: 30px',
         headerStyle: 'width: 30px',
-        label: 'Jml.Distribusi',
-        field: 'qty_distribution'
+        label: 'Harga Item',
+        field: 'item_cost'
+      },
+      {
+        name: 'line_cost',
+        align: 'right',
+        sytle: 'width: 30px',
+        headerStyle: 'width: 30px',
+        label: 'Total',
+        field: 'line_cost'
+      },
+      {
+        name: 'remarks',
+        align: 'left',
+        label: 'Catatan',
+        field: 'remarks'
       },
       {
         name: 'qty_received',
@@ -477,7 +525,7 @@ export default defineComponent({
     const warehouse_opt = ref([])
     const item_group_opt = ref([])
     const inv_group = ref('')
-    const dlgRequest = ref(false)
+    const dlgDistribution = ref(false)
 
     function runMethod(method, transid = -1) {
       this[method](transid)
@@ -502,17 +550,17 @@ export default defineComponent({
     }
 
     async function edit_event(uuidrec = '') {
-      dlgRequest.value = true
+      dlgDistribution.value = true
       ref_action.value = 'save'
     }
 
     async function approved_event(uuidrec = '') {
-      dlgRequest.value = true
+      dlgDistribution.value = true
       ref_action.value = 'approved'
     }
 
     async function delete_event(transid = '') {
-      dlgRequest.value = true
+      dlgDistribution.value = true
       ref_action.value = 'deleted'
     }
 
@@ -521,10 +569,10 @@ export default defineComponent({
         title: 'Konfirmasi',
         message:
           ref_action.value === 'save'
-            ? 'Apakah permintaan barang ini akan disimpan ?'
+            ? 'Apakah distribusi barang ini akan disimpan ?'
             : ref_action.value === 'deleted'
-            ? 'Apakah permintaan barang ini akan dibatalkan ?'
-            : 'Apakah permintaan barang ini akan disetujui ?',
+            ? 'Apakah distribusi barang ini akan dibatalkan ?'
+            : 'Apakah distribusi barang ini akan disetujui ?',
         cancel: true,
         persistent: true
       }).onOk(async () => {
@@ -533,11 +581,11 @@ export default defineComponent({
           app.header = edit.value
           app.detail = detail.value
           if (ref_action.value === 'save') {
-            app.url = 'inventory/item/request'
+            app.url = 'inventory/item/distribution'
           } else if (ref_action.value === 'approved') {
-            app.url = 'inventory/item/request/posting'
+            app.url = 'inventory/item/distribution/posting'
           } else if (ref_action.value === 'deleted') {
-            app.url = 'inventory/item/request'
+            app.url = 'inventory/item/distribution'
           }
           app.progress = true
           let respon = {}
@@ -618,6 +666,9 @@ export default defineComponent({
       dlgItem.value = true
       current_row.value = lineno
     }
+    function load_request() {
+      dlgRequest.value = true
+    }
 
     function getItem(closed, data) {
       dlgItem.value = closed
@@ -686,11 +737,74 @@ export default defineComponent({
         let props = {}
         props.url = 'inventory/item/request/get'
         props.uuidrec = data.uuid_rec
+        props.getcost = 1
+        $store.dispatch('master/GET_DATA', props).then((response) => {
+          if (response.header.request_state !== 'APPROVED') {
+            $q.notify({
+              color: 'positive',
+              textcolor: 'white',
+              message:
+                'Permintaan belum disetujui (Distribusi belum bisa dilakukan)',
+              position: 'top',
+              timeout: 2000
+            })
+          } else {
+            edit.value.request_id = response.header.sysid
+            edit.value.ref_number = response.header.doc_number
+            edit.value.location_id_from = response.header.location_id_to
+            edit.value.location_name_from = response.header.location_name_to
+            edit.value.location_id_to = response.header.location_id_from
+            edit.value.location_name_to = response.header.location_name_from
+            edit.value.item_group = response.header.item_group
+            edit.value.remarks = 'Permintaan ' + response.header.doc_number
+            detail.value = []
+            response.detail.forEach((el) => {
+              let item = {
+                line_no: detail.value.length + 1,
+                item_id: el.item_id,
+                item_code: el.item_code,
+                item_name: el.item_name,
+                mou_issue: el.mou_inventory,
+                convertion: 1,
+                mou_inventory: el.mou_inventory,
+                quantity_request: el.qty_request,
+                quantity_distribution: el.qty_request,
+                item_cost: el.cogs,
+                line_cost: el.qty_request * el.cogs,
+                quantity_update: el.qty_request,
+                account_transfer: '',
+                account_inventory: ''
+              }
+              detail.value.push(item)
+            })
+          }
+        })
+      }
+    }
+
+    function getDistribution(closed, data) {
+      dlgDistribution.value = closed
+      if (typeof data.uuid_rec !== 'undefined') {
+        let props = {}
+        props.url = 'inventory/item/distribution/get'
+        props.uuidrec = data.uuid_rec
         $store.dispatch('master/GET_DATA', props).then((response) => {
           edit.value = response.header
           detail.value = response.detail
           stateform.value = true
         })
+      }
+    }
+
+    function calculate_line(line) {
+      let i = 0
+      for (i = 0; i < detail.value.length; i++) {
+        if (line === detail.value[i].line_no) {
+          detail.value[i].quantity_update =
+            detail.value[i].convertion * detail.value[i].quantity_distribution
+          detail.value[i].line_cost =
+            detail.value[i].item_cost * detail.value[i].quantity_update
+        }
       }
     }
 
@@ -771,16 +885,20 @@ export default defineComponent({
       changeitem_mou,
       approved_event,
       ref_action,
-      cancel_entry
+      cancel_entry,
+      dlgDistribution,
+      load_request,
+      calculate_line,
+      getDistribution
     }
   }
 })
 </script>
 <style lang="scss">
 .fit-table-entry {
-  height: -webkit-calc(100vh - 345px) !important;
-  height: -moz-calc(100vh - 345px) !important;
-  height: calc(100vh - 345px) !important;
+  height: -webkit-calc(100vh - 295px) !important;
+  height: -moz-calc(100vh - 295px) !important;
+  height: calc(100vh - 295px) !important;
 
   thead tr th {
     position: sticky;

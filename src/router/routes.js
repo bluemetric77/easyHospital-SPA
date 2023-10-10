@@ -202,7 +202,12 @@ const routes = [
       {
         path: 'item/request',
         name: 'item_request',
-        component: () => import('pages/inventory/ItemRequest.vue')
+        component: () => import('pages/inventory/ItemsRequest.vue')
+      },
+      {
+        path: 'item/distribution',
+        name: 'item_distribution',
+        component: () => import('pages/inventory/ItemsDistribution.vue')
       }
     ]
   },

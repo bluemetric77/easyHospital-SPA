@@ -12,7 +12,7 @@
         style="width: 1000px; max-width: 80vw; max-height: 700px"
       >
         <q-bar class="entry-caption">
-          Pemesanan Barang
+          Distribusi Barang
           <q-space />
           <q-btn
             dense
@@ -24,10 +24,7 @@
         </q-bar>
         <q-card-section class="q-pa-xs">
           <div class="row items-center q-col-gutter-xs q-mb-xs">
-            <div
-              class="col-xs-6 col-sm-2"
-              v-show="request_state === 'A'"
-            >
+            <div class="col-xs-6 col-sm-2">
               <q-input
                 v-model="date1"
                 type="date"
@@ -39,10 +36,7 @@
                 @blur="loaddata()"
               />
             </div>
-            <div
-              class="col-xs-6 col-sm-2"
-              v-show="request_state === 'A'"
-            >
+            <div class="col-xs-6 col-sm-2">
               <q-input
                 v-model="date2"
                 type="date"
@@ -159,9 +153,6 @@
                     <div v-else-if="col.name === 'ref_date'">
                       {{ $INDDate(props.row.ref_date) }}
                     </div>
-                    <div v-else-if="col.name === 'process_date'">
-                      {{ $INDDateTime2(props.row.process_date) }}
-                    </div>
                     <div v-else>
                       {{ col.value }}
                     </div>
@@ -183,7 +174,7 @@ import { useStore } from 'vuex'
 
 export default defineComponent({
   name: 'ItemsRequest',
-  props: { show: Boolean, state: String },
+  props: { show: Boolean },
   setup(props, context) {
     const $store = useStore()
     const dlgShow = ref(false)
@@ -194,7 +185,7 @@ export default defineComponent({
       rowsPerPage: 50,
       rowsNumber: 50
     })
-    const request_state = ref('')
+
     const filter = ref('')
     const selected = ref([])
     const date1 = ref(null)
@@ -203,7 +194,7 @@ export default defineComponent({
       {
         name: 'doc_number',
         align: 'left',
-        label: 'No.Pemesanan',
+        label: 'No.Distribusi',
         field: 'doc_number',
         sortable: true
       },
@@ -220,6 +211,13 @@ export default defineComponent({
         label: 'Tanggal',
         field: 'ref_date',
         sortable: true
+      },
+      {
+        name: 'ref_time',
+        align: 'left',
+        label: 'Jam',
+        field: 'ref_time',
+        sortable: false
       },
       {
         name: 'location_name_from',
@@ -243,31 +241,10 @@ export default defineComponent({
         sortable: false
       },
       {
-        name: 'request_state',
+        name: 'cost',
         align: 'left',
-        label: 'Status 1',
-        field: 'request_state',
-        sortable: true
-      },
-      {
-        name: 'line_state',
-        align: 'left',
-        label: 'Status 2',
-        field: 'line_state',
-        sortable: true
-      },
-      {
-        name: 'process_number',
-        align: 'left',
-        label: 'No. Distribusi',
-        field: 'process_number',
-        sortable: true
-      },
-      {
-        name: 'process_date',
-        align: 'left',
-        label: 'Tgl. Distribusi',
-        field: 'process_date',
+        label: 'Total Distribusi',
+        field: 'cost',
         sortable: true
       }
     ])
@@ -312,10 +289,7 @@ export default defineComponent({
           sortBy: sortBy,
           date1: date1.value,
           date2: date2.value,
-          url:
-            request_state.value === 'A'
-              ? 'inventory/item/request'
-              : 'inventory/item/request/open'
+          url: 'inventory/item/distribution'
         }
         let respon = await $store.dispatch('master/GET_DATA', prop)
         data.value = respon.data
@@ -347,7 +321,6 @@ export default defineComponent({
 
     onMounted(async () => {
       dlgShow.value = props.show
-      request_state.value = props.state !== '' ? props.state : 'A'
       let skrng = new Date()
       date1.value = ymd(skrng)
       date2.value = ymd(skrng)
@@ -368,8 +341,7 @@ export default defineComponent({
       dlgShow,
       loaddata,
       date1,
-      date2,
-      request_state
+      date2
     }
   }
 })

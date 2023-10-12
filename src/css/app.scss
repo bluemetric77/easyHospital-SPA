@@ -336,10 +336,28 @@ $bg-toolbar: $blue-grey-8;
   }
 }
 
+.fit-table-ui-with-parameter-1 {
+  height: -webkit-calc(100vh - 225px) !important;
+  height: -moz-calc(100vh - 225px) !important;
+  height: calc(100vh - 225px) !important;
+
+  thead tr th {
+    position: sticky;
+    z-index: 1;
+  }
+  thead tr:first-child th {
+    top: 0;
+  }
+  /* this is when the loading indicator appears */
+  &.q-table--loading thead tr:last-child th {
+    /* height of all previous header rows */
+    top: 48px;
+  }
+}
 .fit-table-ui-dialog {
   height: -webkit-calc(100vh - 175px) !important;
   height: -moz-calc(100vh - 175px) !important;
-  height: calc(100vh - 175px) !important;
+  height: calc(100vh - 195px) !important;
 
   thead tr th {
     position: sticky;

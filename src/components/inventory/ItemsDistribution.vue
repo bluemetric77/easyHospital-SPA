@@ -153,6 +153,9 @@
                     <div v-else-if="col.name === 'ref_date'">
                       {{ $INDDate(props.row.ref_date) }}
                     </div>
+                    <div v-else-if="col.name === 'cost'">
+                      {{ $formatnumber(props.row.cost, 2, ',', '0', true) }}
+                    </div>
                     <div v-else>
                       {{ col.value }}
                     </div>
@@ -234,6 +237,13 @@ export default defineComponent({
         sortable: true
       },
       {
+        name: 'line_state',
+        align: 'left',
+        label: 'Status',
+        field: 'line_state',
+        sortable: true
+      },
+      {
         name: 'remarks',
         align: 'left',
         label: 'Catatan',
@@ -242,7 +252,7 @@ export default defineComponent({
       },
       {
         name: 'cost',
-        align: 'left',
+        align: 'right',
         label: 'Total Distribusi',
         field: 'cost',
         sortable: true

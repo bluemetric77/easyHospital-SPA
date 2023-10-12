@@ -2,8 +2,6 @@
   <q-dialog
     v-model="dlgWarehouse"
     persistent
-    transition-show="scale"
-    transition-hide="scale"
   >
     <q-card
       square
@@ -14,40 +12,41 @@
       <q-toolbar class="entry-caption">
         <strong>Gudang/Lokasi</strong>
         <q-space />
-        <q-input
-          dark
-          v-model="filter"
-          standout
-          rounded
+        <q-btn
+          icon="close"
           dense
           outline
+          flat
+          rounded
+          @click="closedata({})"
+        />
+      </q-toolbar>
+      <q-card-section class="q-pa-xs">
+        <q-input
+          v-model="filter"
+          square
+          dense
+          outlined
           debounce="500"
-          label-color="white"
           placeholder="Pencarian"
         >
           <template v-slot:append>
             <q-icon
-              v-if="filter === ''"
               name="search"
               size="sm"
-            />
-            <q-icon
-              v-else
-              name="clear"
-              class="cursor-pointer"
-              size="sm"
-              @click="filter = ''"
+              color="blue-10"
+              @click="loaddata()"
             />
           </template>
         </q-input>
-      </q-toolbar>
+      </q-card-section>
       <q-table
         square
         :rows="data"
         :columns="columns"
         no-data-label="data kosong"
         no-results-label="data yang kamu cari tidak ditemukan"
-        row-key="loc_code"
+        row-key="location_code"
         :filter="filter"
         separator="cell"
         selection="single"
@@ -104,12 +103,12 @@
               :props="props"
             >
               <div class="grid-data">
-                <div v-if="col.name === 'loc_code'">
+                <div v-if="col.name === 'location_code'">
                   <span
                     class="text-primary cursor-pointer"
                     @click="selectdata(props.row.sysid)"
                   >
-                    {{ props.row.loc_code }}
+                    {{ props.row.location_code }}
                   </span>
                 </div>
                 <div v-else>
@@ -153,12 +152,12 @@ import { useStore } from 'vuex'
 
 export default defineComponent({
   name: 'warehouse',
-  props: { show: Boolean, warehouse_group: String },
+  props: { show: Boolean, warehouse_group: String, allgroup: String },
   setup(props, context) {
     const $store = useStore()
     const dlgWarehouse = ref(false)
     const pagination = ref({
-      sortBy: 'loc_code',
+      sortBy: 'location_code',
       descending: false,
       page: 1,
       rowsPerPage: 25,
@@ -169,17 +168,24 @@ export default defineComponent({
     const selected = ref([])
     const columns = ref([
       {
-        name: 'loc_code',
+        name: 'location_code',
         align: 'left',
         label: 'Kode',
-        field: 'loc_code',
+        field: 'location_code',
         sortable: true
       },
       {
         name: 'location_name',
         align: 'left',
-        label: 'Nama Gudang/Lokasi',
+        label: 'Nama Lokasi',
         field: 'location_name',
+        sortable: true
+      },
+      {
+        name: 'warehouse_group',
+        align: 'left',
+        label: 'Tipe',
+        field: 'warehouse_group',
         sortable: true
       }
     ])
@@ -188,6 +194,7 @@ export default defineComponent({
     const data = ref([])
     const loading = ref(false)
     const wh_group = ref('')
+    const is_all = ref('0')
 
     async function loaddata() {
       await onRequest({
@@ -226,9 +233,11 @@ export default defineComponent({
           descending: descending,
           sortBy: sortBy,
           group_name: wh_group.value,
+          all: is_all.value,
           is_active: true,
           url: 'master/inventory/warehouse'
         }
+        console.info(JSON.stringify(prop))
         let respon = await $store.dispatch('master/GET_DATA', prop)
         data.value = respon.data
         pagination.value = {
@@ -254,6 +263,7 @@ export default defineComponent({
     onMounted(async () => {
       dlgWarehouse.value = props.show
       wh_group.value = props.warehouse_group
+      is_all.value = props.allgroup
       loaddata()
     })
 
@@ -269,7 +279,8 @@ export default defineComponent({
       onRequest,
       closedata,
       dlgWarehouse,
-      wh_group
+      wh_group,
+      is_all
     }
   }
 })

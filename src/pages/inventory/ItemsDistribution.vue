@@ -325,7 +325,7 @@
           icon="save"
           :label="
             ref_action === 'approved'
-              ? 'Persetujuan'
+              ? 'Konfirmasi Distribusi'
               : ref_action === 'deleted'
               ? 'Pembatalan '
               : 'Simpan'
@@ -350,6 +350,15 @@
           no-caps
           dense
           @click="cancel_entry()"
+        />
+        <q-space />
+        <q-btn
+          icon="more_vert"
+          flat
+          dense
+          class="btn-toolbar"
+          label="Info"
+          no-caps
         />
       </q-toolbar>
     </q-page-sticky>
@@ -571,8 +580,8 @@ export default defineComponent({
           ref_action.value === 'save'
             ? 'Apakah distribusi barang ini akan disimpan ?'
             : ref_action.value === 'deleted'
-            ? 'Apakah distribusi barang ini akan dibatalkan ?'
-            : 'Apakah distribusi barang ini akan disetujui ?',
+            ? 'Apakah distribusi barang ini akan dibatalkan (void) ?'
+            : 'Apakah distribusi barang ini akan dikirim (didistribusikan) ?',
         cancel: true,
         persistent: true
       }).onOk(async () => {
@@ -739,7 +748,7 @@ export default defineComponent({
         props.uuidrec = data.uuid_rec
         props.getcost = 1
         $store.dispatch('master/GET_DATA', props).then((response) => {
-          if (response.header.request_state !== 'APPROVED') {
+          if (response.header.request_state !== 'C005@1') {
             $q.notify({
               color: 'positive',
               textcolor: 'white',
@@ -767,11 +776,11 @@ export default defineComponent({
                 mou_issue: el.mou_inventory,
                 convertion: 1,
                 mou_inventory: el.mou_inventory,
-                quantity_request: el.qty_request,
-                quantity_distribution: el.qty_request,
+                quantity_request: el.quantity_request,
+                quantity_distribution: el.quantity_request,
                 item_cost: el.cogs,
-                line_cost: el.qty_request * el.cogs,
-                quantity_update: el.qty_request,
+                line_cost: el.quantity_request * el.cogs,
+                quantity_update: el.quantity_request,
                 account_transfer: '',
                 account_inventory: ''
               }

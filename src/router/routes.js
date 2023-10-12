@@ -208,6 +208,16 @@ const routes = [
         path: 'item/distribution',
         name: 'item_distribution',
         component: () => import('pages/inventory/ItemsDistribution.vue')
+      },
+      {
+        path: 'item/distribution/confirm',
+        name: 'item_distribution_confirm',
+        component: () => import('pages/inventory/ItemsDistributionConfirm.vue')
+      },
+      {
+        path: 'item/stock',
+        name: 'item_stock',
+        component: () => import('pages/inventory/Information/ItemsStock.vue')
       }
     ]
   },

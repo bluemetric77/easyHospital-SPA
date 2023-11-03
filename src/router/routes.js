@@ -156,6 +156,11 @@ const routes = [
         path: 'inventory/items-kitchen',
         name: 'items-kitchen',
         component: () => import('pages/master/inventory/ItemsKitchen.vue')
+      },
+      {
+        path: 'inventory/items-production',
+        name: 'items-production',
+        component: () => import('pages/master/inventory/ItemsBOM.vue')
       }
     ]
   },
@@ -218,6 +223,26 @@ const routes = [
         path: 'item/stock',
         name: 'item_stock',
         component: () => import('pages/inventory/Information/ItemsStock.vue')
+      },
+      {
+        path: 'item/issue',
+        name: 'item_issue',
+        component: () => import('pages/inventory/ItemsOut.vue')
+      },
+      {
+        path: 'item/receive',
+        name: 'item_receive',
+        component: () => import('pages/inventory/ItemsIn.vue')
+      },
+      {
+        path: 'item/production',
+        name: 'item_production',
+        component: () => import('pages/inventory/ItemsProduction.vue')
+      },
+      {
+        path: 'item/adjustment',
+        name: 'item_adjustment',
+        component: () => import('pages/inventory/StockAdjustment.vue')
       }
     ]
   },

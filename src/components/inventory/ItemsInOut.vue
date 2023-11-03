@@ -3,8 +3,6 @@
     <q-dialog
       v-model="dlgShow"
       persistent
-      transition-show="scale"
-      transition-hide="scale"
     >
       <q-card
         class="icard"
@@ -12,7 +10,9 @@
         style="width: 1000px; max-width: 90vw; max-height: 700px"
       >
         <q-bar class="entry-caption">
-          Distribusi Barang
+          {{
+            DataType.value === 'IN' ? 'Penerimaan Barang' : 'Pengeluaran Barang'
+          }}
           <q-space />
           <q-btn
             dense
@@ -176,8 +176,8 @@ import { defineComponent, ref, onMounted } from 'vue'
 import { useStore } from 'vuex'
 
 export default defineComponent({
-  name: 'ItemsRequest',
-  props: { show: Boolean },
+  name: 'ItemsInOut',
+  props: { show: Boolean, datatype: String },
   setup(props, context) {
     const $store = useStore()
     const dlgShow = ref(false)
@@ -188,7 +188,7 @@ export default defineComponent({
       rowsPerPage: 50,
       rowsNumber: 50
     })
-
+    const DataType = ref('')
     const filter = ref('')
     const selected = ref([])
     const date1 = ref(null)
@@ -223,24 +223,17 @@ export default defineComponent({
         sortable: false
       },
       {
-        name: 'location_name_from',
+        name: 'location_name',
         align: 'left',
-        label: 'Dari Lokasi',
-        field: 'location_name_from',
+        label: 'Lokasi',
+        field: 'location_name',
         sortable: true
       },
       {
-        name: 'location_name_to',
-        align: 'left',
-        label: 'kepada Lokasi',
-        field: 'location_name_to',
-        sortable: true
-      },
-      {
-        name: 'line_state',
-        align: 'left',
-        label: 'Status',
-        field: 'line_state',
+        name: 'cost',
+        align: 'right',
+        label: 'Total',
+        field: 'cost',
         sortable: true
       },
       {
@@ -251,10 +244,17 @@ export default defineComponent({
         sortable: false
       },
       {
-        name: 'cost',
-        align: 'right',
-        label: 'Total Distribusi',
-        field: 'cost',
+        name: 'registration_number',
+        align: 'left',
+        label: 'No.Registrasi',
+        field: 'registration_number',
+        sortable: true
+      },
+      {
+        name: 'patient_name',
+        align: 'left',
+        label: 'Nama Pasien',
+        field: 'patient_name',
         sortable: true
       }
     ])
@@ -299,7 +299,8 @@ export default defineComponent({
           sortBy: sortBy,
           date1: date1.value,
           date2: date2.value,
-          url: 'inventory/item/distribution'
+          line_type: DataType.value,
+          url: 'inventory/item/inout'
         }
         let respon = await $store.dispatch('master/GET_DATA', prop)
         data.value = respon.data
@@ -320,7 +321,7 @@ export default defineComponent({
       dlgShow.value = false
       filter.value = ''
       data.value = []
-      context.emit('CloseRequest', false, record)
+      context.emit('CloseInOut', false, record)
     }
     function loaddata() {
       onRequest({
@@ -331,6 +332,7 @@ export default defineComponent({
 
     onMounted(async () => {
       dlgShow.value = props.show
+      DataType.value = props.datatype
       let skrng = new Date()
       date1.value = ymd(skrng)
       date2.value = ymd(skrng)
@@ -350,6 +352,7 @@ export default defineComponent({
       closedata,
       dlgShow,
       loaddata,
+      DataType,
       date1,
       date2
     }

@@ -4,36 +4,36 @@
       square
       class="icard"
     >
-      <q-toolbar class="entry-caption">
+      <q-bar class="entry-caption">
         <strong>{{ pagetitle }}</strong>
         <q-space />
         <q-input
           dark
           v-model="filter"
-          standout
-          rounded
+          flat
           dense
-          outline
           debounce="500"
-          label-color="white"
           placeholder="Pencarian"
+          input-class="q__field_filter-search"
         >
           <template v-slot:append>
             <q-icon
               v-if="filter === ''"
               name="search"
-              size="sm"
+              size="xs"
+              color="white"
             />
             <q-icon
               v-else
               name="clear"
               class="cursor-pointer"
-              size="sm"
+              size="xs"
               @click="filter = ''"
+              color="white"
             />
           </template>
         </q-input>
-      </q-toolbar>
+      </q-bar>
       <q-table
         dense
         square
@@ -102,6 +102,16 @@
                     </q-tooltip>
                   </q-icon>
                 </div>
+                <div v-else-if="col.name === 'item_code'">
+                  <q-btn
+                    :label="props.row.item_code"
+                    no-caps
+                    dense
+                    flat
+                    @click="edit_event(props.row.uuid_rec)"
+                    class="btn-link"
+                  />
+                </div>
                 <div v-else-if="col.name === 'het_price' || col.name === 'hna'">
                   {{ $formatnumber(col.value) }}
                 </div>
@@ -111,6 +121,17 @@
                   "
                 >
                   {{ $formatnumber(col.value, 2, ',', '0', true) }}
+                </div>
+
+                <div v-else-if="col.name === 'mou_alternative'">
+                  <q-btn
+                    label="Alternatif"
+                    no-caps
+                    dense
+                    flat
+                    @click="open_mou(props.row.uuid_rec)"
+                    class="btn-link"
+                  />
                 </div>
                 <div v-else-if="col.name === 'is_active'">
                   <q-toggle
@@ -166,8 +187,6 @@
     <q-dialog
       v-model="dataevent"
       persistent
-      transition-show="flip-down"
-      transition-hide="flip-up"
       full-width
     >
       <q-card
@@ -183,7 +202,6 @@
             flat
             rounded
             icon="close"
-            color="red-5"
             size="sm"
           >
             <q-tooltip>Tutup</q-tooltip>
@@ -538,6 +556,7 @@
                             dense
                             :model-value="edit.hna"
                             label="Harga Netto Apotik (HNA)"
+                            disable
                           >
                             <template v-slot:control>
                               <vue-numeric
@@ -558,6 +577,7 @@
                             dense
                             :model-value="edit.cogs"
                             label="HPP (Average)"
+                            disable
                           >
                             <template v-slot:control>
                               <vue-numeric
@@ -580,6 +600,7 @@
                             dense
                             :model-value="edit.on_hand"
                             label="Stok(Gudang Utama)"
+                            disable
                           >
                             <template v-slot:control>
                               <vue-numeric
@@ -600,6 +621,7 @@
                             dense
                             :model-value="edit.on_hand_unit"
                             label="Stok (Unit/Bagian)"
+                            disable
                           >
                             <template v-slot:control>
                               <vue-numeric
@@ -813,6 +835,222 @@
         </q-card-section>
       </q-card>
     </q-dialog>
+
+    <q-dialog
+      v-model="dlgmou"
+      persistent
+    >
+      <q-card
+        square
+        class="icard"
+        style="width: 800px; max-width: 80vw"
+      >
+        <q-bar class="entry-caption"
+          >Alternatif Satuan Barang
+          <q-space />
+          <q-btn
+            dense
+            rounded
+            icon="close"
+            v-close-popup
+            flat
+          />
+        </q-bar>
+        <q-toolbar class="main-toolbar">
+          <q-btn
+            v-show="info_mode === false"
+            no-caps
+            flat
+            class="btn-toolbar q-mr-sm"
+            icon="add"
+            label="Tambah"
+            @click="add_mou(-1)"
+          />
+          <q-btn
+            v-show="info_mode === false"
+            no-caps
+            flat
+            class="btn-toolbar q-mr-sm"
+            icon="edit"
+            label="Ubah"
+            @click="edit_mou(-1)"
+          />
+          <q-btn
+            v-show="info_mode === false"
+            no-caps
+            flat
+            class="btn-toolbar"
+            icon="delete"
+            label="Hapus"
+            @click="delete_mou(-1)"
+          />
+          <q-btn
+            v-show="info_mode === true"
+            no-caps
+            flat
+            class="btn-toolbar"
+            icon="save"
+            label="Simpan"
+            @click="save_mou()"
+          />
+          <q-btn
+            v-show="info_mode === true"
+            no-caps
+            flat
+            class="btn-toolbar"
+            icon="undo"
+            label="Batal"
+            @click="info_mode = false"
+          />
+        </q-toolbar>
+        <q-table
+          v-show="info_mode === false"
+          dense
+          square
+          :rows="infos"
+          :columns="columns_info"
+          no-data-label="data kosong"
+          no-results-label="data yang cari tidak ditemukan"
+          row-key="sysid"
+          separator="cell"
+          selection="single"
+          v-model:selected="selected_info"
+          v-model:pagination="pagination_info"
+          binary-state-sort
+          @request="onRequestMOU"
+          :loading="loading_info"
+          virtual-scroll
+          table-class="fit-table-ui-dialog-with-parameter"
+        >
+          <template v-slot:loading>
+            <q-inner-loading showing>
+              <q-spinner-ball
+                size="75px"
+                color="red-10"
+              />
+            </q-inner-loading>
+          </template>
+
+          <template v-slot:header="props">
+            <q-tr :props="props">
+              <q-th
+                v-for="col in props.cols"
+                :key="col.name"
+                :props="props"
+                class="bg-teal-8 text-white"
+              >
+                {{ col.label }}
+              </q-th>
+            </q-tr>
+          </template>
+          <template v-slot:body="props">
+            <q-tr
+              :props="props"
+              @click="props.selected = !props.selected"
+            >
+              <q-td
+                v-for="col in props.cols"
+                :key="col.name"
+                :props="props"
+              >
+                <div class="grid-data">
+                  <div v-if="col.name === 'mou_unit'">
+                    <q-btn
+                      :label="props.row.mou_unit"
+                      no-caps
+                      dense
+                      flat
+                      @click="edit_mou(props.row.sysid)"
+                      class="btn-link"
+                    />
+                  </div>
+                  <div v-else-if="col.name === 'is_active'">
+                    <q-toggle
+                      v-model="props.row.is_active"
+                      true-value="1"
+                      false-value="0"
+                      dense
+                      disable
+                    />
+                  </div>
+                  <div v-else-if="col.name === 'convertion'">
+                    {{
+                      $formatnumber(props.row.convertion, 3, ',', '0', false)
+                    }}
+                  </div>
+                  <div v-else-if="col.name === 'create_date'">
+                    {{ $INDDateTime2(props.row.create_date) }}
+                  </div>
+                  <div v-else-if="col.name === 'update_date'">
+                    {{ $INDDateTime2(props.row.update_date) }}
+                  </div>
+                  <div v-else>
+                    {{ col.value }}
+                  </div>
+                </div>
+              </q-td>
+            </q-tr>
+          </template>
+        </q-table>
+        <q-card-section
+          class="q-pa-sm"
+          v-show="info_mode === true"
+        >
+          <div class="row items-start q-pa-xs q-mb-sm">
+            <div class="col-xs-12 col-sm-4">
+              <q-select
+                v-model="edit_info.mou_unit"
+                label="Satuan alternatif"
+                dense
+                square
+                outlined
+                stack-label
+                :options="mou"
+                option-label="mou_name"
+                option-value="mou_name"
+                emit-value
+                map-options
+                options-dense
+              />
+            </div>
+          </div>
+          <div class="row items-start q-pa-xs q-mb-sm">
+            <div class="col-xs-12 col-sm-4">
+              <q-field
+                square
+                outlined
+                stack-label
+                dense
+                :model-value="edit_info.convertion"
+                label="Konversi"
+              >
+                <template v-slot:control>
+                  <vue-numeric
+                    v-model="edit_info.convertion"
+                    class="q-field__input text-right"
+                    separator="."
+                    :precision="3"
+                  />
+                </template>
+              </q-field>
+            </div>
+          </div>
+          <div class="row items-start q-pa-xs q-mb-sm">
+            <div class="col-xs-12 col-sm-4">
+              <q-input
+                v-model="edit_info.mou_inventory"
+                dense
+                square
+                outlined
+                label="Satuan Simpan"
+                disable
+              />
+            </div>
+          </div>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
+
     <manufactur
       v-if="dlgManufactur"
       :show="dlgManufactur"
@@ -841,7 +1079,6 @@ import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 import { useQuasar } from 'quasar'
 import { Config } from 'boot/engine'
-import esArrayIterator from 'core-js/modules/es.array.iterator'
 
 export default defineComponent({
   name: 'Inventory',
@@ -857,12 +1094,13 @@ export default defineComponent({
     const filter = ref('')
     const loading = ref(false)
     const pagination = ref({
-      sortBy: 'sysid',
+      sortBy: 'item_name1',
       descending: false,
       page: 1,
-      rowsPerPage: 20,
-      rowsNumber: 20
+      rowsPerPage: 50,
+      rowsNumber: 50
     })
+    const dlgmou = ref(false)
     const data = ref([])
     const selected = ref([])
     const columns = ref([])
@@ -876,6 +1114,20 @@ export default defineComponent({
     const dlgSupplier = ref(false)
     const dlgItemGroup = ref(false)
     const file = ref(null)
+    const info_mode = ref(false)
+    const infos = ref([])
+    const edit_info = ref({})
+    const pagination_info = ref({
+      sortBy: 'sysid',
+      descending: false,
+      page: 1,
+      rowsPerPage: 50,
+      rowsNumber: 50
+    })
+    const selected_info = ref([])
+    const columns_info = ref([])
+    const loading_info = ref(false)
+    const item_sysid = ref(-1)
 
     async function onRequest(props) {
       let { page, rowsPerPage, rowsNumber, sortBy, descending } =
@@ -1101,6 +1353,37 @@ export default defineComponent({
       }
     }
 
+    async function onRequestMOU(props) {
+      let { page, rowsPerPage, rowsNumber, sortBy, descending } =
+        props.pagination
+      let filter = props.filter
+
+      let fetchCount = rowsPerPage === 0 ? rowsNumber : rowsPerPage
+      loading_info.value = true
+      try {
+        let props = {
+          page: page,
+          limit: fetchCount,
+          filter: filter,
+          sortBy: sortBy,
+          descending: descending,
+          uuidrec: edit.value.uuid_rec,
+          url: 'master/inventory/inventory-item/mou'
+        }
+        let respon = await $store.dispatch('master/GET_DATA', props)
+        infos.value = respon.data
+        pagination_info.value = {
+          rowsNumber: respon.total,
+          page: respon.current_page,
+          rowsPerPage: respon.per_page,
+          sortBy: sortBy,
+          descending: descending
+        }
+      } catch (error) {
+      } finally {
+        loading_info.value = false
+      }
+    }
     function open_itemgroup() {
       dlgItemGroup.value = true
     }
@@ -1110,6 +1393,163 @@ export default defineComponent({
       if (!(typeof data === 'undefined')) {
         edit.value.item_group_sysid = data.sysid
         edit.value.group_name = data.group_name
+      }
+    }
+    function open_mou(uuidrec) {
+      data.value.forEach((el) => {
+        if (el.uuid_rec === uuidrec) {
+          edit.value = el
+        }
+      })
+      dlgmou.value = true
+      info_mode.value = false
+      columns_info.value = [
+        {
+          name: 'mou_unit',
+          align: 'left',
+          sytle: 'min-width: 60px',
+          headerStyle: 'min-width: 60px',
+          label: 'Unit (Alternartif)',
+          field: 'mou_unit'
+        },
+        {
+          name: 'convertion',
+          align: 'right',
+          sytle: 'min-width: 60px',
+          headerStyle: 'min-width: 60px',
+          label: 'Konversi',
+          field: 'convertion'
+        },
+        {
+          name: 'mou_inventory',
+          align: 'left',
+          sytle: 'min-width: 60px',
+          headerStyle: 'min-width: 60px',
+          label: 'Unit Simpan',
+          field: 'mou_inventory'
+        },
+        {
+          name: 'is_active',
+          align: 'left',
+          label: 'Aktif',
+          field: 'is_active'
+        },
+        {
+          name: 'create_by',
+          align: 'left',
+          label: 'Dibuat oleh',
+          field: 'create_by'
+        },
+        {
+          name: 'create_date',
+          align: 'left',
+          label: 'Tgl. Dibuat',
+          field: 'create_date'
+        },
+        {
+          name: 'update_by',
+          align: 'left',
+          label: 'Diubah oleh',
+          field: 'update_by'
+        },
+        {
+          name: 'update_date',
+          align: 'left',
+          label: 'Tgl. Diubah',
+          field: 'update_date'
+        }
+      ]
+      onRequestMOU({
+        pagination: pagination_info.value,
+        filter: ''
+      })
+    }
+
+    function add_mou(sysid = -1) {
+      edit_info.value = {
+        sysid: -1,
+        item_sysid: edit.value.sysid,
+        mou_unit: '',
+        convertion: 1,
+        mou_inventory: edit.value.mou_inventory
+      }
+      info_mode.value = true
+    }
+    function edit_mou(sysid = -1) {
+      if (sysid === -1) {
+        sysid = selected_info.value[0].sysid
+      }
+      infos.value.forEach((el) => {
+        if (el.sysid === sysid) {
+          edit_info.value = el
+          info_mode.value = true
+        }
+      })
+    }
+    function delete_mou(sysid = -1) {
+      if (sysid === -1) {
+        sysid = selected_info.value[0].sysid
+      }
+      edit_info.value = null
+      infos.value.forEach((el) => {
+        if (el.sysid === sysid) {
+          edit_info.value = el
+        }
+      })
+      if (info_mode.value !== null) {
+        $q.dialog({
+          title: 'Konfirmasi',
+          message: 'Apakah konversi satuan ini akan dihapus ?',
+          cancel: true,
+          persistent: true
+        }).onOk(async () => {
+          try {
+            let app = {}
+            app.sysid = edit_info.value.sysid
+            app.url = 'master/inventory/inventory-item/mou'
+            app.progress = true
+            let respon = await $store.dispatch('master/DELETE_DATA', app)
+            if (!(typeof respon === 'undefined')) {
+              let msg = respon.data
+              if (respon.success) {
+                onRequestMOU({ pagination: pagination_info.value, filter: '' })
+              } else {
+                $q.notify({
+                  color: 'red-10',
+                  textcolor: 'white',
+                  message: msg,
+                  position: 'top',
+                  timeout: 3000
+                })
+              }
+            }
+          } finally {
+            loading.value = false
+          }
+        })
+      }
+    }
+
+    async function save_mou() {
+      let app = {}
+      app.data = edit_info.value
+      app.url = 'master/inventory/inventory-item/mou'
+      app.progress = true
+      let respon = await $store.dispatch('master/POST_DATA', app)
+      if (!(typeof respon === 'undefined')) {
+        let msg = respon.data
+        if (respon.success) {
+          info_mode.value = false
+          onRequestMOU({ pagination: pagination_info.value, filter: '' })
+        } else {
+          $q.notify({
+            color: 'negative',
+            textcolor: 'white',
+            message: msg,
+            position: 'top',
+            timeout: 2000
+          })
+        }
       }
     }
 
@@ -1162,7 +1602,22 @@ export default defineComponent({
       dlgItemGroup,
       open_itemgroup,
       getItemGroup,
-      file
+      file,
+      open_mou,
+      dlgmou,
+      pagination_info,
+      columns_info,
+      selected_info,
+      infos,
+      edit_info,
+      loading_info,
+      info_mode,
+      add_mou,
+      edit_mou,
+      delete_mou,
+      save_mou,
+      item_sysid,
+      onRequestMOU
     }
   }
 })

@@ -8,38 +8,40 @@
     <q-card
       square
       class="icard"
-      style="width: 500px; max-width: 80vw"
+      style="width: 600px; max-width: 80vw"
     >
-      <q-toolbar class="entry-caption">
-        <strong>Manufaktur/Pabrik</strong>
+      <q-bar class="entry-caption">
+        Manufaktur/Pabrik
         <q-space />
-        <q-input
-          dark
-          v-model="filter"
-          standout
-          rounded
-          dense
-          outline
-          debounce="500"
-          label-color="white"
-          placeholder="Pencarian"
-        >
-          <template v-slot:append>
-            <q-icon
-              v-if="filter === ''"
-              name="search"
-              size="sm"
-            />
-            <q-icon
-              v-else
-              name="clear"
-              class="cursor-pointer"
-              size="sm"
-              @click="filter = ''"
-            />
-          </template>
-        </q-input>
-      </q-toolbar>
+        <q-icon
+          name="close"
+          size="xs"
+          flat
+          @click="closedata()"
+        />
+      </q-bar>
+      <q-card-section class="q-pa-xs">
+        <div class="row items-start">
+          <q-input
+            v-model="filter"
+            square
+            dense
+            outlined
+            debounce="500"
+            label-color="white"
+            placeholder="Pencarian"
+            class="full-width"
+          >
+            <template v-slot:append>
+              <q-icon
+                name="search"
+                color="green-10"
+                size="sm"
+              />
+            </template>
+          </q-input>
+        </div>
+      </q-card-section>
       <q-table
         square
         :rows="data"
@@ -127,7 +129,6 @@
         <q-btn
           no-caps
           label="Pilih"
-          color="positive"
           icon="check"
           flat
           class="q-mr-sm"
@@ -135,7 +136,6 @@
         />
         <q-btn
           no-caps
-          color="negative"
           label="Tutup"
           icon="close"
           flat

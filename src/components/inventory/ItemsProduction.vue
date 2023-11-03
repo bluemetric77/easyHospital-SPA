@@ -3,8 +3,6 @@
     <q-dialog
       v-model="dlgShow"
       persistent
-      transition-show="scale"
-      transition-hide="scale"
     >
       <q-card
         class="icard"
@@ -12,7 +10,7 @@
         style="width: 1000px; max-width: 90vw; max-height: 700px"
       >
         <q-bar class="entry-caption">
-          Distribusi Barang
+          Produksi
           <q-space />
           <q-btn
             dense
@@ -153,8 +151,38 @@
                     <div v-else-if="col.name === 'ref_date'">
                       {{ $INDDate(props.row.ref_date) }}
                     </div>
-                    <div v-else-if="col.name === 'cost'">
-                      {{ $formatnumber(props.row.cost, 2, ',', '0', true) }}
+                    <div v-else-if="col.name === 'cost_production'">
+                      {{
+                        $formatnumber(
+                          props.row.cost_production,
+                          2,
+                          ',',
+                          '0',
+                          true
+                        )
+                      }}
+                    </div>
+                    <div v-else-if="col.name === 'cost_standard'">
+                      {{
+                        $formatnumber(
+                          props.row.cost_standard,
+                          2,
+                          ',',
+                          '0',
+                          true
+                        )
+                      }}
+                    </div>
+                    <div v-else-if="col.name === 'output_planning'">
+                      {{
+                        $formatnumber(
+                          props.row.output_planning,
+                          2,
+                          ',',
+                          '0',
+                          true
+                        )
+                      }}
                     </div>
                     <div v-else>
                       {{ col.value }}
@@ -176,7 +204,7 @@ import { defineComponent, ref, onMounted } from 'vue'
 import { useStore } from 'vuex'
 
 export default defineComponent({
-  name: 'ItemsRequest',
+  name: 'ItemsProduction',
   props: { show: Boolean },
   setup(props, context) {
     const $store = useStore()
@@ -188,7 +216,7 @@ export default defineComponent({
       rowsPerPage: 50,
       rowsNumber: 50
     })
-
+    const DataType = ref('')
     const filter = ref('')
     const selected = ref([])
     const date1 = ref(null)
@@ -197,7 +225,7 @@ export default defineComponent({
       {
         name: 'doc_number',
         align: 'left',
-        label: 'No.Distribusi',
+        label: 'No.Produksi',
         field: 'doc_number',
         sortable: true
       },
@@ -223,24 +251,37 @@ export default defineComponent({
         sortable: false
       },
       {
-        name: 'location_name_from',
+        name: 'item_name',
         align: 'left',
-        label: 'Dari Lokasi',
-        field: 'location_name_from',
+        label: 'Produksi',
+        field: 'item_name',
         sortable: true
       },
       {
-        name: 'location_name_to',
-        align: 'left',
-        label: 'kepada Lokasi',
-        field: 'location_name_to',
+        name: 'output_planning',
+        align: 'right',
+        label: 'Jumlah Rencana',
+        field: 'output_planning'
+      },
+      {
+        name: 'cost_standard',
+        align: 'right',
+        label: 'Acuan Nilai',
+        field: 'cost_standard',
         sortable: true
       },
       {
-        name: 'line_state',
+        name: 'cost_production',
+        align: 'right',
+        label: 'Nilai Produksi',
+        field: 'cost_production',
+        sortable: true
+      },
+      {
+        name: 'location_name',
         align: 'left',
-        label: 'Status',
-        field: 'line_state',
+        label: 'Lokasi',
+        field: 'location_name',
         sortable: true
       },
       {
@@ -249,13 +290,6 @@ export default defineComponent({
         label: 'Catatan',
         field: 'remarks',
         sortable: false
-      },
-      {
-        name: 'cost',
-        align: 'right',
-        label: 'Total Distribusi',
-        field: 'cost',
-        sortable: true
       }
     ])
 
@@ -299,7 +333,7 @@ export default defineComponent({
           sortBy: sortBy,
           date1: date1.value,
           date2: date2.value,
-          url: 'inventory/item/distribution'
+          url: 'inventory/item/production'
         }
         let respon = await $store.dispatch('master/GET_DATA', prop)
         data.value = respon.data
@@ -320,7 +354,7 @@ export default defineComponent({
       dlgShow.value = false
       filter.value = ''
       data.value = []
-      context.emit('CloseRequest', false, record)
+      context.emit('CloseProduction', false, record)
     }
     function loaddata() {
       onRequest({

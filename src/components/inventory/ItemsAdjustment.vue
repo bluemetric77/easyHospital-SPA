@@ -3,8 +3,6 @@
     <q-dialog
       v-model="dlgShow"
       persistent
-      transition-show="scale"
-      transition-hide="scale"
     >
       <q-card
         class="icard"
@@ -12,7 +10,7 @@
         style="width: 1000px; max-width: 90vw; max-height: 700px"
       >
         <q-bar class="entry-caption">
-          Distribusi Barang
+          Koreksi Stok Barang
           <q-space />
           <q-btn
             dense
@@ -126,13 +124,6 @@
               <q-tr
                 :props="props"
                 @click="props.selected = !props.selected"
-                :class="
-                  props.row.is_approved === '1'
-                    ? 'text-green'
-                    : props.row.is_void === '1'
-                    ? 'text-red text-strike'
-                    : ''
-                "
               >
                 <q-td
                   v-for="col in props.cols"
@@ -153,8 +144,16 @@
                     <div v-else-if="col.name === 'ref_date'">
                       {{ $INDDate(props.row.ref_date) }}
                     </div>
-                    <div v-else-if="col.name === 'cost'">
-                      {{ $formatnumber(props.row.cost, 2, ',', '0', true) }}
+                    <div v-else-if="col.name === 'adjustment_cost'">
+                      {{
+                        $formatnumber(
+                          props.row.cost_production,
+                          2,
+                          ',',
+                          '0',
+                          true
+                        )
+                      }}
                     </div>
                     <div v-else>
                       {{ col.value }}
@@ -176,7 +175,7 @@ import { defineComponent, ref, onMounted } from 'vue'
 import { useStore } from 'vuex'
 
 export default defineComponent({
-  name: 'ItemsRequest',
+  name: 'ItemsAdjustment',
   props: { show: Boolean },
   setup(props, context) {
     const $store = useStore()
@@ -188,7 +187,6 @@ export default defineComponent({
       rowsPerPage: 50,
       rowsNumber: 50
     })
-
     const filter = ref('')
     const selected = ref([])
     const date1 = ref(null)
@@ -197,15 +195,15 @@ export default defineComponent({
       {
         name: 'doc_number',
         align: 'left',
-        label: 'No.Distribusi',
+        label: 'No.Koreksi',
         field: 'doc_number',
         sortable: true
       },
       {
-        name: 'ref_number',
+        name: 'reference',
         align: 'left',
         label: 'Referensi',
-        field: 'ref_number',
+        field: 'reference',
         sortable: true
       },
       {
@@ -223,38 +221,23 @@ export default defineComponent({
         sortable: false
       },
       {
-        name: 'location_name_from',
-        align: 'left',
-        label: 'Dari Lokasi',
-        field: 'location_name_from',
-        sortable: true
-      },
-      {
-        name: 'location_name_to',
-        align: 'left',
-        label: 'kepada Lokasi',
-        field: 'location_name_to',
-        sortable: true
-      },
-      {
-        name: 'line_state',
-        align: 'left',
-        label: 'Status',
-        field: 'line_state',
-        sortable: true
-      },
-      {
-        name: 'remarks',
+        name: 'notes',
         align: 'left',
         label: 'Catatan',
-        field: 'remarks',
-        sortable: false
+        field: 'notes'
       },
       {
-        name: 'cost',
+        name: 'adjustment_cost',
         align: 'right',
-        label: 'Total Distribusi',
-        field: 'cost',
+        label: 'Nilai Koreksi',
+        field: 'adjustment_cost',
+        sortable: true
+      },
+      {
+        name: 'location_name',
+        align: 'left',
+        label: 'Lokasi',
+        field: 'location_name',
         sortable: true
       }
     ])
@@ -299,7 +282,7 @@ export default defineComponent({
           sortBy: sortBy,
           date1: date1.value,
           date2: date2.value,
-          url: 'inventory/item/distribution'
+          url: 'inventory/item/adjustment'
         }
         let respon = await $store.dispatch('master/GET_DATA', prop)
         data.value = respon.data
@@ -320,7 +303,7 @@ export default defineComponent({
       dlgShow.value = false
       filter.value = ''
       data.value = []
-      context.emit('CloseRequest', false, record)
+      context.emit('CloseAdjustment', false, record)
     }
     function loaddata() {
       onRequest({

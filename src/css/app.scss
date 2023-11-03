@@ -224,9 +224,11 @@ $bg-toolbar: $blue-grey-8;
   background-color: #ffff;
   border: 1.5px solid $red-10;
 }
+
 .select-input:hover {
   border: 1.5px solid $green-10;
 }
+
 .select-input select {
   background-color: white;
 }
@@ -238,21 +240,25 @@ $bg-toolbar: $blue-grey-8;
   padding-top: 5px;
   padding-bottom: 5px;
 }
+
 .icard {
   background-color: $bg-color2;
   @media (max-width: $breakpoint-xs-max) {
     background-color: $bg-color2;
   }
 }
+
 .icard-report {
   background-color: white;
   color: black;
 }
+
 .report-caption {
   background-color: white;
   color: $grey-10;
   font-size: 1.2em;
 }
+
 .itable {
   background-color: $bg-color2;
   @media (max-width: $breakpoint-xs-max) {
@@ -267,29 +273,7 @@ $bg-toolbar: $blue-grey-8;
   color: white;
   background-color: $green-10;
 }
-.my-sticky-table {
-  /* height or max-height is important */
-  height: 380px;
 
-  .q-table__top,
-  .q-table__bottom,
-  thead tr:first-child th {
-    /* bg color is important for th; just specify one */
-    background-color: rgb(193, 244, 205);
-  }
-  thead tr th {
-    position: sticky;
-    z-index: 1;
-  }
-  thead tr:first-child th {
-    top: 0;
-  }
-  /* this is when the loading indicator appears */
-  &.q-table--loading thead tr:last-child th {
-    /* height of all previous header rows */
-    top: 48px;
-  }
-}
 .filter-search {
   color: #fff;
 }
@@ -298,10 +282,17 @@ $bg-toolbar: $blue-grey-8;
   background-color: #fff;
 }
 
+.q__field_filter-search {
+  color: #fff;
+}
+.q__field_filter-search:focus {
+  color: #ffff;
+}
+
 .fit-table-ui {
-  height: -webkit-calc(100vh - 175px) !important;
-  height: -moz-calc(100vh - 175px) !important;
-  height: calc(100vh - 175px) !important;
+  height: -webkit-calc(100vh - 155px) !important;
+  height: -moz-calc(100vh - 155px) !important;
+  height: calc(100vh - 155px) !important;
 
   thead tr th {
     position: sticky;

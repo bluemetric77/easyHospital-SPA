@@ -15,7 +15,7 @@
         <q-space />
         <q-icon
           name="close"
-          size="sm"
+          size="xs"
           flat
           @click="closedata()"
         />
@@ -129,7 +129,6 @@
         <q-btn
           no-caps
           label="Pilih"
-          color="positive"
           icon="check"
           flat
           class="q-mr-sm"
@@ -137,7 +136,6 @@
         />
         <q-btn
           no-caps
-          color="negative"
           label="Tutup"
           icon="close"
           flat

@@ -2,18 +2,18 @@
   <q-page class="page-app">
     <q-card
       square
-      class="icard"
+      class="icard q-mb-sm"
     >
-      <q-card-section clas="q-pa-sm q-mb-sm">
+      <q-bar class="entry-caption">Tipe Gudang/Lokasi</q-bar>
+      <q-card-section clas="q-pa-xs">
         <q-btn-toggle
           v-model="warehouse_group"
-          class="my-custom-toggle"
+          style="border: 1px solid #027be3"
           no-caps
           rounded
           unelevated
           toggle-color="primary"
           color="white"
-          style="border: 1px solid #027be3"
           text-color="primary"
           :options="[
             { label: 'Gudang Medis', value: 'MEDICAL' },
@@ -23,36 +23,43 @@
           @update:model-value="loaddata()"
         />
       </q-card-section>
-      <q-toolbar class="entry-caption">
+    </q-card>
+
+    <q-card
+      square
+      class="icard"
+    >
+      <q-bar class="entry-caption">
         <strong>{{ pagetitle }}</strong>
         <q-space />
         <q-input
-          dark
           v-model="filter"
-          standout
-          rounded
           dense
           outline
           debounce="500"
           label-color="white"
+          borderless
           placeholder="Pencarian"
+          input-class="text-white"
         >
           <template v-slot:append>
             <q-icon
               v-if="filter === ''"
               name="search"
               size="sm"
+              color="white"
             />
             <q-icon
               v-else
               name="clear"
               class="cursor-pointer"
               size="sm"
+              color="white"
               @click="filter = ''"
             />
           </template>
         </q-input>
-      </q-toolbar>
+      </q-bar>
       <q-table
         dense
         square
@@ -114,7 +121,7 @@
                     :name="btn.icon"
                     size="xs"
                     color="green-10"
-                    @click="runMethod(btn.onclick, props.row.sysid)"
+                    @click="runMethod(btn.onclick, props.row.uuid_rec)"
                   >
                     <q-tooltip content-class="tooltips-app">
                       {{ btn.tooltips }}
@@ -157,11 +164,29 @@
                     disable
                   />
                 </div>
+                <div v-else-if="col.name === 'is_direct_purchase'">
+                  <q-toggle
+                    v-model="props.row.is_direct_purchase"
+                    true-value="1"
+                    false-value="0"
+                    dense
+                    disable
+                  />
+                </div>
+                <div v-else-if="col.name === 'is_production'">
+                  <q-toggle
+                    v-model="props.row.is_production"
+                    true-value="1"
+                    false-value="0"
+                    dense
+                    disable
+                  />
+                </div>
                 <div v-else-if="col.name === 'create_date'">
-                  {{ $INDDateTime(props.row.create_date) }}
+                  {{ $INDDateTime2(props.row.create_date) }}
                 </div>
                 <div v-else-if="col.name === 'update_date'">
-                  {{ $INDDateTime(props.row.update_date) }}
+                  {{ $INDDateTime2(props.row.update_date) }}
                 </div>
                 <div v-else>
                   {{ col.value }}
@@ -230,7 +255,7 @@
           <div class="row items-center q-col-gutter-sm q-mb-sm">
             <div class="col-4">
               <q-input
-                v-model="edit.loc_code"
+                v-model="edit.location_code"
                 dense
                 outlined
                 square
@@ -340,7 +365,7 @@
             </div>
           </div>
           <div class="row items-start q-col-gutter-sm q-mb-sm">
-            <div class="col-12">
+            <div class="col-6">
               <q-checkbox
                 v-model="edit.is_sales"
                 true-value="1"
@@ -352,9 +377,21 @@
                 stack-label
               />
             </div>
+            <div class="col-6">
+              <q-checkbox
+                v-model="edit.is_direct_purchase"
+                true-value="1"
+                false-value="0"
+                dense
+                outlined
+                square
+                label="Diizinkan pembelian tunai"
+                stack-label
+              />
+            </div>
           </div>
           <div class="row items-start q-col-gutter-sm q-mb-sm">
-            <div class="col-12">
+            <div class="col-6">
               <q-checkbox
                 v-model="edit.is_received"
                 true-value="1"
@@ -362,7 +399,19 @@
                 dense
                 outlined
                 square
-                label="Diizinkan untuk penerimaan stock"
+                label="Diizinkan untuk penerimaan PO"
+                stack-label
+              />
+            </div>
+            <div class="col-6">
+              <q-checkbox
+                v-model="edit.is_production"
+                true-value="1"
+                false-value="0"
+                dense
+                outlined
+                square
+                label="Diizinkan produksi"
                 stack-label
               />
             </div>
@@ -499,31 +548,32 @@ export default defineComponent({
       dataevent.value = true
       title.value = 'Tambah Data'
       edit.value = {
-        sysid: -1,
-        loc_code: '',
+        location_code: '',
         location_name: '',
         inventory_account: '',
         cogs_account: '',
         expense_account: '',
         variant_account: '',
         warehouse_type: 'Gudang utama',
-        is_sales: true,
-        is_distribution: true,
-        is_received: true,
+        is_sales: '1',
+        is_distribution: '0',
+        is_received: '1',
+        is_direct_purchase: '0',
+        is_production: '0',
         warehouse_group: warehouse_group.value,
-        is_active: true
+        is_active: '1',
+        uuid_rec: ''
       }
     }
 
-    async function edit_event(primary = -1) {
-      if (selected.value.length > 0 || !(primary === -1)) {
-        if (primary === -1) {
-          let item = selected.value[0]
-          primary = item.sysid
+    async function edit_event(uuidrec = '') {
+      if (selected.value.length > 0 || !(uuidrec === '')) {
+        if (uuidrec === '') {
+          uuidrec = selected.value[0].uuid_rec
         }
         let props = {}
         props.url = api_url.value.edit
-        props.sysid = primary
+        props.uuid_rec = uuidrec
         props.progress = true
         let respon = await $store.dispatch('master/GET_DATA', props)
         if (!(typeof respon === 'undefined')) {
@@ -534,11 +584,10 @@ export default defineComponent({
       }
     }
 
-    async function delete_event(primary = -1) {
-      if (selected.value.length > 0 || !(primary === -1)) {
-        if (primary === -1) {
-          let item = selected.value[0]
-          primary = item.sysid
+    async function delete_event(uuidrec = '') {
+      if (selected.value.length > 0 || !(uuidrec === '')) {
+        if (uuidrec === '') {
+          uuidrec = selected.value[0].uuid_rec
         }
         $q.dialog({
           title: 'Konfirmasi',
@@ -547,7 +596,7 @@ export default defineComponent({
           persistent: true
         }).onOk(() => {
           let json = {}
-          json.sysid = primary
+          json.uuid_rec = uuidrec
           json.url = api_url.value.delete
           $store.dispatch('master/DELETE_DATA', json).then((respon) => {
             if (!(typeof respon === 'undefined')) {
@@ -616,8 +665,8 @@ export default defineComponent({
       })
     }
 
-    function runMethod(method, primary = -1) {
-      this[method](primary)
+    function runMethod(method, uuidrec = '') {
+      this[method](uuidrec)
     }
 
     onMounted(async () => {

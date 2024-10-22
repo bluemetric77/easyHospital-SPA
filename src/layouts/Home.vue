@@ -245,7 +245,6 @@
                         :to="itmsub.url_link"
                         @click="drawer = false"
                         dense
-                        class="my-menu-link"
                         :active="active"
                       >
                         <q-item-section>{{ itmsub.title }}</q-item-section>
@@ -682,7 +681,7 @@ export default defineComponent({
         })
 
         props = {}
-        props.url = 'userprofile'
+        props.url = 'user-profile'
         props.jwt = JWTToken()
         $store.dispatch('home/GET_DATA', props).then((respon) => {
           userprofile.value = respon
@@ -994,10 +993,11 @@ export default defineComponent({
   }
 })
 </script>
+
 <style lang="scss">
 .my-menu-link {
-  color: white;
-  background: $blue-grey-9;
+  color: #fff;
+  background-color: #003135;
 }
 .my-menu-link:hover {
   color: red;

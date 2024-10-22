@@ -3,23 +3,13 @@ import VueNumeric from '@handcrafted-market/vue3-numeric'
 import { api } from 'boot/axios'
 import { Loading, QSpinnerGears, QSpinnerPie, QSpinnerBall } from 'quasar'
 import home from '../store/utility/home'
+import { SessionStorage } from 'quasar'
 
 // "async" is optional;
 // more info on params: https://v2.quasar.dev/quasar-cli/boot-files
 class Config {
   Environment() {
     let setting = {}
-    /*setting = {
-      BaseUrl: 'https://putrajayagroup.com',
-      Port: 0,
-      API: 'backend/api',
-      API: 'v1/api',
-      vendor: 'vendor',
-      APIKey: '4c7a804cb484aa4a81734023634644a7643cf8ff',
-      APIPassword: 'e059de7fcce4ceb254f9048478abd6ec613e17e4',
-      UserToken: 'pjm'
-    }*/
-
     setting = {
       BaseUrl: 'http://localhost',
       Port: 8000,
@@ -86,7 +76,7 @@ class Config {
   AccessToken() {
     let accesstoken = ''
     try {
-      accesstoken = sessionStorage.getItem('auth-jwt')
+      accesstoken = SessionStorage.getItem('auth-jwt')
       if (accesstoken.indexOf('|') > 0) {
         accesstoken = accesstoken.substr(
           accesstoken.indexOf('|') + 1,
@@ -522,7 +512,7 @@ async function pageauth(url) {
   let config = new Config()
   let timeoutlink = config.Environment().timeout
   let jwt = config.JWTToken()
-  let urlapi = (await config.UrlLink()) + '/access/securitypage'
+  let urlapi = (await config.UrlLink()) + '/access/page-verification'
   Loading.show({ spinner: QSpinnerGears, message: 'Sedang cek akses data' })
   try {
     let respon = await api({
@@ -531,8 +521,10 @@ async function pageauth(url) {
       timeout: timeoutlink,
       withCredentials: true,
       params: {
-        jwt: jwt,
         objects: url
+      },
+      headers: {
+        'x-jwt': jwt
       }
     })
     var result = {
@@ -547,7 +539,7 @@ async function pageauth(url) {
         )
         if (!(typeof respon.data.contents.data.new_jwt === 'undefined')) {
           let newjwt = respon.data.contents.data.new_jwt
-          sessionStorage.set('auth-jwt', newjwt)
+          SessionStorage.set('auth-jwt', newjwt)
         }
         Loading.hide()
         var result = {

@@ -9,36 +9,40 @@
           square
           class="icard"
         >
-          <q-toolbar class="entry-caption">
+          <q-bar class="entry-caption">
             <strong>Kelompok</strong>
             <q-space />
             <q-input
-              dark
               v-model="filter_groups"
+              dark
               standout
-              rounded
               dense
               outline
               debounce="500"
               label-color="white"
+              borderless
               placeholder="Pencarian"
+              input-class="text-white"
             >
               <template v-slot:append>
                 <q-icon
                   v-if="filter_groups === ''"
                   name="search"
+                  color="white"
                   size="sm"
                 />
                 <q-icon
                   v-else
                   name="clear"
                   class="cursor-pointer"
+                  color="white"
                   size="sm"
                   @click="filter_groups = ''"
                 />
               </template>
             </q-input>
-          </q-toolbar>
+          </q-bar>
+
           <q-table
             dense
             square
@@ -91,13 +95,23 @@
                 >
                   <div class="grid-data">
                     <div v-if="col.name === 'descriptions'">
-                      <span class="q-mr-md">
-                        {{ props.row.descriptions }}
-                      </span>
-                      <q-icon
-                        name="fa-solid fa-chevron-right"
-                        color="green-10"
+                      <q-btn
+                        :label="props.row.descriptions"
+                        no-caps
+                        dense
+                        flat
                         @click="load_item(props.row.sysid)"
+                        class="btn-operation q-mr-sm"
+                      />
+                    </div>
+                    <div v-else-if="col.name === 'parent_code'">
+                      <q-btn
+                        :label="props.row.parent_code"
+                        no-caps
+                        dense
+                        flat
+                        @click="load_item(props.row.sysid)"
+                        class="btn-operation q-mr-sm"
                       />
                     </div>
                     <div v-else>
@@ -116,36 +130,38 @@
           square
           class="icard"
         >
-          <q-toolbar class="entry-caption">
+          <q-bar class="entry-caption">
             <strong>{{ pagetitle }}</strong>
             <q-space />
             <q-input
-              dark
               v-model="filter"
+              dark
               standout
-              rounded
               dense
               outline
               debounce="500"
               label-color="white"
+              borderless
               placeholder="Pencarian"
             >
               <template v-slot:append>
                 <q-icon
                   v-if="filter === ''"
                   name="search"
+                  color="white"
                   size="sm"
                 />
                 <q-icon
                   v-else
                   name="clear"
                   class="cursor-pointer"
+                  color="white"
                   size="sm"
                   @click="filter = ''"
                 />
               </template>
             </q-input>
-          </q-toolbar>
+          </q-bar>
           <q-table
             dense
             square

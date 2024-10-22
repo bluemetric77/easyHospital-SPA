@@ -4,36 +4,37 @@
       square
       class="icard"
     >
-      <q-toolbar class="entry-caption">
-        <strong>{{ pagetitle }}</strong>
+      <q-bar class="entry-caption">
+        {{ pagetitle }}
         <q-space />
         <q-input
-          dark
           v-model="filter"
-          standout
-          rounded
           dense
           outline
-          debounce="500"
+          debounce="300"
           label-color="white"
+          borderless
           placeholder="Pencarian"
+          input-class="field-filter"
         >
           <template v-slot:append>
             <q-icon
               v-if="filter === ''"
               name="search"
-              size="sm"
+              size="xs"
+              color="white"
             />
             <q-icon
               v-else
               name="clear"
               class="cursor-pointer"
-              size="sm"
+              size="xs"
+              color="white"
               @click="filter = ''"
             />
           </template>
         </q-input>
-      </q-toolbar>
+      </q-bar>
       <q-table
         dense
         square
@@ -95,7 +96,7 @@
                     :name="btn.icon"
                     size="xs"
                     color="green-10"
-                    @click="runMethod(btn.onclick, props.row.sysid)"
+                    @click="runMethod(btn.onclick, props.row.uuid_rec)"
                   >
                     <q-tooltip content-class="tooltips-app">
                       {{ btn.tooltips }}
@@ -109,10 +110,10 @@
                     disable
                   />
                 </div>
-                <div v-else-if="col.name === 'create_date'">
+                <div v-else-if="col.name === 'created_date'">
                   {{ $INDDateTime(props.row.create_date) }}
                 </div>
-                <div v-else-if="col.name === 'update_date'">
+                <div v-else-if="col.name === 'updated_date'">
                   {{ $INDDateTime(props.row.update_date) }}
                 </div>
                 <div v-else>
@@ -170,7 +171,6 @@
             flat
             rounded
             icon="close"
-            color="red-5"
             size="sm"
           >
             <q-tooltip>Tutup</q-tooltip>
@@ -220,8 +220,8 @@
                 label="Jenis Klinik"
                 stack-label
                 :options="[
-                  { value: '0', label: 'Non Executive' },
-                  { value: '1', label: 'Executive' }
+                  { value: false, label: 'Non Executive' },
+                  { value: true, label: 'Executive' }
                 ]"
                 option-value="value"
                 option-label="label"
@@ -421,29 +421,26 @@ export default defineComponent({
 
       let fetchCount = rowsPerPage === 0 ? rowsNumber : rowsPerPage
       loading.value = true
-      try {
-        let props = {
-          page: page,
-          limit: fetchCount,
-          filter: filter,
-          sortBy: sortBy,
-          descending: descending,
-          group_name: 'OUTPATIENT',
-          url: api_url.value.retrieve
-        }
-        let respon = await $store.dispatch('master/GET_DATA', props)
-        data.value = respon.data
-        pagination.value = {
-          rowsNumber: respon.total,
-          page: respon.current_page,
-          rowsPerPage: respon.per_page,
-          sortBy: sortBy,
-          descending: descending
-        }
-      } catch (error) {
-      } finally {
-        loading.value = false
+      data.value = []
+      let paylaod = {
+        page: page,
+        limit: fetchCount,
+        filter: filter,
+        sortBy: sortBy,
+        descending: descending,
+        group_name: 'OUTPATIENT',
+        url: api_url.value.retrieve
       }
+      let respon = await $store.dispatch('master/GET_DATA', paylaod)
+      data.value = respon.data
+      pagination.value = {
+        rowsNumber: respon.total,
+        page: respon.current_page,
+        rowsPerPage: respon.per_page,
+        sortBy: sortBy,
+        descending: descending
+      }
+      loading.value = false
     }
 
     async function add_event() {
@@ -464,100 +461,84 @@ export default defineComponent({
         is_executive: false,
         price_class: -1,
         price_class_name: '',
-        is_active: true
+        is_active: true,
+        uuid_rec: ''
       }
     }
 
-    async function edit_event(primary = -1) {
-      if (selected.value.length > 0 || !(primary === -1)) {
-        if (primary === -1) {
-          let item = selected.value[0]
-          primary = item.sysid
-        }
-        let props = {}
-        props.url = api_url.value.edit
-        props.sysid = primary
-        props.progress = true
-        let respon = await $store.dispatch('master/GET_DATA', props)
-        if (!(typeof respon === 'undefined')) {
-          title.value = 'Ubah Data'
-          dataevent.value = true
-          edit.value = respon
-        }
+    async function edit_event(uuid = '') {
+      if (selected.value.length <= 0 && uuid === '') {
+        return 0
+      }
+
+      uuid = uuid !== '' ? uuid : selected.value[0].uuid_rec
+      let payload = {
+        url: api_url.value.edit,
+        uuid_rec: uuid,
+        progress: true
+      }
+      let respon = await $store.dispatch('master/GET_DATA', payload)
+      if (!(typeof respon === 'undefined')) {
+        title.value = 'Ubah Data'
+        dataevent.value = true
+        edit.value = respon
+        console.info(JSON.stringify(respon))
       }
     }
 
-    async function delete_event(primary = -1) {
-      if (selected.value.length > 0 || !(primary === -1)) {
-        if (primary === -1) {
-          let item = selected.value[0]
-          primary = item.sysid
+    async function delete_event(uuid = '') {
+      if (selected.value.length <= 0 && uuid === '') {
+        return 0
+      }
+      $q.dialog({
+        title: 'Konfirmasi',
+        message: 'Apakah data ini akan di hapus ?',
+        cancel: true,
+        persistent: true
+      }).onOk(() => {
+        let payload = {
+          uuid_rec: uuid,
+          url: api_url.value.delete,
+          progress: true
         }
-        $q.dialog({
-          title: 'Konfirmasi',
-          message: 'Apakah data ini akan di hapus?',
-          cancel: true,
-          persistent: true
-        }).onOk(() => {
-          let json = {}
-          json.sysid = primary
-          json.url = api_url.value.delete
-          $store.dispatch('master/DELETE_DATA', json).then((respon) => {
-            if (!(typeof respon === 'undefined')) {
-              let msg = respon.data
-              if (respon.success) {
-                dataevent.value = false
-                $q.notify({
-                  color: 'positive',
-                  textcolor: 'white',
-                  message: msg,
-                  position: 'top',
-                  timeout: 2000
-                })
-                loaddata()
-              } else {
-                $q.notify({
-                  color: 'negative',
-                  textcolor: 'white',
-                  message: msg,
-                  position: 'top',
-                  timeout: 2000
-                })
-              }
-            }
+
+        $store.dispatch('master/DELETE_DATA', payload).then((respon) => {
+          let msg = respon.data
+          if (respon.success) {
+            dataevent.value = false
+            loaddata()
+          }
+          $q.notify({
+            color: respon.success ? 'positive' : 'negative',
+            textcolor: 'white',
+            message: msg,
+            position: 'top',
+            timeout: 2000
           })
         })
-      }
+      })
     }
 
     async function save_data() {
-      let app = {}
-      app.data = edit.value
-      app.operation = edit.value.sysid === -1 ? 'inserted' : 'updated'
-      app.url = api_url.value.save
-      app.progress = true
-      let respon = await $store.dispatch('master/POST_DATA', app)
+      let payload = {
+        data: edit.value,
+        url: api_url.value.save,
+        progress: true
+      }
+      let respon = await $store.dispatch('master/POST_DATA', payload)
       if (!(typeof respon === 'undefined')) {
         let msg = respon.data
         if (respon.success) {
           dataevent.value = false
-          $q.notify({
-            color: 'positive',
-            textcolor: 'white',
-            message: msg,
-            position: 'top',
-            timeout: 2000
-          })
           loaddata()
-        } else {
-          $q.notify({
-            color: 'negative',
-            textcolor: 'white',
-            message: msg,
-            position: 'top',
-            timeout: 2000
-          })
         }
+        $q.notify({
+          color: respon.success ? 'positive' : 'negative',
+          textcolor: 'white',
+          message: msg,
+          position: 'top',
+          timeout: 2000
+        })
       }
     }
 
@@ -569,8 +550,8 @@ export default defineComponent({
       })
     }
 
-    function runMethod(method, primary = -1) {
-      this[method](primary)
+    function runMethod(method, uuid = '') {
+      this[method](uuid)
     }
 
     function open_warehouse(group_name, field_name) {
@@ -581,34 +562,36 @@ export default defineComponent({
 
     function getWarehouse(closed, data) {
       dlgWarehouse.value = closed
-      if (!(typeof data.sysid == 'undefined')) {
-        if (field.value === 'wh_medical') {
-          edit.value.wh_medical = data.sysid
-          edit.value.wh_medical_name =
-            data.loc_code + ' - ' + data.location_name
-        } else {
-          edit.value.wh_general = data.sysid
-          edit.value.wh_general_name =
-            data.loc_code + ' - ' + data.location_name
-        }
+      if (typeof data.sysid == 'undefined') {
+        return 0
+      }
+      if (field.value === 'wh_medical') {
+        edit.value.wh_medical = data.sysid
+        edit.value.wh_medical_name =
+          data.location_code + ' - ' + data.location_name
+      } else {
+        edit.value.wh_general = data.sysid
+        edit.value.wh_general_name =
+          data.location_code + ' - ' + data.location_name
       }
     }
 
     function getPharmacy(closed, data) {
       dlgPharmacy.value = closed
-      if (!(typeof data.sysid == 'undefined')) {
-        edit.value.wh_pharmacy = data.sysid
-        edit.value.wh_pharmacy_name = data.dept_code + ' - ' + data.dept_name
+      if (typeof data.sysid == 'undefined') {
+        return 0
       }
+      edit.value.wh_pharmacy = data.sysid
+      edit.value.wh_pharmacy_name = data.dept_code + ' - ' + data.dept_name
     }
 
     function getPriceClass(closed, data) {
       dlgPriceClass.value = closed
-      if (!(typeof data.sysid == 'undefined')) {
-        edit.value.price_class = data.sysid
-        edit.value.price_class_name =
-          data.price_code + ' - ' + data.descriptions
+      if (typeof data.sysid == 'undefined') {
+        return 0
       }
+      edit.value.price_class = data.sysid
+      edit.value.price_class_name = data.price_code + ' - ' + data.descriptions
     }
 
     onMounted(async () => {

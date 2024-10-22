@@ -5,12 +5,11 @@
   >
     <q-card
       square
-      dark
       class="icard"
       style="width: 500px; max-width: 80vw"
     >
       <q-toolbar class="entry-caption">
-        <strong>Gudang/Lokasi</strong>
+        Gudang/Lokasi
         <q-space />
         <q-btn
           icon="close"
@@ -127,7 +126,6 @@
         <q-btn
           no-caps
           label="Pilih"
-          color="positive"
           icon="check"
           flat
           class="q-mr-sm"
@@ -135,7 +133,6 @@
         />
         <q-btn
           no-caps
-          color="negative"
           label="Tutup"
           icon="close"
           flat
@@ -196,27 +193,29 @@ export default defineComponent({
     const wh_group = ref('')
     const is_all = ref('0')
 
-    async function loaddata() {
-      await onRequest({
+    function loaddata() {
+      onRequest({
         pagination: pagination.value,
         filter: filter.value
       })
     }
+
     function selectdata(sysid = -1) {
-      if (selected.value.length > 0 || sysid !== -1) {
-        let row = null
-        if (sysid !== -1) {
-          data.value.forEach((el) => {
-            if (sysid === el.sysid) {
-              row = el
-            }
-          })
-        } else {
-          let item = selected.value[0]
-          row = item
-        }
-        closedata(row)
+      if (selected.value.length <= 0 && sysid === -1) {
+        return 0
       }
+      let row = null
+      if (sysid !== -1) {
+        data.value.forEach((el) => {
+          if (sysid === el.sysid) {
+            row = el
+          }
+        })
+      } else {
+        let item = selected.value[0]
+        row = item
+      }
+      closedata(row)
     }
 
     async function onRequest(props) {
@@ -225,31 +224,28 @@ export default defineComponent({
       let filter = props.filter
       let fetchCount = rowsPerPage === 0 ? rowsNumber : rowsPerPage
       loading.value = true
-      try {
-        let prop = {
-          page: page,
-          limit: fetchCount,
-          filter: filter,
-          descending: descending,
-          sortBy: sortBy,
-          group_name: wh_group.value,
-          all: is_all.value,
-          is_active: true,
-          url: 'master/inventory/warehouse'
-        }
-        console.info(JSON.stringify(prop))
-        let respon = await $store.dispatch('master/GET_DATA', prop)
-        data.value = respon.data
-        pagination.value = {
-          rowsNumber: respon.total,
-          page: respon.current_page,
-          sortBy: sortBy,
-          descending: descending,
-          rowsPerPage: respon.per_page
-        }
-      } catch (error) {
-      } finally {
-        loading.value = false
+      let payload = {
+        page: page,
+        limit: fetchCount,
+        filter: filter,
+        descending: descending,
+        sortBy: sortBy,
+        group_name: wh_group.value,
+        all: is_all.value,
+        is_active: true,
+        url: 'master/inventory/warehouse'
+      }
+      data.value = []
+      let respon = await $store.dispatch('master/GET_DATA', payload)
+      loading.value = false
+
+      data.value = respon.data
+      pagination.value = {
+        rowsNumber: respon.total,
+        page: respon.current_page,
+        sortBy: sortBy,
+        descending: descending,
+        rowsPerPage: respon.per_page
       }
     }
 

@@ -29,15 +29,16 @@ export async function POST_DATA(context, props) {
 }
 
 export async function GET_PAGEPROPERTY(context, id) {
-  let json = {}
-  json.id = id
-  let result = await getapi('home/columndef', json)
+  let payload = {
+    id: id
+  }
+  let result = await getapi('home/page-environment', payload)
   if (!(typeof result === 'undefined')) {
     let ret = {}
     let columns = JSON.parse(result.data.column_def)
     let col = []
     columns.forEach((el) => {
-      el.headerClasses = 'bg-blue-grey-14 text-white'
+      el.headerStyle = 'background-color:#003135;color:#fff'
       col.push(el)
     })
     ret.columns = col

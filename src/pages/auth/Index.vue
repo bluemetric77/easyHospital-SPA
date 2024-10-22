@@ -53,7 +53,7 @@
           label="Login"
           no-caps
           flat
-          @click="check_login()"
+          @click="check_auth()"
         />
       </q-card-section>
     </q-card>
@@ -67,7 +67,7 @@ import { useStore } from 'vuex'
 import { useQuasar, QSpinnerBars } from 'quasar'
 
 export default defineComponent({
-  name: 'Userlogin',
+  name: 'UserAuthorization',
   setup() {
     const $q = useQuasar()
     const $store = useStore()
@@ -76,30 +76,20 @@ export default defineComponent({
     const txtuser = ref('')
     const txtpwd = ref('')
     const isPwd = ref(true)
-    const cwidth = computed(() => {
-      var size = '350'
-      if ($q.screen.xs) {
-        size = '250'
-      } else if ($q.screen.sm) {
-        size = '300'
-      } else {
-        size = '300'
-      }
-      return size
-    })
 
     const profile = computed(() => {
       return $store.state.home.profile
     })
 
-    async function check_login() {
-      let json = {}
-      json.url = 'login'
-      json.user_id = txtuser.value
-      json.password = txtpwd.value
+    async function check_auth() {
+      let payload = {
+        url: 'auth',
+        user_id: txtuser.value,
+        password: txtpwd.value
+      }
       $q.loading.show({ spinner: QSpinnerBars, delay: 1000 })
       $store
-        .dispatch('home/POST_DATA', json)
+        .dispatch('home/POST_DATA', payload)
         .then((respon) => {
           if (!(typeof respon === 'undefined')) {
             let msg = ''
@@ -149,9 +139,8 @@ export default defineComponent({
       txtuser,
       txtpwd,
       isPwd,
-      cwidth,
       profile,
-      check_login,
+      check_auth,
       refreshpage
     }
   }
